@@ -1,0 +1,7 @@
+#!/bin/bash
+# This script is a poor mans version of the symbolic link
+# that is normally here to facilitate running bpipe from the root directory 
+# of the distribution
+set -f
+CMD=`echo "$0" | sed 's/bpipe/tools\/bpipe\/0.9.8.8\/bin\/bpipe/'`
+$CMD $*

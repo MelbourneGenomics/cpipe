@@ -1,0 +1,2 @@
+#!/bin/sh
+java -Djava.awt.headless=true  -Xmx4g  -jar `dirname $0`/igvtools.jar $*

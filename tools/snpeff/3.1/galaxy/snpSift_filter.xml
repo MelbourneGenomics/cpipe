@@ -1,0 +1,33 @@
+<tool id="snpSift_filter" name="SnpSift Filter" version="1.0">
+	<options sanitize="False" />
+	<description>Filter variants using arbitrary expressions</description>
+	<!-- 
+	    You will need to change the path to wherever your installation is.
+		You can change the amount of memory used, just change the -Xmx parameter (e.g. use -Xmx2G for 2Gb of memory)
+	java -Xmx6G -jar /home/pcingola/tools/SnpSift.jar filter -f $input -e $exprFile > $output
+	-->
+	<command>
+		java -Xmx6G -jar /home/pcingola/tools/SnpSift.jar filter -f $input -e $exprFile > $output
+	</command>
+	<inputs>
+		<param format="Tabular" name="input" type="data" label="VCF input"/>
+		<param name="expr" type="text" label="Expression" size="50"/>
+	</inputs>
+	<configfiles>
+		<configfile name="exprFile">
+		$expr
+		</configfile> 
+	</configfiles>
+
+	<outputs>
+		<data format="tabular" name="output" />
+	</outputs>
+
+	<help>
+
+You can filter using arbitrary expressions.
+
+For details about this tool, please go to http://snpeff.sourceforge.net/SnpSift.html#filter
+
+	</help>
+</tool>

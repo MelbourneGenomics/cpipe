@@ -1,0 +1,16 @@
+=================== Download GATK ====================
+
+As GATK is a commercial product, you must agree to the
+license terms yourself (not for non-research use, etc), 
+download it and unzip it in this folder. Once unzipped, 
+set the location in the config.groovy, if you are using
+a different version to the default.
+
+As a standard practise, the folders are being named as only
+their version number. Eg: 2.3.9, or 2.8-1-g932cd3a.
+
+To download GATK, visit this URL:
+
+  http://www.broadinstitute.org/gatk/auth?package=GATK
+
+NOTE: the pipeline NO LONGER works with 2.3.9.

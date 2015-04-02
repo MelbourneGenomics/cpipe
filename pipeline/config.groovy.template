@@ -1,0 +1,185 @@
+////////////////////////////////////////////////////////////////////////
+//
+// This is the configuration file for the Melbourne Genomics 
+// Demonstration Project pipeline.
+//
+// In here are configured the locations for all the tools that the
+// pipeline uses. You should copy this file to 'config.groovy'
+// and then read through instructions below to edit it for your 
+// local setup.
+//
+// Author:      Simon Sadedin, simon.sadedin@mcri.edu.au
+// Date:        January 2014
+//
+// Copyright Melbourne Genomics Health Alliance members, all rights reserved.
+// 
+// DISTRIBUTION:
+//
+// This source code should not be distributed to a third party without prior
+// approval of the Melbourne Genomics Health Alliance steering committee (via
+// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
+//
+////////////////////////////////////////////////////////////////////////
+
+//////////////////// REQUIRED PARAMTERS TO EDIT ////////////////////////
+//
+// The base of everything - set this to the absolute path of the 
+// root of the pipeline distribution (most likely, parent folder of
+// the folder this file is in)
+BASE="..." // <===== YOU MUST EDIT THIS
+
+// Set a good location for storing large temp files here (probably not /tmp)
+TMPDIR="/tmp"
+
+// Set to your exome target regions here. This should be the regions targeted
+// for capture by the exome kit, not the regions targeted for analysis
+EXOME_TARGET="$BASE/designs/captures/nextera_rapid_capture_exome_1.2/nexterarapidcapture_exome_targetedregions_v1.2.bed"
+
+// If you are using the default reference data, download it now in 
+// the hg19 folder (see hg19/README)
+//
+// NEXT: once you have reference data, run ./pipeline/scripts/check_install.sh from 
+// the root of the distribution
+
+//////////////////// REFERENCE FILES ////////////////////////////////////
+//
+// You do not need to edit below here if you are using the default 
+// reference files. See hg19/README for how to get the files needed.
+//
+////////////////////////////////////////////////////////////////////////
+
+// Set location of your reference files here (see hg19/README for what is required)
+REFBASE="$BASE/hg19" // <====== YOU MUST PUT REFERENCE FILES HERE, OR CHANGE THIS
+
+// Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
+// To download this file, and the files below, visit the GATK resource bundle
+// at ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19
+REF="$REFBASE/ucsc.hg19.fasta"
+
+// Set to a VCF file containing DBSNP entries (or leave it if you are downloading the default)
+DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
+
+// Set to a VCF file containing known indels here
+GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+
+// Names for targeted disease genes - each one must have a BED file 
+// in design/flagships. If you are targeting the whole exome,
+// use the covered regions for the exome (see examples in designs)
+DISEASE_COHORTS="AML,CMT,CS,EPIL,CRC"
+
+//////////////////// OPTIONAL PARAMTERS ////////////////////////////////
+//
+// You probably do NOT need to set anything under here! 
+//
+///////////////////////////////////////////////////////////////////////
+
+// The variant database requires every sample id to map to a different
+// individual. If multiple sample ids can map to the same individual
+// (for example, you repeat sequencing on a sample, etc.), then
+// you can mask out the part of the sample id that is not unique
+// with a regular expression here. For example, Melbourne Genomics
+// uses a 9 digit sample (study) id, but only the first 7 digits are
+// unique for an individual. We can use a mask of ".{7}" to indicate
+// that only the first 8 digits of the study id should be used in
+// the variant database.
+SAMPLE_ID_MASK=".*"
+
+// Filter out variants observed more than 2 times (ie: 3 times or more)
+// in samples from a different cohort / disease target
+OUT_OF_COHORT_VARIANT_COUNT_FILTER=2
+
+// This is only used for setting read group information in the
+// BAM files
+PLATFORM="illumina"
+
+// The coverage level below which a sample should be failed
+MEDIAN_COVERAGE_THRESHOLD=50
+
+// Base location of all the tools that we use
+TOOLS="$BASE/tools"
+
+// Various support scripts that the pipeline uses
+SCRIPTS="$BASE/pipeline/scripts"
+
+// Location of Picard tools here
+PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
+
+// Set location of Annovar distribution
+// Due to license restrictions on Annovar, you must download
+// it yourself and place it in this location
+// Note also that many databases also need to be downloaded,
+// using annovar's downdb function. See scripts/download_annovar_db.sh for
+// a helper script.
+ANNOVAR="$TOOLS/annovar/2013aug23"
+
+// Due to GATK license restrictions, you must download
+// GATK 2.8.1 yourself and place it in this location
+// (or point this to your installation)
+GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+
+// Utilities for making Excel files 
+EXCEL="$TOOLS/excel/1.0"
+
+// Location of Bedtools distribution
+BEDTOOLS="$TOOLS/bedtools/2.18.2"
+
+// Location of Samtools
+SAMTOOLS="$TOOLS/samtools/0.1.19"
+
+// FastQC tool
+FASTQC="$TOOLS/fastqc/0.10.1"
+
+// Utilties for processing NGS data in Java/Groovy
+GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0"
+
+// Set location of Variant Effect Predictor here
+// and store it in the local directory called 'vep_cache'
+// (you can create a symlink to an existing directory with 
+// that name if desired).
+// See tools/vep/README for more information
+VEP_VERSION="74"
+VEP="$TOOLS/vep/$VEP_VERSION"
+
+IGVTOOLS="$TOOLS/IGVTools/2.3.6"
+
+// IGV location
+IGV="$TOOLS/tools/igv/2.3.15"
+
+// Location and version of BWA
+BWA="$TOOLS/bwa/0.7.5a/bwa"
+
+// The exome target region to use for the analysis
+// Note this is relative to the analysis directory, not
+// the directory of this file!
+EXOME_TARGET="../design/target_region.bed"
+
+CONDEL="$TOOLS/condel/24-1-2013"
+
+// Database of unique variants, updated for each sample
+VARIANT_DB="$BASE/variants.db"
+
+// Location of groovy installation
+GROOVY_HOME="$TOOLS/groovy/2.3.4"
+
+// GROOVY binary
+GROOVY="$GROOVY_HOME/bin/groovy"
+
+// Whether to fail analysis if FASTQC produces warnings
+CHECK_FASTQC_FAILURES=true
+
+// If adapter sequence for exome capture is known, put here
+ADAPTERS_FASTA=false
+
+// By default synonymous variants are excluded from all outputs
+// Set to true to include them
+EXCLUDE_VARIANT_TYPES="synonymous SNV"
+
+// Use default Java installed in PATH
+JAVA="java"
+
+// SNPEFF location
+// Note: snpeff is not needed by default pipeline
+SNPEFF="$TOOLS/snpEff/3.1"
+
+// Genome needed (currently) only if using expanded splice regions
+HG19_CHROM_INFO="$BASE/hg19/hg19.genome"

@@ -1,0 +1,13 @@
+====================== Melbourne Genomics Variant Calling Pipeline =======================
+
+This directory contains batches of data and analysis results from operation of the
+pipeline. Each batch is given a name, and the entire working results from 
+analysis of the batch is stored in a directory with that name.
+
+Directory structure under here:
+
+     <batch id> : directories numbered by batch id containing source data
+           - data     : source data (FastQ)
+           - design   : design files relevant to this batch
+           - analysis : the outputs and working files from execution of the pipeline
+

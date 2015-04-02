@@ -1,0 +1,105 @@
+#!/bin/bash
+
+function usage() {
+  echo "Usage: igvsnapshot [-d <display>] [-o output pdf file] [-j IGV jar file] <bed/vcf file> <bed/bam/vcf file> <bed/bam/vcf file>..."
+  echo
+  echo "To use with VNC based display, start a VNC server first using:"
+  echo
+  echo "vncserver -geometry 1920x1200 :<some number>"
+  echo 
+  echo "Then pass :<some number> with -d flag"
+  echo
+  exit 1
+}
+
+function igverror() {
+        echo
+        echo "Something went wrong with IGV. Please check igv.$ID.log"
+        echo
+        exit 1
+}
+
+set -e
+while getopts "d:o:j:" o; do
+    case "${o}" in
+        d)
+            export DISPLAY="${OPTARG}"
+            ;;
+        o)
+            OUTPUT="${OPTARG}"
+            ;;
+        j)
+            IGV="${OPTARG}"
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+
+if [ -z "$2" ];
+then
+        usage
+fi
+
+if [ -z "$IGV" ];
+then
+        echo 
+        echo "Please specify the location of the IGV jar file using the -j option, eg: -j /usr/local/igv/igv.jar"
+        echo
+        usage
+fi
+
+# TODO: Start a custom VNC server, set display
+# vncserver -geometry 1920x1200 $DISPLAY
+
+ID="$$"
+
+TMPFILE=/tmp/$ID.igv.tmp
+
+echo "genome hg19" > $TMPFILE
+
+# NOTE: may not actually be a BED file - works with VCF too
+BED="$1"
+
+shift
+
+for i in $*;
+do
+ echo "load $i" >> $TMPFILE
+done
+
+echo "load $BED" >> $TMPFILE
+
+bedtools igv -slop 50 -i "$BED" -path snapshots.$ID >> $TMPFILE
+
+echo "exit
+" >> $TMPFILE
+
+java -Xmx1g -jar $IGV -b $TMPFILE > igv.$ID.log 2>&1 || igverror   
+
+IGVPID=$!
+
+echo "Running ... IGV log output to igv.$ID.log"
+echo "Batch script=$TMPFILE, IGV process=$IGVPID, Snapshots will appear in ./snapshots.$ID" 
+
+wait $IGVPID
+
+if [ -z "$OUTPUT" ];
+then
+        OUTPUT="snapshots.$ID.pdf"
+fi
+
+if [ ! -e ./snapshots.$ID/ ];
+then
+        igverror
+fi 
+
+convert `ls -tr ./snapshots.$ID/*.png` $OUTPUT
+echo
+echo "Done. Output = $OUTPUT"
+echo
+
