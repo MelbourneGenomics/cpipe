@@ -49,10 +49,10 @@ for l in annovar_file:
             #if exon_start == 18439811 and start == 18439809:
                 #print "Exon [%d,%d] " % (exon_start, exon_end)
                 if end <= exon_start and end > exon_start - search_width:
-                    l[0] = "vcgs_splicing;"+l[0]
+                    l[0] = "extra_splicing;"+l[0]
                     w.writerow(l)
                 elif start >= exon_end and start < exon_end + search_width:
-                    l[0] = "vcgs_splicing;"+l[0]
+                    l[0] = "extra_splicing;"+l[0]
                     w.writerow(l)
                 else:
                     # Not interesting
