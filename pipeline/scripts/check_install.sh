@@ -1,5 +1,5 @@
 #!/bin/bash
-#vim: ts=4:expandtab:sw=4:
+# vim: ts=4:expandtab:sw=4:cindent
 ############################################################
 #
 # Installation check script for Melbourne Genomics Pipeline
@@ -14,31 +14,47 @@
 
 # Helper functions
 function err() {
-        echo
-        echo "========================= ERROR =================================="
-        echo
-        echo "$1" | fmt -w 100
-        echo
-        echo "=================================================================="
-        echo
-        exit 1
+    echo
+    echo "========================= ERROR =================================="
+    echo
+    echo "$1" | fmt -w 100
+    echo
+    echo "=================================================================="
+    echo
+    exit 1
 }
 
 function warn() {
-        echo
-        echo "================================================================"
-        echo "WARNING: $1" | fmt -w 100
-        echo "================================================================"
-        echo
+    echo
+    echo "================================================================"
+    echo "WARNING: $1" | fmt -w 100
+    echo "================================================================"
+    echo
 }
 
 
 function msg() {
-        echo
-        echo "================================================================"
-        echo "$1"
-        echo "================================================================"
-        echo
+    echo
+    echo "================================================================"
+    echo "$1"
+    echo "================================================================"
+    echo
+}
+
+#
+# Support for "quiet" operation - only prompt if QUIET != false
+#
+function prompt() {
+
+    PROMPT="$1"
+    DEFAULT="$2"
+   
+    if $QUIET;
+    then
+        REPLY="$DEFAULT"
+    else
+        read -p "$1"
+    fi
 }
 
 function compile() {
@@ -46,7 +62,7 @@ function compile() {
     msg "Check $PROGRAM is compiled ..."
     if [ ! -e $PROGRAM ];
     then
-            read -p "$PROGRAM does not seem to be compiled: do you want me to compile it? (y/n): "
+            prompt "$PROGRAM does not seem to be compiled: do you want me to compile it? (y/n): " "y"
             if [ "$REPLY" == "y" ];
             then
                 pushd `dirname $PROGRAM` || pushd `dirname $(dirname $PROGRAM)`
@@ -61,6 +77,11 @@ function compile() {
     fi
 }
 
+QUIET=false
+if [ "$1" == "-q" ];
+then
+  QUIET=true
+fi
 
 [ -e pipeline ] || \
         err "I can't see the pipeline directory. Maybe you didn't clone the repository, or you're running this script from the wrong location?"
@@ -125,7 +146,7 @@ msg "Check reference FASTA is indexed"
 
 find `dirname $REF`/ -name '*.bwt' -mtime +180 | grep -q bwt && {
     warn "The BWA index on your reference is more than 180 days old. If you experience errors in the alignment stage, please try re-indexing your data"
-    read -p "Press enter to continue"
+    prompt "Press enter to continue" " "
 }
 
 [ -e "$DBSNP" ] || err "The DBSNP file $DBSNP does not exist. Please download it."
@@ -143,7 +164,7 @@ msg "Check ulimit ..."
 MAX_OPEN_FILES=`ulimit -n` 
 if [ "$MAX_OPEN_FILES" -lt 2048 ]; 
 then 
-	warn "The limit on open files is set to $MAX_OPEN_FILES. Cpipe may require more open files than this. Consider adding 'ulimit set -S -n 2048' to your .bashrc file."
+    warn "The limit on open files is set to $MAX_OPEN_FILES. Cpipe may require more open files than this. Consider adding 'ulimit set -S -n 2048' to your .bashrc file."
 fi
 
 msg "Success: all the dependencies I know how to check are OK"
