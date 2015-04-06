@@ -28,7 +28,7 @@ set_target_info = {
     var HG19_CHROM_INFO : false
 
     branch.splice_region_window=false
-    branch.splice_region_bed=""
+    branch.splice_region_bed_flag=""
     branch.multi_annovar=false
 
     branch.batch = batch
@@ -80,31 +80,41 @@ set_target_info = {
     // Load arbitrary settings related to the target
     println "Loading settings for target region $branch.name from ${file(target_config).absolutePath}"
     load file(target_config).absolutePath
-
-    if(splice_region_window) {
-
-        if(!HG19_CHROM_INFO)
-            fail "Settings specify annotation of splice window but HG19_CHROM_INFO is not set. Please set this variable to a file containing chromosome sizes for genome $REF"
-
-        branch.exon_bed_file = '../design/'+target_name+'.exons.bed'
-        if(!file(branch.exon_bed_file).exists()) {
-            exec """
-                cp $BASE/designs/${target_name}/${target_name}.exons.bed ${output(exon_bed_file)}
-            """
-
-            exec """
-             $BEDTOOLS/bin/bedtools slop -b $splice_region_window -i $exon_bed_file -g $HG19_CHROM_INFO  > $output.splice.bed
-            """
-            branch.splice_region_bed = " -L $output.splice.bed "
-        }
-    }
-
     if(multi_annovar) {
         println "Enabling multiple Annovar annotation sources for $target_name"
         branch.annoar = multiple_annovar 
     }
     
     println "Target $target_name is processing samples $target_samples"
+}
+
+create_splice_site_bed = {
+
+    // If no splice region window is defined, simply set the 
+    if(!splice_region_window) {
+        branch.splice_region_bed_flag = ""
+        return
+    }
+
+    msg "Setting regions for calling / annotation of splice variants to $splice_region_window bp past exon boundary"
+
+    output.dir="../design"
+    produce(target_name + ".splice.bed", target_name + ".exons.bed") {
+        exec """
+            python $SCRIPTS/create_exon_bed.py  
+                -c -s $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file -
+              | $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $splice_region_window -i - > $output.bed
+
+            python $SCRIPTS/create_exon_bed.py  
+                -c $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file $output2.bed
+        """
+
+        branch.splice_region_bed_flag = "-L $output1.bed"
+        branch.exon_bed_file = output2.bed
+    }
+
+    println "Splice region flat = $splice_region_bed_flag"
+    println "Exon bed file = $exon_bed_file"
 }
 
 set_sample_info = {
@@ -456,7 +466,7 @@ realignIntervals = {
             -T RealignerTargetCreator 
             -R $REF 
             -I $input.bam 
-            -L $COMBINED_TARGET $splice_region_bed
+            -L $COMBINED_TARGET $splice_region_bed_flag
             --known $GOLD_STANDARD_INDELS 
             -o $output.intervals
     """, "realign_target_creator"
@@ -470,7 +480,7 @@ realign = {
              -T IndelRealigner 
              -R $REF 
              -I $input.bam 
-             -L $COMBINED_TARGET $splice_region_bed
+             -L $COMBINED_TARGET $splice_region_bed_flag
              -targetIntervals $input.intervals 
              -o $output.bam
     ""","local_realign"
@@ -501,7 +511,7 @@ recal_count = {
              -T BaseRecalibrator 
              -I $input.bam 
              -R $REF 
-             -L $COMBINED_TARGET $splice_region_bed
+             -L $COMBINED_TARGET $splice_region_bed_flag
              --knownSites $DBSNP $INDEL_QUALS
              -l INFO 
              -cov ReadGroupCovariate -cov QualityScoreCovariate -cov CycleCovariate -cov ContextCovariate 
@@ -517,7 +527,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
-               -L $COMBINED_TARGET $splice_region_bed
+               -L $COMBINED_TARGET $splice_region_bed_flag
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -550,7 +560,7 @@ call_variants_ug = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed
+                   -L $COMBINED_TARGET $splice_region_bed_flag
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
@@ -579,7 +589,7 @@ call_variants_hc = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed
+                   -L $COMBINED_TARGET $splice_region_bed_flag
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -631,7 +641,7 @@ filter_variants = {
                  -R $REF
                  -T SelectVariants 
                  --variant $input.vcf 
-                 -L $target_bed_file $splice_region_bed $pgx_flag
+                 -L $target_bed_file $splice_region_bed_flag $pgx_flag
                  -o $output.vcf 
         """
     }
@@ -997,6 +1007,15 @@ annovar_summarize = {
                 --buildver hg19 $output.av $ANNOVAR/../humandb/
         """
     }
+}
+
+annovar_table = {
+    output.dir="variants"
+    exec """
+        $ANNOVAR/table_annovar.pl  $input.av $ANNOVAR/../humandb/  -buildver hg19 -protocol refGene,phastCons
+            Elements46way,genomicSuperDups,1000g2010nov_all,snp138,ljb_all -operation g,r,r,f,f,f -nastring . 
+            --outfile test.csv
+    """
 }
 
 merge_annovar_reports = {

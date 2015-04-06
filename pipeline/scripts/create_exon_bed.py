@@ -1,33 +1,46 @@
 # vim: ts=4:expandtab:sw=4:cindent
 ########################################################################
 #
-# Reads a bed file containing genes and expands it to exon definitions
-# by relating the genes to exons defined in the hg19 refseq gene file
+# Reads a bed file containing genes in the ID column, and then
+# expands those genes into exon definitions as per the UCSC RefSeq
+# RefGene table. This table needs to be downloaded from UCSC 
+# in text format (unzipped) and passed as an argument.
 # 
 # The output is written to the third / last command line argument
+#
+# Optionally, the BED file can be written to contain only the splice
+# boundaries.
 #
 ########################################################################
 import sys, csv, getopt, re
 
+def log(msg):
+    print >>sys.stderr, msg
+ 
 # Whether to include UTR regions 
 include_utr = True
 
-opts,args = getopt.getopt(sys.argv[1:],"c",)
+splice_mode = False
+
+opts,args = getopt.getopt(sys.argv[1:],"cs",)
 for opt,value in opts:
         if opt == '-c':
                include_utr = False 
+        elif opt == '-s':
+               splice_mode = True
 
 if not args or len(args)<4:
-        print >>sys.stderr, "\nUsage: python %s [-c] <gene bed file> <hg19 UCSC RefSeq genes file> <transcript file> <output file>\n" % sys.argv[0]
-        print >>sys.stderr, "\t-c   do not include UTR\n"
+        log( "\nUsage: python %s [-c] <gene bed file> <hg19 UCSC RefSeq genes file> <transcript file> <output file>\n" % sys.argv[0])
+        log( "\t-c   do not include UTR")
+        log( "\t-s   write each splice boundary as a separate line instead of whole exons\n")
         sys.exit(1)
 
 
 # Read all of the transcripts
 tx_file = args[2]
-vcgs_txes = [ re.sub('\.[0-9]*$', '',line).strip() for line in open(tx_file) ]
+priority_txes = [ re.sub('\.[0-9]*$', '',line).strip() for line in open(tx_file) ]
 
-print >>sys.stderr, "The vcgs txes are %s" % vcgs_txes
+log( "The prioritised transcripts are %s" % priority_txes)
 
 
 def check_overlap(existing_exons,newexon):            
@@ -63,16 +76,21 @@ genes = {}
 gene_ranges = {}
 gene_chr = {}
 for g in gene_file:
-    genes[g[3]] = []
-    gene_chr[g[3]] = g[0]
-    gene_ranges[g[3]] = [int(g[1])-1,int(g[2])+1]
+    chr,start,stop,gene = g
+    genes[gene] = []
+    gene_chr[gene] = chr
+    if gene in gene_ranges:
+        gene_ranges[gene][0] = min(gene_ranges[gene][0], int(start)-1)
+        gene_ranges[gene][1] = max(gene_ranges[gene][1], int(stop)+1)
+    else:
+        gene_ranges[gene] = [int(start)-1,int(stop)+1]
 
-print >>sys.stderr,  "Read %d genes from gene file" % len(genes)
+log("Read %d genes from gene file" % len(genes))
 
 cds_starts = {}
 cds_ends = {}
 
-vcgs_prioritized_txes = { }
+prioritized_txes = { }
 
 # Now create a hash in memory of exons indexed by gene
 # We are reading the whole hg19 RefSeq gene annotation database into memory here
@@ -92,7 +110,7 @@ for g in refseq_genes:
         ends = map(lambda x: int(x), filter(lambda x: x != '', g[10].split(",")))
 
         exons = map(lambda x: list(x), zip(starts,ends))
-        print >>sys.stderr,  "Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons))
+        log("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
 
         if g[2] != gene_chr[gene]:
             raise Exception("Gene %s is annotated to multiple chromosomes: %s vs %s" % (gene, gene_chr[gene], g[2]))
@@ -106,6 +124,8 @@ for g in refseq_genes:
         cds_starts[gene] = min(cds_starts.get(gene,sys.maxint),cds_start)
         cds_ends[gene] = max(cds_ends.get(gene,0),cds_end)
 
+        #log("CDS starts for gene %s are %s" % (str(cds_starts), str(cds_ends)))
+
         existing_exons = genes[gene]
 
         #print "Existing exons = %s" % existing_exons
@@ -114,7 +134,7 @@ for g in refseq_genes:
         # Merge the exons with existing ones
         for e in exons:
             if e[0] > gene_range[1] or e[1] < gene_range[0]:
-                print >>sys.stderr,  "Exon %s in gene %s outside range %s" % (e,gene,gene_range)
+                log("Exon %s in gene %s ignored because it is outside range defined for gene: %s" % (e,gene,gene_range))
                 continue
 
             overlapping = check_overlap(existing_exons,e)
@@ -129,17 +149,16 @@ for g in refseq_genes:
                 if new_start == old_start and new_end == old_end:
                     continue
 
-                if g[1] in vcgs_txes:
-                    print >>sys.stderr,  "Exon %s in gene %s has multiple potential splice regions! Selecting VCGS prioritized tx=%s : will use %d-%d as coding sequence" % (e,gene,g[1],e[0],e[1])
+                if g[1] in priority_txes:
+                    log("Exon %s in gene %s has multiple potential splice regions! Selecting prioritized tx=%s : will use %d-%d as coding sequence" % (e,gene,g[1],e[0],e[1]))
                     existing_exons[overlapping][0] = e[0]
                     existing_exons[overlapping][1] = e[1]
-                    vcgs_prioritized_txes[gene] = g[1]
-                elif gene in vcgs_prioritized_txes:
-                    print >>sys.stderr,\
-                        "Exon %s in gene %s has multiple potential splice regions! Not using longest sequence because a VCGS prioritized tx (%s) exists vs tx=%s : will use %d-%d as coding sequence" \
-                        % (e,gene,vcgs_prioritized_txes[gene], g[1],new_start,new_end)
+                    prioritized_txes[gene] = g[1]
+                elif gene in prioritized_txes:
+                    log("Exon %s in gene %s has multiple potential splice regions! Not using longest sequence because a prioritized tx (%s) exists vs tx=%s : will use %d-%d as coding sequence" \
+                        % (e,gene,prioritized_txes[gene], g[1],new_start,new_end))
                 else:
-                    print >>sys.stderr,  "Exon %s in gene %s has multiple potential splice regions! Current tx=%s Will use %d-%d as longest coding sequence" % (e,gene,g[1],new_start,new_end)
+                    log("Exon %s in gene %s has multiple potential splice regions! Current tx=%s Will use %d-%d as longest coding sequence" % (e,gene,g[1],new_start,new_end))
                     existing_exons[overlapping][0] = new_start
                     existing_exons[overlapping][1] = new_end
             else:
@@ -158,7 +177,7 @@ if not include_utr:
 
             # Move start of first exon to start of CDS for gene
             if len(exons) == 0:
-                print "WARNING: no exons overlapped by coordinates for gene %s: " % g
+                log("WARNING: no exons overlapped by coordinates for gene %s: " % g)
             else:
                 first_exon = exons[min(range(len(exons)), key=lambda i: exons[i][0])]
 
@@ -174,11 +193,17 @@ if not include_utr:
             
 
 # Write out result bed file
-output = csv.writer(open(args[3],'wb'), delimiter='\t', lineterminator='\n')
+if args[3] == "-":
+    output = csv.writer(sys.stdout, delimiter='\t', lineterminator='\n')
+else:
+    output = csv.writer(open(args[3],'wb'), delimiter='\t', lineterminator='\n')
 for g in genes:
     exon_count = 0
     for e in genes[g]:
         exon_count += 1
         # print ','.join(map(lambda x: str(x), [ gene_chr[g], e[0], e[1], "%s|%d" % (g, exon_count)])) 
-        output.writerow( [ gene_chr[g], e[0], e[1], "%s|%d" % (g, exon_count)] )
-
+        if splice_mode:
+            output.writerow( [ gene_chr[g], e[0], e[0]+1, "%s|%d|start" % (g, exon_count)] )
+            output.writerow( [ gene_chr[g], e[1], e[1]+1, "%s|%d|end" % (g, exon_count)] )
+        else:
+            output.writerow( [ gene_chr[g], e[0], e[1], "%s|%d" % (g, exon_count)] )

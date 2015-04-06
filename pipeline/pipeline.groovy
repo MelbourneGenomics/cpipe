@@ -82,7 +82,9 @@ run {
     // For each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * [
 
-        set_target_info +
+        set_target_info + 
+
+        create_splice_site_bed +
         
         // The first phase is to perform alignment and variant calling for each sample
         samples * [
