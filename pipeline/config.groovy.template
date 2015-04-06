@@ -183,3 +183,11 @@ SNPEFF="$TOOLS/snpEff/3.1"
 
 // Genome needed (currently) only if using expanded splice regions
 HG19_CHROM_INFO="$BASE/hg19/hg19.genome"
+
+// Trimmomatic location
+TRIMMOMATIC="$TOOLS/trimmomatic/0.30"
+
+// Bamsurgeon location
+BAMSURGEON="$TOOLS/bamsurgeon/20150331"
+
+PYTHON="python"
