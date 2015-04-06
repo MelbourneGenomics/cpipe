@@ -28,6 +28,7 @@ set_target_info = {
     var HG19_CHROM_INFO : false
 
     branch.splice_region_window=false
+    branch.splice_region_bed=""
     branch.multi_annovar=false
 
     branch.batch = batch
@@ -90,6 +91,11 @@ set_target_info = {
             exec """
                 cp $BASE/designs/${target_name}/${target_name}.exons.bed ${output(exon_bed_file)}
             """
+
+            exec """
+             $BEDTOOLS/bin/bedtools slop -b $splice_region_window -i $exon_bed_file -g $HG19_CHROM_INFO  > $output.splice.bed
+            """
+            branch.splice_region_bed = " -L $output.splice.bed "
         }
     }
 
@@ -237,23 +243,26 @@ check_fastqc = {
 
     doc "Search for any failures in FastQC output and abort further processing if they are found"
 
-    if(CHECK_FASTQC_FAILURES) {
-        check {
+    check {
+       // NOTE: we remove per-base-sequence content and
+       // per-base-gc-content from examination because Nextera
+       // appears to contain natural biases that flag QC failures 
+       // here.
+       exec """
+           cat "fastqc/${sample}_*fastqc/summary.txt" |
+               grep -v "Per base sequence content" |
+               grep -v "Per base GC content" |
+               grep -q 'FAIL' && exit 1
 
-           // NOTE: we remove per-base-sequence content and
-           // per-base-gc-content from examination because Nextera
-           // appears to contain natural biases that flag QC failures 
-           // here.
-           exec """
-               cat "fastqc/${sample}_*fastqc/summary.txt" |
-                   grep -v "Per base sequence content" |
-                   grep -v "Per base GC content" |
-                   grep -q 'FAIL' && exit 1
-
-               exit 0
-           ""","local"
-        } otherwise {
+           exit 0
+       ""","local"
+    } otherwise {
+        if(CHECK_FASTQC_FAILURES) {
             succeed report('templates/fastqc_failure.html') to channel: cpipe_operator, 
+                                                            subject: "Sample $sample has failed FastQC Check", 
+                                                            file: input.zip
+        } else {
+            send report('templates/fastqc_failure.html') to channel: cpipe_operator, 
                                                             subject: "Sample $sample has failed FastQC Check", 
                                                             file: input.zip
         }
@@ -447,6 +456,7 @@ realignIntervals = {
             -T RealignerTargetCreator 
             -R $REF 
             -I $input.bam 
+            -L $COMBINED_TARGET $splice_region_bed
             --known $GOLD_STANDARD_INDELS 
             -o $output.intervals
     """, "realign_target_creator"
@@ -460,6 +470,7 @@ realign = {
              -T IndelRealigner 
              -R $REF 
              -I $input.bam 
+             -L $COMBINED_TARGET $splice_region_bed
              -targetIntervals $input.intervals 
              -o $output.bam
     ""","local_realign"
@@ -490,6 +501,7 @@ recal_count = {
              -T BaseRecalibrator 
              -I $input.bam 
              -R $REF 
+             -L $COMBINED_TARGET $splice_region_bed
              --knownSites $DBSNP $INDEL_QUALS
              -l INFO 
              -cov ReadGroupCovariate -cov QualityScoreCovariate -cov CycleCovariate -cov ContextCovariate 
@@ -505,6 +517,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
+               -L $COMBINED_TARGET $splice_region_bed
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -527,14 +540,6 @@ call_variants_ug = {
     var call_conf:5.0, 
         emit_conf:5.0
 
-    def filter_bed = ""
-    if(splice_region_window) {
-        exec """
-             $BEDTOOLS/bin/bedtools slop -b $splice_region_window -i $exon_bed_file -g $HG19_CHROM_INFO  > $output.splice.bed
-             """
-        filter_bed = " -L $output.splice.bed "
-    }
-
     transform("bam","bam") to("metrics","vcf") {
         exec """
                 $JAVA -Xmx8g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
@@ -545,7 +550,7 @@ call_variants_ug = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $filter_bed
+                   -L $COMBINED_TARGET $splice_region_bed
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
@@ -564,14 +569,6 @@ call_variants_hc = {
     var call_conf:5.0, 
         emit_conf:5.0
 
-    def filter_bed = ""
-    if(splice_region_window) {
-        exec """
-             $BEDTOOLS/bin/bedtools slop -b $splice_region_window -i $exon_bed_file -g $HG19_CHROM_INFO  > $output.splice.bed
-             """
-        filter_bed = " -L $output.splice.bed "
-    }
-
     transform("bam") to("vcf") {
         exec """
 
@@ -582,7 +579,7 @@ call_variants_hc = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $filter_bed
+                   -L $COMBINED_TARGET $splice_region_bed
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -628,21 +625,13 @@ filter_variants = {
         pgx_flag = "-L ../design/${target_name}.pgx.vcf"
     }
 
-    def filter_bed = target_bed_file
-    if(splice_region_window) {
-        exec """
-             $BEDTOOLS/bin/bedtools slop -b $splice_region_window -i $exon_bed_file -g $HG19_CHROM_INFO  > $output.splice.bed
-             """
-        filter_bed = output.splice.bed
-    }
-
     filter("filter") {
         exec """
             $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
                  -R $REF
                  -T SelectVariants 
                  --variant $input.vcf 
-                 -L $filter_bed $pgx_flag
+                 -L $target_bed_file $splice_region_bed $pgx_flag
                  -o $output.vcf 
         """
     }
