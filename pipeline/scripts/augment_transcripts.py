@@ -1,8 +1,12 @@
 # vim: sw=4:expandtab:cindent:ts=4
+###################################################################
+#
 # Reads the output summary from Annovar and adds a column to indicate 
 # whether the mutation in the row affects one of the transcripts that
-# VCGS is interested in, as defined in an input file.
+# are identified in the prioritised transcripts file.
 #
+###################################################################
+
 import csv,sys,re
 
 # Transcripts of interest
@@ -32,7 +36,7 @@ header = reader.next()
 if len(header)<28:
         header.append('Qual')
         header.append('Depth')
-        header.append('VCGS_TX')
+        header.append('PTY_TX')
 
 w.writerow(header)
 
