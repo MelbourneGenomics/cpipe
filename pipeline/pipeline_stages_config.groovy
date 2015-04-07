@@ -745,7 +745,7 @@ augment_condel = {
     doc "Extract Condel scores from VEP annotated VCF files and add them to Annovar formatted CSV output"
 
     output.dir="variants"
-    from("*.exome_summary*.csv") filter("con") {
+    from("*.hg19_multianno*.csv") filter("con") {
         exec """
             JAVA_OPTS="-Xmx4g -Djava.awt.headless=true" $GROOVY 
                 -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar 
@@ -846,7 +846,7 @@ vcf_to_excel = {
     output.dir="results"
 
     def all_outputs = [target_name + ".xlsx"] + target_samples.collect { it + ".annovarx.csv" }
-    from("*.exome_summary.*.csv", "*.vcf") produce(all_outputs) {
+    from("*.hg19_multianno.*.csv", "*.vcf") produce(all_outputs) {
         exec """
             echo "Creating $outputs.csv"
 
@@ -990,32 +990,26 @@ annotate_significance = {
     }
 }
 
-annovar_summarize = {
+annovar_table = {
+
     output.dir="variants"
-    var source : "refgene"
 
-    doc "Annotate variants using Annovar from the UCSC ${source} database"
-
-    transform("vcf") to(["${source}.exome_summary.csv","${source}.exonic_variant_function","${source}.genome_summary.csv","${source}.av"]) {
+    transform("vcf","vcf") to("av", "hg19_multianno.csv") {
         exec """
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
-            $ANNOVAR/summarize_annovar.pl 
-                --genetype ${source} 
-                --verdbsnp 138  
-                --outfile ${output.csv.prefix.replaceAll('.exome_summary','')}
-                --buildver hg19 $output.av $ANNOVAR/../humandb/
+            $ANNOVAR/table_annovar.pl $output.av $ANNOVAR/../humandb/  -buildver hg19 
+            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb_all
+            -operation g,r,r,f,f,f,f,f,f 
+            -nastring . 
+            --otherinfo   
+            --csvout
+            --outfile $output.csv.prefix.prefix
+            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,
+
+            sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
     }
-}
-
-annovar_table = {
-    output.dir="variants"
-    exec """
-        $ANNOVAR/table_annovar.pl  $input.av $ANNOVAR/../humandb/  -buildver hg19 -protocol refGene,phastCons
-            Elements46way,genomicSuperDups,1000g2010nov_all,snp138,ljb_all -operation g,r,r,f,f,f -nastring . 
-            --outfile test.csv
-    """
 }
 
 merge_annovar_reports = {

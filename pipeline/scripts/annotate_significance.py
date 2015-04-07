@@ -43,7 +43,9 @@
 #
 ####################################################################################
 
-import csv, getopt, sys
+import csv, getopt, sys, logging as log
+
+log.basicConfig(level=log.DEBUG)
 
 class Annovar:
     """
@@ -71,11 +73,12 @@ class Annovar:
     ANNOVAR_EXONIC_FUNCS = {
         "truncating" : ["frameshift insertion","frameshift deletion","frameshift substitution","stopgain SNV","stoploss SNV"],
         "missense" : ["nonframeshift insertion","nonframeshift deletion","nonframeshift substitution","nonsynonymous SNV"],
-        "synonymous" : ["synonymous SNV"]
+        "synonymous" : ["synonymous SNV"],
+        "noncoding" : ["intronic","intergenic","ncRNA_intronic"]
     }
 
     # These are the Annovar fields that contain population frequency estimates
-    POPULATION_FREQ_FIELDS = ["ESP5400_ALL", "1000g2010nov_ALL"]
+    POPULATION_FREQ_FIELDS = ["esp5400_all", "1000g2010nov_all","exac03"]
 
     def __init__(self, line):
         self.line = line
@@ -108,17 +111,24 @@ class Annovar:
             if self.is_novel():
                 return 4
             elif self.is_rare():
+                log.debug("%s:%s is rare" % (self.Chr,self.Start))
                 return 1
             else:
                 return 0
+
+        elif self.is_noncoding():
+            return 0
 
         elif self.ExonicFunc in ["synonymous SNV", "unknown"]:
             return 0
         else:
             print >>sys.stderr, "WARNING: variant %s:%s %s/%s func=%s failed to be categorized" % \
-                    (self.Chr, self.Start, self.Ref, self.Obs, self.ExonicFunc)
+                    (self.Chr, self.Start, self.Ref, self.Alt, self.ExonicFunc)
             return 9
         
+    def is_noncoding(self):
+        return self.Func in self.ANNOVAR_EXONIC_FUNCS["noncoding"]
+
     def is_missense(self):
         return self.ExonicFunc in self.ANNOVAR_EXONIC_FUNCS["missense"]
 
@@ -127,6 +137,8 @@ class Annovar:
 
     def is_rare(self):
         # Return true iff at least one database has the variant at > the MAF_THRESHOLD
+        log.debug("MAF values for %s:%s are %s", self.Chr, self.Start, map(lambda f: self.maf_value(f),self.POPULATION_FREQ_FIELDS))
+        return not any(map(lambda f: self.maf_value(f)>self.MAF_THRESHOLD, self.POPULATION_FREQ_FIELDS))
         return not any(map(lambda f: self.maf_value(f)>self.MAF_THRESHOLD, self.POPULATION_FREQ_FIELDS))
 
     def is_very_rare(self):
@@ -135,7 +147,7 @@ class Annovar:
 
     def is_novel(self):
         # return true iff the variant has no MAF in any database AND no DBSNP ID
-        return not any(map(lambda f: self.maf_value(f) > 0.0, self.POPULATION_FREQ_FIELDS)) and self.dbSNP138 == ""
+        return not any(map(lambda f: self.maf_value(f) > 0.0, self.POPULATION_FREQ_FIELDS)) and (self.snp138 in ["","."])
 
     def is_conserved(self):
         # Clarification 27/5/2014:
@@ -144,7 +156,7 @@ class Annovar:
         if condel_str != "":
             return float(condel_str) >= 0.7
         else:
-            return self.Conserved != ""
+            return self.phastConsElements46way != ""
 
     @staticmethod
     def init_columns(cols):
@@ -152,7 +164,7 @@ class Annovar:
 
     def maf_value(self, name):
         value = self.line[self.columns.index(name)]
-        if value == "":
+        if value == "" or value ==".":
             return 0
         else:
             return float(value)

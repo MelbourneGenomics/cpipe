@@ -111,7 +111,7 @@ db.tx {
                 if(lineIndex%5000==0)
                     println new Date().toString() + "\tProcessed $lineIndex lines"
 
-                def variantInfo = vcf.findAnnovarVariant(av.Chr, av.Start, av.End, av.Obs)
+                def variantInfo = vcf.findAnnovarVariant(av.Chr, av.Start, av.End, av.Alt)
                 if(!variantInfo) {
                     println "WARNING: Variant $av.Chr:$av.Start at line $lineIndex could not be found in the original VCF file"
                     continue

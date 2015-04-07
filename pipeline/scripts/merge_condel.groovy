@@ -73,7 +73,7 @@ def find_vcf_variant(vcf, av, lineIndex) {
   try {
       int pos = av.Start.toInteger()
       int end = av.End.toInteger()
-      return vcf.find(av.Chr,pos-10,end) { variant -> variant.equalsAnnovar(av.Chr,pos,av.Obs) }
+      return vcf.find(av.Chr,pos-10,end) { variant -> variant.equalsAnnovar(av.Chr,pos,av.Alt) }
   }
   catch(Exception e) {
       try { println "WARNING: unable to locate annovar variant at $lineIndex in VCF ($e)" } catch(Exception e2) { e.printStackTrace() }

@@ -110,11 +110,23 @@ geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[
 AACHANGE_FIELDS = ANNOVAR_FIELDS.grep { it.startsWith("AAChange") }
 
 // Order preferred if clinicians need to review output directly
-OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + AACHANGE_FIELDS + ["Gene Category", "Priority Index", "Condel", "Conserved", "ESP5400_ALL", "1000g2010nov_ALL", "dbSNP138", "AVSIFT", "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++", "SegDup", "Chr", "Start", "End", "Ref", "Obs", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "CADD","VCGS_TX"]
+OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + AACHANGE_FIELDS + ["Gene Category", "Priority_Index", "Condel", "phastConsElements46way", "esp5400_all", "1000g2010nov_all", "snp138","exac03", "avsift", "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++", "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "CADD","PRIORITY_TX"]
 
-OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["Conserved","SegDup","ESP5400_ALL","1000g2010nov_ALL","dbSNP138","AVSIFT","LJB_PhyloP","LJB_PhyloP_Pred","LJB_SIFT","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred","LJB_LRT","LJB_LRT_Pred","LJB_MutationTaster","LJB_MutationTaster_Pred","LJB_GERP++","Chr","Start","End","Ref","Obs","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD","Gene Category","Priority Index","CADD","#Obs","RefCount","AltCount","VCGS_TX"]
+OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all","exac03","snp138","avsift","LJB_PhyloP","LJB_PhyloP_Pred","LJB_SIFT","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred","LJB_LRT","LJB_LRT_Pred","LJB_MutationTaster","LJB_MutationTaster_Pred","LJB_GERP++","Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD","Gene Category","Priority_Index","CADD","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
-CENTERED_COLUMNS = ["Gene Category", "Priority Index", "1000g2010nov_ALL","ESP5400_ALL", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
+CENTERED_COLUMNS = ["Gene Category", "Priority_Index", "1000g2010nov_all","esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
+
+// The output headings are sometimes different to the input headings
+// this is done to preserve compatibility as annovar headings change
+// occasionally with the software
+HEADING_MAP = OUTPUT_FIELDS.collectEntries{[it,it]} + [
+   "phastConsElements46way" : "Conserved",
+   "esp5400_All" : "ESP5400_ALL",
+   "1000g2010nov_all"  : "1000g2010nov_ALL",
+   "snp138" : "dbSNP138",
+   "genomicSuperDups" : "SegDup",
+   "avsift" : "AVSIFT"
+]
 
 extractAAChange = { gene, aaChange ->
     if(gene.indexOf("(")>=0) {
@@ -151,9 +163,18 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     outputValues["Gene"] = gene
     outputValues["Func"] = func
 
-    for(i in 4..(av.values.size()-3)) {
-        outputValues[ANNOVAR_FIELDS[i]] = av.values[i]
+    for(af in ANNOVAR_FIELDS) {
+        if(av.columns.containsKey(af)) {
+            outputValues[af] = av[af]
+        }
     }
+
+    // New version of Annovar puts het/hom, Qual and Depth all in one tab separated field called Otherinfo
+    def otherInfo = av.Otherinfo.split("\t")
+    outputValues["Otherinfo"] = otherInfo[0] // the original value that was called Otherinfo
+    outputValues["Qual"] = otherInfo[1]
+    outputValues["Depth"] = otherInfo[2]
+
     outputValues.CADD = av.columns.CADD != null ? av.CADD: ""
 
     if(db) {
@@ -172,7 +193,7 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
             outputValues.RefCount=gt.AD[0]
 
             // Alternate depth depends on which allele
-            int altAllele = (variant.alts.size()==1)?1:variant.equalsAnnovar(av.Chr, av.Start.toInteger(), av.Obs)
+            int altAllele = (variant.alts.size()==1)?1:variant.equalsAnnovar(av.Chr, av.Start.toInteger(), av.Alt)
             outputValues.AltCount = gt.AD[altAllele]
         }
         else {
@@ -205,7 +226,7 @@ try {
                     err "The following samples did not have an Annovar file provided: $sample in Annovar files:\n${opts.as.join('\n')}"
 
                 println "Processing $annovarName ..."
-                def annovar_csv = parseCSV(annovarName,','); // .grep { it.Priority_Index.toInteger()>0 }.sort { -it.Priority_Index.toInteger() }
+                def annovar_csv = parseCSV(annovarName,',').grep { it.Priority_Index.toInteger()>0 }.sort { -it.Priority_Index.toInteger() }
 
                 // Parse the VCF. It is assumed that all the samples to be exported are included in the VCF
                 String vcfName = opts.vcfs.find { new File(it).name.startsWith(samplePrefix) }
@@ -216,7 +237,7 @@ try {
 
                 // Write out header row
                 bold { row {
-                        cells(OUTPUT_FIELDS)
+                        cells(OUTPUT_FIELDS.collect {HEADING_MAP[it]} )
                 } }
 
                 println "Priority genes for $sample are ${sample_info[sample].geneCategories.keySet()}"
@@ -225,7 +246,7 @@ try {
                 // but which includes our custom fields on the end
                 // Start by writing the headers
                 def writer = new FileWriter("${opts.annox}/${sample}.annovarx.csv")
-                writer.println(OUTPUT_CSV_FIELDS.join(","))
+                writer.println(OUTPUT_CSV_FIELDS.collect{HEADING_MAP[it]}.join(","))
                 CSVWriter csvWriter = new CSVWriter(writer);
                 for(av in annovar_csv) {
                     ++lineIndex
@@ -237,7 +258,7 @@ try {
                         continue
                     }
 
-                    def variantInfo = vcf.findAnnovarVariant(av.Chr, av.Start, av.End, av.Obs)
+                    def variantInfo = vcf.findAnnovarVariant(av.Chr, av.Start, av.End, av.Alt)
                     if(!variantInfo) {
                         println "WARNING: Variant $av.Chr:$av.Start at line $lineIndex could not be found in the original VCF file"
                         log.println "Variant $av.Chr:$av.Start excluded because it could not be identified in the source VCF file"
@@ -325,7 +346,7 @@ try {
                         Func: "pharma", 
                         ExonicFunc: state,
                         Gene: genes,
-                        dbSNP138: pvx.id,
+                        snp138: pvx.id,
                         Chr: pvx.chr,
                         Start: pvx.pos,
                         End: pvx.pos + pvx.size(),
@@ -376,7 +397,7 @@ try {
             row {}
             row { cell("Gene").bold(); cell("The gene affected. A mutation may occur on multiple rows if more than one gene or transcript is affected") }
             row { cell("ESP5400").bold(); cell("Frequency of allele in ESP project (5400 exomes)") }
-            row { cell("1000g2010nov_ALL").bold(); cell("Frequency of allele in 1000 Genomes project 2010 Nov release") }
+            row { cell("1000g2010nov_all").bold(); cell("Frequency of allele in 1000 Genomes project 2010 Nov release") }
             row { cell("LJB_XXX").bold(); cell("DBNSFP annotations indicating predictions of pathogenicity") }
             row { cell(""); cell("Numeric: 0 = low impact, 1.0 = high impact") }
             row { cell(""); cell("D=Damaging") }

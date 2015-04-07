@@ -67,10 +67,6 @@ ANALYSIS_PROFILES = sample_info*.value*.target as Set
 
 samples = sample_info.keySet()
 
-annovar = segment {
-    annovar_summarize + add_splice_variants
-}
-
 run {
     // Check the basic sample information first
     check_sample_info + check_tools +
@@ -101,7 +97,7 @@ run {
                          call_variants_hc + call_pgx + merge_pgx +
                             filter_variants + 
                             annotate_vep + index_vcf +
-                            annovar +
+                            annovar_table +
                             [ 
                                add_to_database, 
                                augment_condel + annotate_significance, 

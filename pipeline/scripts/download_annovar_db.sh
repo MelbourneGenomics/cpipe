@@ -27,3 +27,4 @@ $ANNOVAR/annotate_variation.pl -downdb ljb_pp2 -webfrom annovar  -buildver hg19 
 $ANNOVAR/annotate_variation.pl -downdb ljb_all -webfrom annovar  -buildver hg19  "$DBDIR"
 $ANNOVAR/annotate_variation.pl -downdb esp5400_all   -buildver hg19 -webfrom annovar   "$DBDIR"
 $ANNOVAR/annotate_variation.pl -downdb phastConsElements46way   -buildver hg19   "$DBDIR"
+$ANNOVAR/annotate_variation.pl -buildver hg19  -downdb -webfrom annovar exac03  "$DBDIR"
