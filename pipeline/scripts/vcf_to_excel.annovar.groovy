@@ -253,7 +253,9 @@ try {
                     if(lineIndex%5000==0)
                         println new Date().toString() + "\tProcessed $lineIndex lines"
 
-                    if(av.ExonicFunc in exclude_types) {
+                    // note: check for exonic, because splice events show up as synonymous but with 
+                    // Func="exonic;splicing", and should not be filtered out this way
+                    if(av.ExonicFunc in exclude_types && av.Func=="exonic") { 
                         log.println "Variant $av.Chr:$av.Start-$av.End excluded by being an excluded type: $av.ExonicFunc"
                         continue
                     }
