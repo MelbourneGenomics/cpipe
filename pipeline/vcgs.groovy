@@ -19,23 +19,6 @@
 /// 
 ////////////////////////////////////////////////////////
 
-add_splice_variants = {
-    doc "Annovar seems to leave out lot of variants that VCGS would consider interesting splice variants, so we add them in afterwards."
-    output.dir = "variants"
-
-    if(!splice_region_window)
-        return
-
-    msg "Adding splice variants from genome summary to exome summary ($input.csv) ..."
-
-    filter("addsplice") {
-        from("exome_summary.csv","genome_summary.csv") {
-            exec "cp $input1 $output; python $SCRIPTS/add_splice_variants.py $exon_bed_file $input2 $splice_region_window >> $output"
-        }
-    }
-}
-
-
 @filter("aug")
 augment_transcript_ids = {
     doc "Add an additional column indicating the VCGS transcript identifier for the VCGS transcript / isoform affected by each variant"
@@ -46,6 +29,7 @@ augment_transcript_ids = {
 }
 
 
+/*
 multiple_annovar = segment {
     [
         annovar_summarize.using(source:"refgene") + add_splice_variants + augment_transcript_ids,
@@ -53,5 +37,6 @@ multiple_annovar = segment {
     ] + merge_annovar_reports 
 }
 
+*/
 
 
