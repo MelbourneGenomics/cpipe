@@ -47,7 +47,7 @@ class ExonCov {
 
     List<Map> indices // tx, index pairs for the transcripts that the exon is in
 
-    List<Float> fracs // List of coverage 
+    List<Float> fracs // List of coverage
 }
 
 coverageResults = allGenes.collectEntries { String gene ->
@@ -64,8 +64,8 @@ coverageResults = allGenes.collectEntries { String gene ->
         // The exon may have different numbers in different transcripts
         // For each transcript, figure out what index the exon is in that transcript
         def indices = txes.collect {  tx ->
-            Integer i = refgene.getTranscriptExons(tx.tx).findIndexOf { 
-                it.overlaps(exon) 
+            Integer i = refgene.getTranscriptExons(tx.tx).findIndexOf {
+                it.overlaps(exon)
             }
 
             if(i >= 0) {
@@ -77,19 +77,28 @@ coverageResults = allGenes.collectEntries { String gene ->
             System.err.println "WARNING: No exons in $exons overlap any exons from any transcript in : " + txes.collect { it.toString() }.join(",")
             indices = [ [ tx:txes.collect { it.tx }.join(','), index:-1] ]
         }
-      
+        
+        List<IntRange> exonTargetOverlaps = targetRegions.intersect(exon)
+        if(exonTargetOverlaps==null)
+            return null
+        
         // This gets us the per-base coverage over the exon intersected
         // with the target region (because the target region is only part that coverage
         // scores are computed for
-        def cov = covs.coverage(exon)
+        def cov = exonTargetOverlaps.collect { covs.coverage(new Region(exon.chr, it)) }.sum()
+        if(cov == null || cov.empty)
+            return null
 
         // println "Coverage for exon $exon = $cov"
         def fracs = COVERAGE_LEVELS.collect { threshold ->
             cov.count { it > threshold }
         }*.div((float)(Math.max(cov.size(),1)))
+        
+        exon.from = exonTargetOverlaps*.from.min()
+        exon.to = exonTargetOverlaps*.to.max()
 
         new ExonCov(exon: exon, indices:indices, fracs:fracs)
-    }
+    }.grep { it != null }
 
     [ gene, coverage ]
 }
@@ -124,7 +133,7 @@ if(opts.x) {
                 def exons = coverageResults[gene]
                 boolean first = true
                 for(e in exons) {
-                    row { 
+                    row {
                       if(first) {
                           bold { cell(gene) }
                       }
@@ -132,7 +141,7 @@ if(opts.x) {
                         cell("")
                       }
                       cell("$e.exon.chr:$e.exon.from-${e.exon.to+1}").link("http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=$e.exon.chr%3A$e.exon.from-$e.exon.to&refGene=pack")
-                      applyStyle("left") { cell(format_indices(e)) }
+                      center { cell(format_indices(e)) }
                       e.fracs.each { cell(String.format('%2.2f',it*100)) }
                     }
                     first=false
@@ -143,5 +152,3 @@ if(opts.x) {
         s.setColumnWidth(2,20*256)
     }.save(opts.x)
 }
-
-
