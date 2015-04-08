@@ -97,6 +97,14 @@ prioritized_txes = { }
 refseq_genes = csv.reader(open(args[1]), delimiter='\t')
 for g in refseq_genes:
     gene = g[12]
+
+    chr=g[2]
+
+    # Ignore haploytype chromosomes
+    if re.match('chr.*_.*$', chr):
+        log("Ignoring gene %s on alternative chromosome %s" % (gene,chr))
+        continue
+
     # debug: limit to specific gene
     # if gene != 'DSP':
     #  continue
@@ -110,10 +118,11 @@ for g in refseq_genes:
         ends = map(lambda x: int(x), filter(lambda x: x != '', g[10].split(",")))
 
         exons = map(lambda x: list(x), zip(starts,ends))
-        log("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
+        #log("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
 
-        if g[2] != gene_chr[gene]:
-            raise Exception("Gene %s is annotated to multiple chromosomes: %s vs %s" % (gene, gene_chr[gene], g[2]))
+        if chr != gene_chr[gene]:
+            log("WARNING: Gene %s is annotated to multiple chromosomes: %s vs %s. The chromosome %s version of this gene will be ignored." % (gene, gene_chr[gene], g[2], chr))
+            continue
 
         cds_start = int(g[6])
         cds_end = int(g[7])
