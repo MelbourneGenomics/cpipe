@@ -1097,6 +1097,23 @@ summary_pdf = {
     }
 }
 
+exon_qc_report = {
+
+    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    output.dir="results"
+
+    produce("${sample}.exon.qc.xlsx") {
+        exec """
+             JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/exon_qc_report.groovy 
+                -cov $input.cov.gz
+                -targets $target_bed_file
+                -refgene $ANNOVAR/../humandb/hg19_refGene.txt 
+                -x $output.xlsx
+        """
+    }
+}
+
 sample_similarity_report = {
 
     doc "Create a report indicating the difference in count of variants for each combination of samples"

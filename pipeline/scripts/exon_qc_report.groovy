@@ -1,16 +1,23 @@
 // vim: ts=4:sw=4:expandtab:cindent
+java.util.logging.LogManager.getLogManager().reset();
 Cli cli = new Cli()
 cli.with {
     refgene 'UCSC RefGene annotation file (download from UCSC website)', args:1, required:true
     targets 'Target regions: coverage will be annotated for regions in the given targets', args:1, required:true
     cov 'BEDTools coverage output', args:1, required:true
-    o 'TSV file to write output to', args:1, required:true
+    o 'TSV file to write output to', args:1
     x 'XLSX file to write output to (optional)', args:1
 }
 
 opts = cli.parse(args)
 if(!opts)
     System.exit(1)
+
+if(!opts.o && !opts.x) {
+    System.err.println "Please supply at least one of -o or -x to set output file\n"
+    cli.usage()
+    System.exit(1)
+}
     
 // Open the coverage file
 println "Reading coverage ..."
@@ -97,11 +104,13 @@ format_indices = { ExonCov e ->
     }
 }
 
-new File(opts.o).withWriter { w ->
-    allGenes.each { gene ->
-        def exons = coverageResults[gene]
-        for(e in exons) {
-            w.println(([ gene, e.exon.chr, e.exon.from, e.exon.to+1, format_indices(e) ] + e.fracs).join('\t'))
+if(opts.o) {
+    new File(opts.o).withWriter { w ->
+        allGenes.each { gene ->
+            def exons = coverageResults[gene]
+            for(e in exons) {
+                w.println(([ gene, e.exon.chr, e.exon.from, e.exon.to+1, format_indices(e) ] + e.fracs).join('\t'))
+            }
         }
     }
 }
@@ -109,7 +118,7 @@ new File(opts.o).withWriter { w ->
 if(opts.x) {
     new ExcelBuilder().build {
         // Summary for all samples in the batch
-        sheet("PerExonQC ") {
+        def s = sheet("PerExonQC ") {
             row { bold { cells("Gene","Region","Exon"); COVERAGE_LEVELS.each { cell(">"+it + "x") } } }
             allGenes.each { gene ->
                 def exons = coverageResults[gene]
@@ -123,13 +132,15 @@ if(opts.x) {
                         cell("")
                       }
                       cell("$e.exon.chr:$e.exon.from-${e.exon.to+1}").link("http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=$e.exon.chr%3A$e.exon.from-$e.exon.to&refGene=pack")
-                      cell(format_indices(e))
+                      applyStyle("left") { cell(format_indices(e)) }
                       e.fracs.each { cell(String.format('%2.2f',it*100)) }
                     }
                     first=false
                 }
             }
-        }.autoSize()
+        }
+        s.autoSize()
+        s.setColumnWidth(2,20*256)
     }.save(opts.x)
 }
 

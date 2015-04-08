@@ -103,13 +103,13 @@ run {
                                augment_condel + annotate_significance, 
                                calculate_cadd_scores
                             ] + augment_cadd +
-                         calc_coverage_stats + summary_pdf, 
+                         calc_coverage_stats + [ summary_pdf, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
                        ]
                    + check_coverage
                    + check_karyotype
-        ] + qc_excel_report
+        ] + qc_excel_report 
    ] + 
 
    // The 3rd phase is to produce the output spreadsheet, 1 per analysis profile
