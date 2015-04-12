@@ -94,6 +94,7 @@ prioritized_txes = { }
 
 # Now create a hash in memory of exons indexed by gene
 # We are reading the whole hg19 RefSeq gene annotation database into memory here
+ignored_alt_chrs=set()
 refseq_genes = csv.reader(open(args[1]), delimiter='\t')
 for g in refseq_genes:
     gene = g[12]
@@ -102,7 +103,8 @@ for g in refseq_genes:
 
     # Ignore haploytype chromosomes
     if re.match('chr.*_.*$', chr):
-        log("Ignoring gene %s on alternative chromosome %s" % (gene,chr))
+        #log("Ignoring gene %s on alternative chromosome %s" % (gene,chr))
+        ignored_alt_chrs.add(chr)
         continue
 
     # debug: limit to specific gene
@@ -216,3 +218,6 @@ for g in genes:
             output.writerow( [ gene_chr[g], e[1], e[1]+1, "%s|%d|end" % (g, exon_count)] )
         else:
             output.writerow( [ gene_chr[g], e[0], e[1], "%s|%d" % (g, exon_count)] )
+
+if len(ignored_alt_chrs)>0:
+    log("WARNING: genes on the following alternative haplotype chromosomes were ignored: %s" % ignored_alt_chrs)
