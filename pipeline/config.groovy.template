@@ -191,3 +191,6 @@ TRIMMOMATIC="$TOOLS/trimmomatic/0.30"
 BAMSURGEON="$TOOLS/bamsurgeon/20150331"
 
 PYTHON="python"
+
+splice_region_bed_flag=2
+
