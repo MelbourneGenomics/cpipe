@@ -489,6 +489,9 @@ realign = {
 dedup = {
     doc "Remove PCR duplicates from reads"
     output.dir="align"
+
+    var MAX_DUPLICATION_RATE : 30
+
     exec """
         $JAVA -Xmx4g -Djava.io.tmpdir=$TMPDIR -jar $PICARD_HOME/lib/MarkDuplicates.jar
              INPUT=$input.bam 
@@ -498,6 +501,17 @@ dedup = {
              METRICS_FILE=$output.metrics
              OUTPUT=$output.bam
     """
+
+    check {
+        exec """
+            DUPLICATION_RATE=`grep -A 1 LIBRARY $output.metrics | cut -f 8 | tail -1  | awk '{ print \$1 * 100 }'`
+
+            [ $DUPLICATION_RATE -lt $MAX_DUPLICATION_RATE ]
+
+        ""","local"
+    } otherwise {
+        send text {"Rate of PCR duplicates for sample $sample is higher than $MAX_DUPLICATION_RATE"} to channel: cpipe_operator 
+    }
 }
 
 recal_count = {
@@ -681,12 +695,27 @@ annotate_snpeff = {
 calc_coverage_stats = {
     doc "Calculate coverage across a target region using Bedtools"
     output.dir="qc"
+
+    var MIN_ONTARGET_PERCENTAGE : 50
+
     transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
         exec """
           $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file | gzip -c > $output.gz
 
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
         """
+    }
+    check {
+        exec """
+            RAW_READ_COUNT=`cat $output2.txt`
+
+            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print ((\$3 * 2) / $RAW_READ_COUNT)*100 }'`
+
+            [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
+
+             """
+    } otherwise {
+        send text {"On target read percentage for $sample < $MIN_ONTARGET_PERCENTAGE"} to channel: cpipe_operator 
     }
 }
 
@@ -947,10 +976,28 @@ insert_size_metrics = {
 
     doc "Generates statistics about distribution of DNA fragment sizes"
 
+    var MIN_MEDIAN_INSERT_SIZE : 70,
+        MAX_MEDIAN_INSERT_SIZE : 240
+
     output.dir="qc"
     exec """
         $JAVA -Xmx4g -jar $PICARD_HOME/lib/CollectInsertSizeMetrics.jar INPUT=$input.bam O=$output.txt H=$output.pdf
     """
+
+    check {
+        exec """
+              INSERT_SIZE=`grep -A 1 MEDIAN_INSERT_SIZE $output.txt | cut -f 1 | tail -1`
+
+              echo "Median insert size = $INSERT_SIZE"
+
+              [ $INSERT_SIZE -gt $MIN_MEDIAN_INSERT_SIZE ] && [ $INSERT_SIZE -lt $MAX_MEDIAN_INSERT_SIZE ]
+             """, "local"
+    } otherwise {
+        send text {"""
+            WARNING: Insert size distribution for $sample has median out of 
+            range $MIN_MEDIAN_INSERT_SIZE - $MAX_MEDIAN_INSERT_SIZE
+        """} to channel: cpipe_operator, file: output.pdf
+    }
 }
 
 qc_excel_report = {
@@ -1103,13 +1150,21 @@ exon_qc_report = {
 
     output.dir="results"
 
-    produce("${sample}.exon.qc.xlsx") {
+    var enable_exon_report : false
+
+    if(!enable_exon_report)  {
+        msg "Exon level coverage report not enabled for $target_name"
+        return
+    }
+
+    produce("${sample}.exon.qc.xlsx", "${sample}.exon.qc.tsv") {
         exec """
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/exon_qc_report.groovy 
                 -cov $input.cov.gz
                 -targets $target_bed_file
                 -refgene $ANNOVAR/../humandb/hg19_refGene.txt 
                 -x $output.xlsx
+                -o $output.tsv
         """
     }
 }
