@@ -63,7 +63,7 @@ add_variant_to_db = { variant, allele, av, dosage, sample_row ->
 
     def variant_row = sql.firstRow("select * from variant where chr=$variant.chr and pos=$allele.start and alt=$allele.alt")
     if(variant_row == null) {
-        sql.execute(""" insert into variant (id,chr,pos,start,end,ref,alt,protein_change,freq_1000g, freq_esp, dbsnp_id) values (NULL, $variant.chr, $allele.start, ${av?.Start?.toInteger()}, ${av?.End?.toInteger()}, ${variant.ref}, $allele.alt, ${av?.AAChange_RefSeq}, ${av?av["1000g2010nov_ALL"]:null},${av?av["ESP5400_ALL"]:null}, ${av?.dbSNP138}) """)
+        sql.execute(""" insert into variant (id,chr,pos,start,end,ref,alt,protein_change,freq_1000g, freq_esp, dbsnp_id) values (NULL, $variant.chr, $allele.start, ${av?.Start?.toInteger()}, ${av?.End?.toInteger()}, ${variant.ref}, $allele.alt, ${av?.AAChange}, ${av?av["1000g2010nov_all"]:null},${av?av["ESP5400_all"]:null}, ${av?.dbSNP138}) """)
         variant_row = sql.firstRow("select * from variant where chr=$variant.chr and pos=$allele.start and alt=$allele.alt")
     }
 
