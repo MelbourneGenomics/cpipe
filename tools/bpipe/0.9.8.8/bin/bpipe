@@ -20,12 +20,12 @@
 
 # Version of Bpipe - this should be 0.0.0 in the source tree,
 # it will be replaced by the build script at build time
-VERSION=0.9.8.7
+VERSION=0.9.8.8
 
 # Build date as an integer (unix epoch time)
 # This should be 0 in the source tree, 
 # it will be replaced by the build script at build time
-BUILDDATE=1427939260629
+BUILDDATE=1428639442578
 
 # Default memory used
 # Mainly here to limit memory on systems with very large memory
@@ -507,7 +507,8 @@ then
     exit 
 elif [ "$COMMAND" == "checks" ];
 then
-    java -Xmx${MAX_JAVA_MEM} -classpath "$CP" -Dbpipe.home="$JVM_BPIPE_HOME" -Dbpipe.mode=showchecks bpipe.ChecksCommand
+    shift 1
+    java -Xmx${MAX_JAVA_MEM} -classpath "$CP" -Dbpipe.home="$JVM_BPIPE_HOME" -Dbpipe.mode=showchecks bpipe.ChecksCommand $*
     exit
 elif [ "$COMMAND" == "override" ];
 then
