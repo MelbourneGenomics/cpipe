@@ -53,10 +53,14 @@ function prompt() {
     then
         REPLY="$DEFAULT"
     else
-        read -p "$1"
+        read -p "$1 "
     fi
 }
 
+#
+# Helper function to execute standard compile process for tools that are
+# shipped in source form
+#
 function compile() {
     PROGRAM="$1"
     msg "Check $PROGRAM is compiled ..."
@@ -77,6 +81,31 @@ function compile() {
     fi
 }
 
+function load_config() {
+    eval `sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+}
+
+function set_config_variable() {
+    NAME="$1"
+    VALUE="$2"
+    sed -i 's,'$NAME'=".*$,'$NAME'="'$VALUE'",g' $BASE/pipeline/config.groovy
+    load_config
+}
+
+echo '
+========================================
+
+ #####   ######   ###  ######   #######  
+#     #  #     #   #   #     #  #        
+#        #     #   #   #     #  #        
+#        ######    #   ######   #####    
+#        #         #   #        #        
+#     #  #         #   #        #        
+ #####   #        ###  #        #######  
+
+========================================
+'
+
 QUIET=false
 if [ "$1" == "-q" ];
 then
@@ -86,14 +115,26 @@ fi
 [ -e pipeline ] || \
         err "I can't see the pipeline directory. Maybe you didn't clone the repository, or you're running this script from the wrong location?"
 
-eval `sed 's/\/\/.*$//' pipeline/config.groovy` 
+[ ! -e pipeline/config.groovy ] && {
+        prompt "You haven't created the file pipeline/config.groovy yet. Do you want me to copy this file from the default template for you?" "y"
+        if [ "$REPLY" == "y" ]
+        then
+            cp -uv pipeline/config.groovy.template pipeline/config.groovy
+        fi
 
-[ ! -e pipeline/config.groovy ] && \
-        err "You haven't created the file pipeline/config.groovy yet: you need to copy the file pipeline/config.groovy.template and edit it."
+        BASE=`pwd`
+        set_config_variable BASE "$BASE"
+        load_config
+}
+
+
+load_config
+
+echo "JAVA=$JAVA"
 
 msg "Check base location is correct ..."
 [ ! -e "$BASE/pipeline" ] &&  \
-        err "Cannot see $BASE/pipeline - please check BASE is defined correctly in config.groovy. It should probably be "`pwd`
+        err "Cannot see $BASE/pipeline - please check BASE is defined correctly in config.groovy. It should probably be: "`pwd`
 
 msg "Checking dependencies ..."
 
@@ -114,20 +155,94 @@ compile "$SAMTOOLS/samtools"
 compile "$BEDTOOLS/bin/bedtools"
 
 msg "Check GATK is downloaded and available"
-[ -e $GATK/GenomeAnalysisTK.jar ] || \
-        err "Could not locate $GATK/GenomeAnalysisTK.jar file. Please download and install GATK to $GATK/. See instructions in tools/gatk/README." 
+[ -e $GATK/GenomeAnalysisTK.jar ] || {
+    echo "
+ The recommended version of GATK for Cpipe is 3.3. However license 
+ terms prevent Cpipe from including this version with Cpipe. Cpipe
+ includes GATK 2.3.9 which can be used instead. If you wish to use
+ a later version of GATK, please abort this script (Ctrl-c), download
+ that version after separately agreeing to the license terms, and 
+ place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
+ you have done that, set the GATK variable in pipeline/config.groovy 
+ appropriately and re-run this script.
+    "
+    prompt "Continue with GATK 2.3.9? (y/n)" "y"
+    if [ "$REPLY" == "y" ];
+    then
+        set_config_variable GATK "$BASE/tools/GATK/2.3.9"
+        set_config_variable GATK_LEGACY "true"
+    else
+        msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
+    fi
+}
 
 msg "Check Annovar is downloaded and available"
-[ -e $ANNOVAR/annotate_variation.pl ] || \
-        err "Could not locate Annovar script. Please download and install Annovar to $ANNOVAR/"
+[ -e $ANNOVAR/annotate_variation.pl ] || {
+
+  pushd $BASE/tools/annovar > /dev/null
+
+  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | head -1`
+
+  if [ ! -e $ANNOVAR_DOWNLOAD ];
+  then
+        echo "
+  Due to license restrictions, Annovar cannot be included
+  with Cpipe. If you wish to use Annovar, please download it
+  separately and place the downloaded file (tar.gz) in the 
+  following location: $BASE/tools/annovar
+
+  Once you have done this, press enter to continue.
+      "
+      read  -p "Press enter when you have placed the Annovar tar.gz file in $BASE/tools/annovar ..."
+  fi
+
+  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | tail -1`
+  if [ -e "$ANNOVAR_DOWNLOAD" ];
+  then
+      tar -xzf $ANNOVAR_DOWNLOAD
+      ANNOVAR_PL=`find . -iname annotate_variation.pl | xargs ls -t | head -1` 
+      ANNOVAR_VERSION=`perl $ANNOVAR_PL | grep Version | grep -o '[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}'`
+      ANNOVAR_DIR=`dirname $ANNOVAR_PL`
+      mv $ANNOVAR_DIR $ANNOVAR_VERSION
+
+      set_config_variable ANNOVAR "$BASE/tools/annovar/$ANNOVAR_VERSION"
+  else
+      err "Could not find tar.gz file inm$BASE/tools/annovar"
+  fi
+  popd > /dev/null
+}
 
 msg "Check Annovar database exists"
-for i in hg19_snp138.txt hg19_avsift.txt hg19_esp5400_all.txt hg19_refGene.txt hg19_ALL.sites.2010_11.txt hg19_phastConsElements46way.txt; 
+MISSING_ANNOVAR=false
+ANNOVAR_DB_FILES="hg19_snp138.txt hg19_avsift.txt hg19_esp5400_all.txt hg19_refGene.txt hg19_ALL.sites.2010_11.txt hg19_phastConsElements46way.txt"
+for i in $ANNOVAR_DB_FILES ;  
 do
     [ -e $ANNOVAR/../humandb/$i ] || {
-        err "Failed to find all necessary Annovar data files ($i): please use Annovar downdb to download all the data files. See tools/annovar/README for assistance."
+        MISSING_ANNOVAR=true
     }
 done
+if [ $MISSING_ANNOVAR ];
+then
+    echo "
+    One or more Annovar database files is not present. Do you want to 
+    download Annovar files now using the built in download script?
+    NOTE: downloading may take some time and cause large files to be
+    downloaded. Please try to avoid having this process be interrupted.
+
+    Files to be downloaded:
+
+    $ANNOVAR_DB_FILES
+    "
+
+    prompt "Download Annovar files? (y/n)" "y"
+
+    if [ "$REPLY" == "y" ];
+    then
+        $BASE/pipeline/scripts/download_annovar_db.sh $ANNOVAR $BASE/tools/annovar/humandb
+    else
+        msg "WARNING: Cpipe will not operate correctly if Annovar database file are not present."
+    fi
+fi
 
 msg "Check VEP database downloaded for version $VEP_VERSION..."
 [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] || \
