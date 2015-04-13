@@ -60,7 +60,7 @@ REF="$REFBASE/ucsc.hg19.fasta"
 DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
 
 // Set to a VCF file containing known indels here
-GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
 
 // Names for targeted disease genes - each one must have a BED file 
 // in design/flagships. If you are targeting the whole exome,
@@ -183,7 +183,7 @@ JAVA="java"
 SNPEFF="$TOOLS/snpEff/3.1"
 
 // Genome needed (currently) only if using expanded splice regions
-HG19_CHROM_INFO="$BASE/hg19/hg19.genome"
+HG19_CHROM_INFO="$REFBASE/hg19.genome"
 
 // Trimmomatic location
 TRIMMOMATIC="$TOOLS/trimmomatic/0.30"
