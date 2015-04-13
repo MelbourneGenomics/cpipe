@@ -116,6 +116,7 @@ ANNOVAR="$TOOLS/annovar/2013aug23"
 // GATK 2.8.1 yourself and place it in this location
 // (or point this to your installation)
 GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+GATK_LEGACY="false"
 
 // Utilities for making Excel files 
 EXCEL="$TOOLS/excel/1.0"
@@ -189,6 +190,7 @@ TRIMMOMATIC="$TOOLS/trimmomatic/0.30"
 
 // Bamsurgeon location
 BAMSURGEON="$TOOLS/bamsurgeon/20150331"
+
 
 PYTHON="python"
 
