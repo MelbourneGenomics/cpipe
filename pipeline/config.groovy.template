@@ -97,8 +97,9 @@ PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
 ANNOVAR="$TOOLS/annovar/2013aug23"
 
 // Due to GATK license restrictions, you must download
-// GATK 2.8.1 yourself and place it in this location
+// GATK yourself and place it in this location
 // (or point this to your installation)
+// GATK="$TOOLS/gatk/2.3.9"
 GATK="$TOOLS/gatk/2.8-1-g932cd3a"
 GATK_LEGACY="false"
 
