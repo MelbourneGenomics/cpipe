@@ -1,0 +1,33 @@
+LICENSE TERMS FOR CPIPE
+-----------------------
+
+Cpipe is licensed under the GNU GPL Version 3, 
+(https://www.gnu.org/licenses/gpl-3.0.txt) subject to the following 
+two additional clauses in accordance with the allowance for such 
+clauses under clause 7 of the GPLv3 license:
+
+(i) In using the Cpipe you agree that, to the extent permitted by applicable
+law, and in addition to the disclaimer of warranty set out in clause 15 of
+GPLv3, the Melbourne Genomics Health Alliance gives no warranty that its 
+material that it has added to Cpipe will be suitable for clinical purposes 
+or individual health decision making.
+
+(ii) The following attribution shall be used with respect to public works or
+presentations which incorporate or are derived from the MGHA material that MGHA
+has added to the Cpipe:
+
+We wish to thank the Melbourne Genomics Health Alliance, in particular Simon
+Sadedin and the developer team together with the Genomics and Bioinformatics
+Advisory Group.  We recognise the generosity of the founding member
+organisations; The Royal Melbourne Hospital, The Royal Children's Hospital, The
+University of Melbourne, The Walter and Eliza Hall Institute, The Murdoch
+Childrens Research Institute, The Australian Genome Research Facility, and
+CSIRO.
+
+(iii) these additional terms are preserved in any redistribution of Cpipe
+
+
+CITATION IN PUBLICATIONS
+------------------------
+For references in publications we ask that users cite our publication in Genome
+Medicine (2015) (currently in review).

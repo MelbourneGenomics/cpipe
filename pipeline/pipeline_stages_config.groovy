@@ -1,23 +1,23 @@
 // vim: ts=4:sw=4:expandtab:cindent:number
-////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-// Melbourne Genomics Variant Calling Pipeline
+// This file is part of Cpipe.
+// 
+// Cpipe is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, under version 3 of the License, subject
+// to additional terms compatible with the GNU General Public License version 3,
+// specified in the LICENSE file that is part of the Cpipe distribution.
+// 
+// Cpipe is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// Pipeline stage definitions for exome variant calling 
-// pipeline. See pipeline.groovy for more information.
-//
-// Author: Simon Sadedin, MCRI
-//         Members of Melbourne Genomics
-//
-// Copyright Melbourne Genomics Health Alliance members. All rights reserved.
-//
-// DISTRIBUTION:
-//
-// This source code should not be distributed to a third party without prior
-// approval of the Melbourne Genomics Health Alliance steering committee (via
-// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
-/// 
-////////////////////////////////////////////////////////
+// You should have received a copy of the GNU General Public License
+// along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
+// 
+/////////////////////////////////////////////////////////////////////////////////
 
 ENABLE_CADD=true
 
@@ -1199,4 +1199,23 @@ annovar_to_lovd = {
         """
     }
 }
+
+@filter("aug")
+augment_transcript_ids = {
+        doc "Add an additional column indicating the VCGS transcript identifier for the VCGS transcript / isoform affected by each variant"
+                output.dir="variants"
+
+                    msg "Augmenting Annovar output with extra columns ($input.csv) ..."
+                        exec "python $SCRIPTS/augment_transcripts.py $transcripts_file $input.csv $input.exonic_variant_function > $output.csv"
+}
+
+/*
+   multiple_annovar = segment {
+       [
+               annovar_summarize.using(source:"refgene") + add_splice_variants + augment_transcript_ids,
+                       annovar_summarize.using(source:"knowngene") + add_splice_variants + augment_transcript_ids
+       ] + merge_annovar_reports
+}
+*/
+
 

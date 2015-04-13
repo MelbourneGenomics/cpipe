@@ -1,21 +1,27 @@
 //vim: shiftwidth=4:ts=4:expandtab:
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-// Melbourne Genomics Demonstration Project
+// This file is part of Cpipe.
+// 
+// Cpipe is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, under version 3 of the License, subject
+// to additional terms compatible with the GNU General Public License version 3,
+// specified in the LICENSE file that is part of the Cpipe distribution.
 //
-// Provenance Report Template
+// Cpipe is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// This script generates the provenance report in PDF format.
-// It extracts all the versions of tools from Bpipe meta data
-// (provided by Bpipe, which executes this script as a report template),
-// and also reports the timestamps and file sizes of all the important
-// files.
+// You should have received a copy of the GNU General Public License
+// along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
 //
-// Requires: Groovy NGS Utils (https://github.com/ssadedin/groovy-ngs-utils)
+/////////////////////////////////////////////////////////////////////////////////
+// 
+// The provenance report, produced for each sample in a Cpipe run
 //
-// Author: Simon Sadedin, simon.sadedin@mcri.edu.au
-//
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 // Start by getting the basic information we will need
 si = sample_info[sample]
@@ -46,7 +52,11 @@ tools = sampleFiles.grep { it.tools }                   // Only files with tools
                    .collectEntries { it.size()>1 ? [it[0], it[1]] : [it[0], "UNKNOWN"] }  // Create a map of tool => version from above split
 
 // Read the version of the pipeline from the version file in the root directory
-pipelineVersion = new File(BASE,"version.txt").text.trim()
+versionFile = new File(BASE,"version.txt")
+if(versionFile.exists())
+    pipelineVersion = versionFile.text.trim()
+else
+    pipelineVersion = "Unknown"
 
 new PDF().document(outputFile.absolutePath) {
 

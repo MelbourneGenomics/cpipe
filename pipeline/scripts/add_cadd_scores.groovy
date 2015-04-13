@@ -1,27 +1,23 @@
 // vim: shiftwidth=4:ts=4:expandtab:cindent
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-// Melbourne Genomics Demonstration Project
+// This file is part of Cpipe.
+// 
+// Cpipe is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, under version 3 of the License, subject
+// to additional terms compatible with the GNU General Public License version 3,
+// specified in the LICENSE file that is part of the Cpipe distribution.
 //
-// Script to augment standard Annovar exome summary output with CADD scores
+// Cpipe is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// This script reads both the standard exome summary AND also the 
-// CADD score output and then adds a column at the end of the Annovar
-// output containing the CADD score for each variant, where one is
-// available.
+// You should have received a copy of the GNU General Public License
+// along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
 //
-// Requires: Groovy NGS Utils (https://github.com/ssadedin/groovy-ngs-utils)
-//           ExcelCategory    (https://github.com/ssadedin/excelcatgory)
-//
-// Author: Simon Sadedin, simon.sadedin@mcri.edu.au
-// DISTRIBUTION:
-//
-// This source code should not be distributed to a third party without prior
-// approval of the Melbourne Genomics Health Alliance steering committee (via
-// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
-//
-/////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////////////////
 import com.xlson.groovycsv.*
 import au.com.bytecode.opencsv.*
 

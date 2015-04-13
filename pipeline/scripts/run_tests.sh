@@ -1,12 +1,31 @@
 #!/bin/bash
 # vim: ts=4:expandtab:sw=4
-########################################################
+###########################################################################
 #
-#      Melbourne Genomics Health Alliance
+# This file is part of Cpipe.
+# 
+# Cpipe is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, under version 3 of the License, subject
+# to additional terms compatible with the GNU General Public License version 3,
+# specified in the LICENSE file that is part of the Cpipe distribution.
+#
+# Cpipe is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
+#
+###########################################################################
+#
+#      Selftest Script
 #
 ########################################################
 
-EMAILS="ssadedin@gmail.com"
+# Enter email here to get notified by email about failures
+EMAILS=""
 
 TESTS='*_test'
 
@@ -28,7 +47,10 @@ function err() {
         echo
         ) | tee error.log
 
-        mail -s "WARNING: Melbourne Genomics SelfTest Failure" $EMAILS  < error.log
+        if [ ! -z "$EMAILS" ];
+        then
+            mail -s "WARNING: Melbourne Genomics SelfTest Failure" $EMAILS  < error.log
+        fi
 
         exit 1
 }
