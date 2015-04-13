@@ -1,4 +1,5 @@
-====================== Melbourne Genomics Variant Calling Pipeline =======================
+Cpipe  
+=======================
 
 Directory structure under here:
 
