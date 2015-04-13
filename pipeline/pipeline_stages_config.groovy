@@ -548,6 +548,52 @@ recal = {
         """, "recalibrate_bam"
 }
 
+legacy_recal_count = {
+    doc title: "Calculate factors correlated with poor base quality for use in recalibrating reads",
+        desc: """Includes recalibration using the following standard covariates:
+                    ContextCovariate
+                    CycleCovariate
+                    QualityScoreCovariate
+                    ReadGroupCovariate
+             """,
+        inputs: "BAM file containing reads, VCF file containing known variants from dbSNP (132)",
+        outputs: "CSV file containing correlation information"
+
+    msg "Analyzing error covariates ..."
+    msg "Input = $input.bam"
+    transform("recal.csv") {
+        exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T BaseRecalibrator
+            -R $HGFA
+            -l INFO
+            -I $input.bam
+            --disable_indel_quals
+            -knownSites $HG19/dbsnp_132.hg19.vcf
+            -o $output
+            ""","count_covariates"
+    }
+}
+
+legacy_recal = {
+    msg "Performing recalibration ..."
+    from("csv","bam") {
+        transform('bam') {
+            exec """
+                java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+                    -l INFO
+                    -R $HGFA
+                    -I $input.bam
+                    -T PrintReads
+                    -BQSR $input.csv
+                    -o $output.bam
+                ""","recalibrate_bam"
+
+            exec "$SAMTOOLS index $output"
+        }
+    }
+}
+
 cleanup_initial_bams = {
     cleanup("*.merge.bam", ~".*L00[0-9].bam")
 }
