@@ -82,6 +82,10 @@ function compile() {
 }
 
 function load_config() {
+    if [ -z "$BASE" ];
+    then
+        BASE="."
+    fi
     eval `sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
 }
 
@@ -129,8 +133,6 @@ fi
 
 
 load_config
-
-echo "JAVA=$JAVA"
 
 msg "Check base location is correct ..."
 [ ! -e "$BASE/pipeline" ] &&  \
@@ -287,12 +289,17 @@ msg "Check that reference FASTA exists"
       pushd $REFBASE /dev/null
       for f in $GATK_BUNDLE_FILES ;
       do
-          BUNDLE_URL="ftp://ftp.broadinstitute.org/bundle/2.8/hg19/$f" 
-          wget --user=gsapubftp-anonymous \
-               --password=cpipe.user@cpipeline.org \
-               $BUNDLE_URL || err "Unable to download file $BUNDLE_URL"
+          if [ ! -e `echo $f | sed 's/.gz$//'` ];
+          then
+              BUNDLE_URL="ftp://ftp.broadinstitute.org/bundle/2.8/hg19/$f" 
+              wget --user=gsapubftp-anonymous \
+                   --password=cpipe.user@cpipeline.org \
+                   $BUNDLE_URL || err "Unable to download file $BUNDLE_URL"
 
-          gunzip $f || err "Failed to unzip downloaded file $f"
+              gunzip $f || err "Failed to unzip downloaded file $f"
+          else
+             echo "File $f already exists ..."
+          fi
       done 
       popd > /dev/null
   else
