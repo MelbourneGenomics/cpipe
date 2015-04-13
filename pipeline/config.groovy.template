@@ -9,24 +9,20 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-//////////////////// REQUIRED PARAMTERS TO EDIT ////////////////////////
+/////////////////////////// BASIC PARAMETERS ///////////////////////////
 //
 // The base of everything - set this to the absolute path of the 
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="..." // <===== YOU MUST EDIT THIS
+BASE="<EDIT THIS>" 
 
 // Set a good location for storing large temp files here (probably not /tmp)
 TMPDIR="/tmp"
 
-// Set to your exome target regions here. This should be the regions targeted
-// for capture by the exome kit, not the regions targeted for analysis
-EXOME_TARGET="$BASE/designs/captures/
-
 // If you are using the default reference data, download it now in 
 // the hg19 folder (see hg19/README)
 //
-// NEXT: once you have reference data, run ./pipeline/scripts/check_install.sh from 
+// NEXT: run ./pipeline/scripts/install.sh from 
 // the root of the distribution
 
 //////////////////// REFERENCE FILES ////////////////////////////////////
@@ -136,11 +132,6 @@ IGV="$TOOLS/tools/igv/2.3.15"
 
 // Location and version of BWA
 BWA="$TOOLS/bwa/0.7.5a/bwa"
-
-// The exome target region to use for the analysis
-// Note this is relative to the analysis directory, not
-// the directory of this file!
-EXOME_TARGET="../design/target_region.bed"
 
 CONDEL="$TOOLS/condel/24-1-2013"
 
