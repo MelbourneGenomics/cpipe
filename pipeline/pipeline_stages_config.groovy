@@ -594,6 +594,17 @@ legacy_recal = {
     }
 }
 
+if(GATK_LEGACY) {
+    bsqr_recalibration = segment {
+        legacy_recal_count + legacy_recal
+    }
+}
+else {
+    bsqr_recalibration = segment {
+        recal_count + recal
+    }
+}
+
 cleanup_initial_bams = {
     cleanup("*.merge.bam", ~".*L00[0-9].bam")
 }

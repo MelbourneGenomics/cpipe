@@ -83,7 +83,7 @@ run {
                    dedup + index_bam + 
                    cleanup_initial_bams +
                    realignIntervals + realign + index_bam +
-                   recal_count + recal + index_bam +
+                   bsqr_recalibration + index_bam +
 				   cleanup_intermediate_bams +
                        [
                          call_variants_hc + call_pgx + merge_pgx +
