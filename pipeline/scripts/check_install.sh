@@ -116,7 +116,7 @@ fi
         err "I can't see the pipeline directory. Maybe you didn't clone the repository, or you're running this script from the wrong location?"
 
 [ ! -e pipeline/config.groovy ] && {
-        prompt "You haven't created the file pipeline/config.groovy yet. Do you want me to copy this file from the default template for you?" "y"
+        prompt "You haven't created the file pipeline/config.groovy yet. Do you want me to copy this file from the default template for you? (y/n)" "y"
         if [ "$REPLY" == "y" ]
         then
             cp -uv pipeline/config.groovy.template pipeline/config.groovy
@@ -213,14 +213,15 @@ msg "Check Annovar is downloaded and available"
 }
 
 msg "Check Annovar database exists"
-MISSING_ANNOVAR=false
+MISSING_ANNOVAR=""
 ANNOVAR_DB_FILES="hg19_snp138.txt hg19_avsift.txt hg19_esp5400_all.txt hg19_refGene.txt hg19_ALL.sites.2010_11.txt hg19_phastConsElements46way.txt"
 for i in $ANNOVAR_DB_FILES ;  
 do
     [ -e $ANNOVAR/../humandb/$i ] || {
-        MISSING_ANNOVAR=true
+        MISSING_ANNOVAR="$i $MISSING_ANNOVAR"
     }
 done
+
 if [ $MISSING_ANNOVAR ];
 then
     echo "
@@ -229,39 +230,110 @@ then
     NOTE: downloading may take some time and cause large files to be
     downloaded. Please try to avoid having this process be interrupted.
 
-    Files to be downloaded:
+    Missing files:
 
-    $ANNOVAR_DB_FILES
+    $MISSING_ANNOVAR
     "
 
     prompt "Download Annovar files? (y/n)" "y"
 
     if [ "$REPLY" == "y" ];
     then
-        $BASE/pipeline/scripts/download_annovar_db.sh $ANNOVAR $BASE/tools/annovar/humandb
+        $BASE/pipeline/scripts/download_annovar_db.sh $ANNOVAR $BASE/tools/annovar/humandb \
+            || err "Failed to download Annovar databases"
     else
         msg "WARNING: Cpipe will not operate correctly if Annovar database file are not present."
     fi
 fi
 
 msg "Check VEP database downloaded for version $VEP_VERSION..."
-[ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] || \
-    err "Failed to find downloaded VEP data files. Please install homosapiens cache and FASTA files using: 'cd $VEP; perl INSTALL.pl -c ../vep_cache"
+[ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] || {
+    echo "
+    Cpipe uses the Variant Effect Predictor from Ensembl
+    to perform annotation of variants.
+    
+    To work, VEP must first be installed, and then reference
+    files must be downloaded. Would you like to launch the
+    VEP installer script now?
+
+    Please answer "y" when asked to install cache files, and choose
+    either homo_sapiens_vep_74.tar.gz or homo_sapiens_refseq_vep_74.tar.gz
+    to download. Note: Cpipe is tested and developed using homo_sapiens_vep_74.tar.gz.
+    "
+
+    prompt "Do you want to run the VEP installer now? (y/n)" "y"
+    if [ "$REPLY" == "y" ];
+    then
+        cd $VEP; 
+        perl INSTALL.pl -c ../vep_cache || err "Failed to run VEP installer"
+    else
+        msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
+    fi
+}
 
 msg "Check that reference FASTA exists"
-[ -e "$REF" ] || err "Reference FASTA file $REF could not be found. Please place it there or change config.groovy to point to your reference"
+[ -e "$REF" ] ||  {
+  echo "
+  It appears that you have not set or downloaded a human
+  genome reference yet ($REF is not found). An appropriate reference
+  and associated files can be downloaded from the GATK reference bundle.
+  
+  "
+  prompt "Would you like to download and install files from the GATK bundle now? (y/n)" "y"
+
+  GATK_BUNDLE_FILES=`basename $DBSNP`.gz" "`basename $GOLD_STANDARD_INDELS`.gz" ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz"
+  if [ "$REPLY" == "y" ];
+  then
+      pushd $REFBASE /dev/null
+      for f in $GATK_BUNDLE_FILES ;
+      do
+          BUNDLE_URL="ftp://ftp.broadinstitute.org/bundle/2.8/hg19/$f" 
+          wget --user=gsapubftp-anonymous \
+               --password=cpipe.user@cpipeline.org \
+               $BUNDLE_URL || err "Unable to download file $BUNDLE_URL"
+
+          gunzip $f || err "Failed to unzip downloaded file $f"
+      done 
+      popd > /dev/null
+  else
+      msg "WARNING: Cpipe will not operate correctly if reference files are not available"
+  fi
+}
 
 msg "Check reference FASTA is indexed"
 
 [ -e "$REF.fai" ] || err "Reference FASTA file $REF is not indexed. Please run samtools faidx to index it"
 
-[ -e "$REF.bwt" ] || err "Reference FASTA file $REF is not indexed by bwa. Please run 'cd "`dirname $REF`"; ../tools/bwa/0.7.5a/bwa index -a bwtsw ucsc.hg19.fasta' on reference file ($REF) to index it"
+[ -e "$REF.bwt" ] || {
 
-[ -e `echo "$REF" | sed 's/\.fa$/.dict/'` ] || err "Reference FASTA file $REF doesn't have a dictionary. Please run Picard CreateSequenceDictionary to make the dictionary (or download the .dict file)."
+    prompt "Reference FASTA file $REF is not indexed by bwa. Do you want to index it now? (y/n)?" "y"
+
+    if [ "$REPLY" == "y" ];
+    then
+        cd "`dirname $REF`"; 
+        $BWA index -a bwtsw `basename $REF` || err "Indexing reference $REF using bwa failed"
+    else
+        msg "WARNING: Cpipe will not operate correctly unless the reference genome is indexed"
+    fi
+}
+
+[ -e `echo "$REF" | sed 's/\.fa$/.dict/'` ] \
+        || err "Reference FASTA file $REF doesn't have a dictionary. Please run Picard CreateSequenceDictionary to make the dictionary (or download the .dict file)."
 
 find `dirname $REF`/ -name '*.bwt' -mtime +180 | grep -q bwt && {
     warn "The BWA index on your reference is more than 180 days old. If you experience errors in the alignment stage, please try re-indexing your data"
     prompt "Press enter to continue" " "
+}
+
+[ -e "$HG19_CHROM_INFO" ] || {
+    prompt "The chromosome size file (.genome) does not exist. Create it by downloading from UCSC (requires MySQL client) (y/n)" "y"
+    if [ "$REPLY" == "y" ];
+    then
+        mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e \
+            "select chrom, size from hg19.chromInfo"  > $HG19_CHROM_INFO || err "Failed to download genome file"
+    else
+        msg "WARNING: Cpipe will not operate correctly unless the $HG19_CHROM_INFO file is created"
+    fi
 }
 
 [ -e "$DBSNP" ] || err "The DBSNP file $DBSNP does not exist. Please download it."
