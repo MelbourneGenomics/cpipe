@@ -327,11 +327,13 @@ msg "Check reference FASTA is indexed"
 [ -e `echo "$REF" | sed 's/\.fa$/.dict/'` ] \
         || err "Reference FASTA file $REF doesn't have a dictionary. Please run Picard CreateSequenceDictionary to make the dictionary (or download the .dict file)."
 
+
 find `dirname $REF`/ -name '*.bwt' -mtime +180 | grep -q bwt && {
     warn "The BWA index on your reference is more than 180 days old. If you experience errors in the alignment stage, please try re-indexing your data"
     prompt "Press enter to continue" " "
 }
 
+msg "Check if genome file $HG19_CHROM_INFO exists ..."
 [ -e "$HG19_CHROM_INFO" ] || {
     prompt "The chromosome size file (.genome) does not exist. Create it by downloading from UCSC (requires MySQL client) (y/n)" "y"
     if [ "$REPLY" == "y" ];
