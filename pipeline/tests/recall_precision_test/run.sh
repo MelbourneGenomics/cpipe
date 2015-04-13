@@ -40,7 +40,7 @@ then
 
     if [ ! -e NA12878.target.vcf ];
     then 
-        msg "Fetching gold standard calls ..."
+        msg "Preparing gold standard calls ..."
 
         if [ ! -e data/NA12878.vcf.gz ];
         then
