@@ -33,7 +33,7 @@ then
     cd $HERE
     [ -z "$EXOME_TARGET" ] && err "This test requires an EXOME_TARGET to be defined in the main config.groovy file"
 
-    if [ -z "data/NA12878CHR22_L001_R1.fastq.gz" ] || [ -z "data/NA12878CHR22_L001_R2.fastq.gz" ] ;
+    if [ ! -e "data/NA12878CHR22_L001_R1.fastq.gz" ] || [ ! -e "data/NA12878CHR22_L001_R2.fastq.gz" ] ;
     then 
         err "The test data required for the precision / recall test is not available. Please download it."
     fi
