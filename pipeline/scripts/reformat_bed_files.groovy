@@ -1,5 +1,23 @@
 // vim: ts=4:expandtab:sw=4:cindent
-////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+//
+// This file is part of Cpipe.
+// 
+// Cpipe is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, under version 3 of the License, subject
+// to additional terms compatible with the GNU General Public License version 3,
+// specified in the LICENSE file that is part of the Cpipe distribution.
+//
+// Cpipe is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
+//
+/////////////////////////////////////////////////////////////////////////////////
 //
 // Conversion script for preparing target region BED files for use in
 // the pipeline. What it does:
@@ -18,18 +36,7 @@
 //       so that it correctly selects the SYMBOL for the target region from the
 //       names of your input files.
 //
-// Author:      Simon Sadedin, simon.sadedin@mcri.edu.au
-// Date:        February 2014
-//
-// Copyright Melbourne Genomics Health Alliance members, all rights reserved.
-// 
-// DISTRIBUTION:
-//
-// This source code should not be distributed to a third party without prior
-// approval of the Melbourne Genomics Health Alliance steering committee (via
-// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
-//
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 
 load "../config.groovy"

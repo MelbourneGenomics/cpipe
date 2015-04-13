@@ -1,32 +1,27 @@
 // vim: ts=4:sw=4:expandtab:cindent
-////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-// Melbourne Genomics Variant Calling Pipeline
-//
-// This pipeline executes the standard variant calling analysis for 
-// analysing data for the MGHA project.
-//
-// The best available documentation for setting up the pipeline is located
-// here:
-//
-//   https://sites.google.com/site/melbournegenomics/how-tos/setting-up-the-pipeline
+// This file is part of Cpipe.
 // 
-// Usage:
+// Cpipe is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, under version 3 of the License, subject
+// to additional terms compatible with the GNU General Public License version 3,
+// specified in the LICENSE file that is part of the Cpipe distribution.
 //
-//   bpipe run ../../../pipeline/pipeline.groovy ../samples.txt
-// 
-// Author: Simon Sadedin, MCRI
-//         Members of the Melbourne Genomics
-// 
-// Copyright Melbourne Genomics Health Alliance members. All rights reserved.
+// Cpipe is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// DISTRIBUTION:
+// You should have received a copy of the GNU General Public License
+// along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
 //
-// This source code should not be distributed to a third party without prior
-// approval of the Melbourne Genomics Health Alliance steering committee (via
-// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
+/////////////////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////////////
+// Cpipe Main Pipeline Script
+//
+/////////////////////////////////////////////////////////////////////////////////
 
 about title: "Melbourne Genomics Demonstration Project Pipeline"
 
@@ -47,9 +42,6 @@ requires EXOME_TARGET : """
 
 // All the core pipeline stages in the pipeline
 load 'pipeline_stages_config.groovy'
-
-// VCGS specific stages
-load 'vcgs.groovy'
 
 sample_metadata_file = args[0]
 sample_info = SampleInfo.parse_sample_info(args[0])
