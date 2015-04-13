@@ -1,23 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// This is the configuration file for the Melbourne Genomics 
-// Demonstration Project pipeline.
+// This is the main configuration file for Cpipe.
 //
 // In here are configured the locations for all the tools that the
 // pipeline uses. You should copy this file to 'config.groovy'
 // and then read through instructions below to edit it for your 
 // local setup.
-//
-// Author:      Simon Sadedin, simon.sadedin@mcri.edu.au
-// Date:        January 2014
-//
-// Copyright Melbourne Genomics Health Alliance members, all rights reserved.
-// 
-// DISTRIBUTION:
-//
-// This source code should not be distributed to a third party without prior
-// approval of the Melbourne Genomics Health Alliance steering committee (via
-// Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +21,7 @@ TMPDIR="/tmp"
 
 // Set to your exome target regions here. This should be the regions targeted
 // for capture by the exome kit, not the regions targeted for analysis
-EXOME_TARGET="$BASE/designs/captures/nextera_rapid_capture_exome_1.2/nexterarapidcapture_exome_targetedregions_v1.2.bed"
+EXOME_TARGET="$BASE/designs/captures/
 
 // If you are using the default reference data, download it now in 
 // the hg19 folder (see hg19/README)
@@ -44,12 +32,14 @@ EXOME_TARGET="$BASE/designs/captures/nextera_rapid_capture_exome_1.2/nexterarapi
 //////////////////// REFERENCE FILES ////////////////////////////////////
 //
 // You do not need to edit below here if you are using the default 
-// reference files. See hg19/README for how to get the files needed.
+// HG19 reference files. These can be downloaded by the installer script.
+// However if you want to avoid downloading those or use your own reference
+// files then you should enter correct paths below.
 //
 ////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/hg19" // <====== YOU MUST PUT REFERENCE FILES HERE, OR CHANGE THIS
+REFBASE="$BASE/hg19" 
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
@@ -62,15 +52,13 @@ DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
 // Set to a VCF file containing known indels here
 GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.vcf"
 
-// Names for targeted disease genes - each one must have a BED file 
-// in design/flagships. If you are targeting the whole exome,
-// use the covered regions for the exome (see examples in designs)
-DISEASE_COHORTS="AML,CMT,CS,EPIL,CRC"
-
 //////////////////// OPTIONAL PARAMTERS ////////////////////////////////
 //
 // You probably do NOT need to set anything under here! 
-//
+// 
+// However you may wish to customise the locations of some tools such
+// as java, python and perl installations.
+// 
 ///////////////////////////////////////////////////////////////////////
 
 // The variant database requires every sample id to map to a different
