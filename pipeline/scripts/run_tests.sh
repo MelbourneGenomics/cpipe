@@ -92,7 +92,7 @@ do
     pushd $i > /dev/null
     
     #echo "Would run $i"
-    source run.sh
+    source ./run.sh
 
     popd > /dev/null
 done
