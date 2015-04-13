@@ -171,7 +171,7 @@ msg "Check GATK is downloaded and available"
     prompt "Continue with GATK 2.3.9? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        set_config_variable GATK "$BASE/tools/GATK/2.3.9"
+        set_config_variable GATK "$BASE/tools/gatk/2.3.9"
         set_config_variable GATK_LEGACY "true"
     else
         msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
