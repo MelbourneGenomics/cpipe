@@ -50,7 +50,7 @@
 
 import csv, getopt, sys, logging as log
 
-log.basicConfig(level=log.DEBUG)
+log.basicConfig(level=log.INFO)
 
 class Annovar:
     """
@@ -76,13 +76,15 @@ class Annovar:
     # Categories of variants as specified by Annovar, mapped to functional categories
     # defined for Melbourne Genomics
     ANNOVAR_EXONIC_FUNCS = {
-        "truncating" : ["frameshift insertion","frameshift deletion","frameshift substitution","stopgain SNV","stoploss SNV"],
+        "truncating" : ["frameshift insertion","frameshift deletion","frameshift substitution","stopgain SNV","stoploss SNV","stoploss","stopgain"],
         "missense" : ["nonframeshift insertion","nonframeshift deletion","nonframeshift substitution","nonsynonymous SNV"],
         "synonymous" : ["synonymous SNV"],
         "noncoding" : ["intronic","intergenic","ncRNA_intronic"]
     }
 
     # These are the Annovar fields that contain population frequency estimates
+    # Note we do some fooling around in the maf_value() method to maintain 
+    # compatibility with different versions of Annovar
     POPULATION_FREQ_FIELDS = ["esp5400_all", "1000g2010nov_all","exac03"]
 
     def __init__(self, line):
@@ -168,6 +170,10 @@ class Annovar:
         Annovar.columns = cols #+ ["MapQ","QD"]
 
     def maf_value(self, name):
+        # Trying to be compatible with multiple versions of Annovar, each having different
+        # names for this column
+        if name == "exac03" and "ExAC_Freq" in self.columns:
+            name = "ExAC_Freq"
         value = self.line[self.columns.index(name)]
         if value == "" or value ==".":
             return 0

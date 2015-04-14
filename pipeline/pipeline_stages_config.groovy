@@ -565,8 +565,9 @@ legacy_recal_count = {
         exec """
             java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T BaseRecalibrator
-            -R $HGFA
+            -R $REF
             -l INFO
+            -L $COMBINED_TARGET $splice_region_bed_flag
             -I $input.bam
             --disable_indel_quals
             -knownSites $HG19/dbsnp_132.hg19.vcf
@@ -582,14 +583,13 @@ legacy_recal = {
             exec """
                 java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
-                    -R $HGFA
+                    -L $COMBINED_TARGET $splice_region_bed_flag
+                    -R $REF
                     -I $input.bam
                     -T PrintReads
                     -BQSR $input.csv
                     -o $output.bam
                 ""","recalibrate_bam"
-
-            exec "$SAMTOOLS index $output"
         }
     }
 }
@@ -632,7 +632,7 @@ call_variants_ug = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
-                   -A AlleleBalance -A Coverage -A FisherStrand 
+                   -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
                    -o $output.vcf
@@ -666,6 +666,10 @@ call_variants_hc = {
             ""","gatk_call_variants"
     }
 }
+
+// For the legacy GATK, we must fall back to UnifiedGenotyper
+// for calling variants
+call_variants_gatk = GATK_LEGACY ? call_variants_ug : call_variants_hc
 
 call_pgx = {
     doc "Call Pharmacogenomic variants using GATK Unified Genotyper"

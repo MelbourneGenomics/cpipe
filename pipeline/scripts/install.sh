@@ -171,7 +171,7 @@ msg "Check GATK is downloaded and available"
     prompt "Continue with GATK 2.3.9? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        set_config_variable GATK "$BASE/tools/GATK/2.3.9"
+        set_config_variable GATK "$BASE/tools/gatk/2.3.9"
         set_config_variable GATK_LEGACY "true"
     else
         msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
@@ -272,6 +272,10 @@ msg "Check VEP database downloaded for version $VEP_VERSION..."
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
 }
+
+msg "Configuring Condel Plugin ..."
+
+sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
 msg "Check that reference FASTA exists"
 [ -e "$REF" ] ||  {

@@ -86,7 +86,7 @@ run {
                    bsqr_recalibration + index_bam +
 				   cleanup_intermediate_bams +
                        [
-                         call_variants_hc + call_pgx + merge_pgx +
+                         call_variants_gatk + call_pgx + merge_pgx +
                             filter_variants + 
                             annotate_vep + index_vcf +
                             annovar_table +
