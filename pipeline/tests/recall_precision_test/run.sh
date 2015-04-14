@@ -31,11 +31,26 @@ then
 
 
     cd $HERE
-    [ -z "$EXOME_TARGET" ] && err "This test requires an EXOME_TARGET to be defined in the main config.groovy file"
+    [ -z "$EXOME_TARGET" ] && err "
+          This test requires an EXOME_TARGET to be defined in the pipeline/config.groovy.
+          
+          For best results, please download the Nextera 1.2 rapid capture exome target regions from Illumina, eg:
+
+          http://support.illumina.com/content/dam/illumina-support/documents/documentation/chemistry_documentation/samplepreps_nextera/nexterarapidcapture/nexterarapidcapture_exome_targetedregions_v1.2.bed
+         "
 
     if [ ! -e "data/NA12878CHR22_L001_R1.fastq.gz" ] || [ ! -e "data/NA12878CHR22_L001_R2.fastq.gz" ] ;
     then 
-        err "The test data required for the precision / recall test is not available. Please download it."
+        err "The test data required for the precision / recall test is not available. Please download it.
+             
+             Please download using a browser from:
+
+                 NA12878CHR22_L001_R1.fastq.gz: http://goo.gl/kGRjJf
+                 NA12878CHR22_L001_R2.fastq.gz: http://goo.gl/OKaxTc
+
+             These files should be placed in $HERE/data.
+        "
+
     fi
 
     if [ ! -e NA12878.target.vcf ];
