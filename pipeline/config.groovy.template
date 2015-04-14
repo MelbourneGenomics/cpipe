@@ -48,6 +48,11 @@ DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
 // Set to a VCF file containing known indels here
 GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
 
+// For self tests and other default features to work, you should
+// set a "default" exome target here. Note that you can specify a different
+// exome capture region for any individual analysis
+EXOME_TARGET=""
+
 //////////////////// OPTIONAL PARAMTERS ////////////////////////////////
 //
 // You probably do NOT need to set anything under here! 
@@ -174,5 +179,5 @@ BAMSURGEON="$TOOLS/bamsurgeon/20150331"
 
 PYTHON="python"
 
-splice_region_bed_flag=2
+splice_region_window=2
 
