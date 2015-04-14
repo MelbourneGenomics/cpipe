@@ -95,6 +95,7 @@ PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
 // using annovar's downdb function. See scripts/download_annovar_db.sh for
 // a helper script.
 ANNOVAR="$TOOLS/annovar/2013aug23"
+ANNOVAR_DB="$TOOLS/annovar/humandb"
 
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
