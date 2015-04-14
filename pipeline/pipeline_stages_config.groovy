@@ -632,7 +632,7 @@ call_variants_ug = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
-                   -A AlleleBalance -A Coverage -A FisherStrand 
+                   -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
                    -o $output.vcf
