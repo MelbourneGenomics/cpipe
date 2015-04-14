@@ -273,6 +273,10 @@ msg "Check VEP database downloaded for version $VEP_VERSION..."
     fi
 }
 
+msg "Configuring Condel Plugin ..."
+
+sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
+
 msg "Check that reference FASTA exists"
 [ -e "$REF" ] ||  {
   echo "
