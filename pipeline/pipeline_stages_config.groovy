@@ -102,11 +102,11 @@ create_splice_site_bed = {
     produce(target_name + ".splice.bed", target_name + ".exons.bed") {
         exec """
             python $SCRIPTS/create_exon_bed.py  
-                -c -s $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file -
+                -c -s $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file -
               | $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $splice_region_window -i - > $output.bed
 
             python $SCRIPTS/create_exon_bed.py  
-                -c $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file $output2.bed
+                -c $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file $output2.bed
         """
 
         branch.splice_region_bed_flag = "-L $output1.bed"
@@ -874,7 +874,7 @@ calculate_cadd_scores = {
     exec """
         $ANNOVAR/annotate_variation.pl
         $input.av 
-        $ANNOVAR/../humandb/
+        $ANNOVAR_DB/
         -filter 
         -dbtype cadd 
         -buildver hg19 
@@ -1102,7 +1102,7 @@ annovar_table = {
         exec """
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
-            $ANNOVAR/table_annovar.pl $output.av $ANNOVAR/../humandb/  -buildver hg19 
+            $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
             -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb_all
             -operation g,r,r,f,f,f,f,f,f 
             -nastring . 
@@ -1219,7 +1219,7 @@ exon_qc_report = {
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/exon_qc_report.groovy 
                 -cov $input.cov.gz
                 -targets $target_bed_file
-                -refgene $ANNOVAR/../humandb/hg19_refGene.txt 
+                -refgene $ANNOVAR_DB/hg19_refGene.txt 
                 -x $output.xlsx
                 -o $output.tsv
         """
