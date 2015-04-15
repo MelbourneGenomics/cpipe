@@ -570,7 +570,7 @@ legacy_recal_count = {
             -L $COMBINED_TARGET $splice_region_bed_flag
             -I $input.bam
             --disable_indel_quals
-            -knownSites $HG19/dbsnp_132.hg19.vcf
+            -knownSites $DBSNP
             -o $output
             ""","count_covariates"
     }
@@ -621,7 +621,7 @@ call_variants_ug = {
     var call_conf:5.0, 
         emit_conf:5.0
 
-    transform("bam","bam") to("metrics","vcf") {
+    transform("bam","bam") to("metrics.txt","vcf") {
         exec """
                 $JAVA -Xmx8g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
                    -R $REF 
@@ -634,7 +634,7 @@ call_variants_ug = {
                    -L $COMBINED_TARGET $splice_region_bed_flag
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
-                   -metrics $output.metrics
+                   -metrics $output.txt
                    -o $output.vcf
             ""","gatk_call_variants"
     }
@@ -1113,7 +1113,7 @@ annovar_table = {
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,
+            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,'-otherinfo'
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
