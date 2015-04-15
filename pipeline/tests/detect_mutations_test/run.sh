@@ -52,14 +52,14 @@ annovar_has chr1 156104747 "nonsynonymous SNV"
 # all get heavily downranked by BSQR. For now I am 
 # disabling these when running using legacy GATK.
 # It should not be a problem for larger data sets
-if [ ! $LEGACY_GATK ];
+if [ ! $GATK_LEGACY ];
 then
     annovar_has chr1 156105692 "exonic;splicing"  #  todo: should this be? "splicing"
     annovar_has chr1 156106711 "splicing"
     annovar_has chr1 156106899 "splicing"
 fi
-annovar_has chr1 201330464 "stopgain SNV"
-annovar_has chr1 201328340 "stoploss SNV"
+annovar_has chr1 201330464 "stopgain"
+annovar_has chr1 201328340 "stoploss"
 
 msg "Test Completed Successfully"
 
