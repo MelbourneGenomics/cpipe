@@ -2,10 +2,9 @@ Cpipe
 =======================
 
 Cpipe is a clinically focused exome sequencing pipeline developed
-by the Melbourne Genomics Health Alliance. 
-
-For information on running and setting up the pipeline, please refer to the
-documentation on the Melbourne Genomics Development site. Briefly:
+by the Melbourne Genomics Health Alliance. Cpipe offers an industry
+standard variant calling pipeline with a suite of additional features 
+needed by diagnostic laboratories added on top.
 
 To set up Cpipe, clone this repository and then run the install script:
 
