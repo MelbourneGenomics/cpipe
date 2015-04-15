@@ -559,8 +559,8 @@ legacy_recal_count = {
         inputs: "BAM file containing reads, VCF file containing known variants from dbSNP (132)",
         outputs: "CSV file containing correlation information"
 
-    msg "Analyzing error covariates ..."
-    msg "Input = $input.bam"
+    output.dir="align"
+
     transform("recal.csv") {
         exec """
             java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
@@ -578,6 +578,7 @@ legacy_recal_count = {
 
 legacy_recal = {
     msg "Performing recalibration ..."
+    output.dir="align"
     from("csv","bam") {
         transform('bam') {
             exec """
