@@ -30,11 +30,10 @@
 # boundaries.
 #
 ############################################################################
-import sys, csv, getopt, re
+import sys, csv, getopt, re,logging as log
 
-def log(msg):
-    print >>sys.stderr, msg
- 
+log.basicConfig(level=log.INFO)
+
 # Whether to include UTR regions 
 include_utr = True
 
@@ -43,14 +42,17 @@ splice_mode = False
 opts,args = getopt.getopt(sys.argv[1:],"cs",)
 for opt,value in opts:
         if opt == '-c':
-               include_utr = False 
+            include_utr = False 
         elif opt == '-s':
-               splice_mode = True
+            splice_mode = True
+        elif opt == '-v':
+            log.basicConfig(level=log.DEBUG)
 
 if not args or len(args)<4:
-        log( "\nUsage: python %s [-c] <gene bed file> <hg19 UCSC RefSeq genes file> <transcript file> <output file>\n" % sys.argv[0])
-        log( "\t-c   do not include UTR")
-        log( "\t-s   write each splice boundary as a separate line instead of whole exons\n")
+        log.info( "\nUsage: python %s [-c] <gene bed file> <hg19 UCSC RefSeq genes file> <transcript file> <output file>\n" % sys.argv[0])
+        log.info( "\t-c   do not include UTR")
+        log.info( "\t-s   write each splice boundary as a separate line instead of whole exons\n")
+        log.info( "\t-v   show debug logging\n")
         sys.exit(1)
 
 
@@ -58,7 +60,7 @@ if not args or len(args)<4:
 tx_file = args[2]
 priority_txes = [ re.sub('\.[0-9]*$', '',line).strip() for line in open(tx_file) ]
 
-log( "The prioritised transcripts are %s" % priority_txes)
+log.info( "The prioritised transcripts are %s" % priority_txes)
 
 
 def check_overlap(existing_exons,newexon):            
@@ -103,7 +105,7 @@ for g in gene_file:
     else:
         gene_ranges[gene] = [int(start)-1,int(stop)+1]
 
-log("Read %d genes from gene file" % len(genes))
+log.info("Read %d genes from gene file" % len(genes))
 
 cds_starts = {}
 cds_ends = {}
@@ -121,7 +123,7 @@ for g in refseq_genes:
 
     # Ignore haploytype chromosomes
     if re.match('chr.*_.*$', chr):
-        #log("Ignoring gene %s on alternative chromosome %s" % (gene,chr))
+        #log.info("Ignoring gene %s on alternative chromosome %s" % (gene,chr))
         ignored_alt_chrs.add(chr)
         continue
 
@@ -138,10 +140,10 @@ for g in refseq_genes:
         ends = map(lambda x: int(x), filter(lambda x: x != '', g[10].split(",")))
 
         exons = map(lambda x: list(x), zip(starts,ends))
-        #log("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
+        #log.info("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
 
         if chr != gene_chr[gene]:
-            log("WARNING: Gene %s is annotated to multiple chromosomes: %s vs %s. The chromosome %s version of this gene will be ignored." % (gene, gene_chr[gene], g[2], chr))
+            log.warning("WARNING: Gene %s is annotated to multiple chromosomes: %s vs %s. The chromosome %s version of this gene will be ignored." % (gene, gene_chr[gene], g[2], chr))
             continue
 
         cds_start = int(g[6])
@@ -153,7 +155,7 @@ for g in refseq_genes:
         cds_starts[gene] = min(cds_starts.get(gene,sys.maxint),cds_start)
         cds_ends[gene] = max(cds_ends.get(gene,0),cds_end)
 
-        #log("CDS starts for gene %s are %s" % (str(cds_starts), str(cds_ends)))
+        #log.info("CDS starts for gene %s are %s" % (str(cds_starts), str(cds_ends)))
 
         existing_exons = genes[gene]
 
@@ -163,7 +165,7 @@ for g in refseq_genes:
         # Merge the exons with existing ones
         for e in exons:
             if e[0] > gene_range[1] or e[1] < gene_range[0]:
-                log("Exon %s in gene %s ignored because it is outside range defined for gene: %s" % (e,gene,gene_range))
+                log.debug("Exon %s in gene %s ignored because it is outside range defined for gene: %s" % (e,gene,gene_range))
                 continue
 
             overlapping = check_overlap(existing_exons,e)
@@ -179,15 +181,15 @@ for g in refseq_genes:
                     continue
 
                 if g[1] in priority_txes:
-                    log("Exon %s in gene %s has multiple potential splice regions! Selecting prioritized tx=%s : will use %d-%d as coding sequence" % (e,gene,g[1],e[0],e[1]))
+                    log.info("Exon %s in gene %s has multiple potential splice regions! Selecting prioritized tx=%s : will use %d-%d as coding sequence" % (e,gene,g[1],e[0],e[1]))
                     existing_exons[overlapping][0] = e[0]
                     existing_exons[overlapping][1] = e[1]
                     prioritized_txes[gene] = g[1]
                 elif gene in prioritized_txes:
-                    log("Exon %s in gene %s has multiple potential splice regions! Not using longest sequence because a prioritized tx (%s) exists vs tx=%s : will use %d-%d as coding sequence" \
+                    log.info("Exon %s in gene %s has multiple potential splice regions! Not using longest sequence because a prioritized tx (%s) exists vs tx=%s : will use %d-%d as coding sequence" \
                         % (e,gene,prioritized_txes[gene], g[1],new_start,new_end))
                 else:
-                    log("Exon %s in gene %s has multiple potential splice regions! Current tx=%s Will use %d-%d as longest coding sequence" % (e,gene,g[1],new_start,new_end))
+                    log.info("Exon %s in gene %s has multiple potential splice regions! Current tx=%s Will use %d-%d as longest coding sequence" % (e,gene,g[1],new_start,new_end))
                     existing_exons[overlapping][0] = new_start
                     existing_exons[overlapping][1] = new_end
             else:
@@ -206,7 +208,7 @@ if not include_utr:
 
             # Move start of first exon to start of CDS for gene
             if len(exons) == 0:
-                log("WARNING: no exons overlapped by coordinates for gene %s: " % g)
+                log.info("WARNING: no exons overlapped by coordinates for gene %s: " % g)
             else:
                 first_exon = exons[min(range(len(exons)), key=lambda i: exons[i][0])]
 
@@ -238,4 +240,4 @@ for g in genes:
             output.writerow( [ gene_chr[g], e[0], e[1], "%s|%d" % (g, exon_count)] )
 
 if len(ignored_alt_chrs)>0:
-    log("WARNING: genes on the following alternative haplotype chromosomes were ignored: %s" % ignored_alt_chrs)
+    log.info("WARNING: genes on the following alternative haplotype chromosomes were ignored: %s" % ignored_alt_chrs)
