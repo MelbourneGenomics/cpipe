@@ -102,11 +102,11 @@ create_splice_site_bed = {
     produce(target_name + ".splice.bed", target_name + ".exons.bed") {
         exec """
             python $SCRIPTS/create_exon_bed.py  
-                -c -s $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file -
+                -c -s $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file -
               | $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $splice_region_window -i - > $output.bed
 
             python $SCRIPTS/create_exon_bed.py  
-                -c $target_bed_file $ANNOVAR/../humandb/hg19_refGene.txt $transcripts_file $output2.bed
+                -c $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file $output2.bed
         """
 
         branch.splice_region_bed_flag = "-L $output1.bed"
@@ -570,7 +570,7 @@ legacy_recal_count = {
             -L $COMBINED_TARGET $splice_region_bed_flag
             -I $input.bam
             --disable_indel_quals
-            -knownSites $HG19/dbsnp_132.hg19.vcf
+            -knownSites $DBSNP
             -o $output
             ""","count_covariates"
     }
@@ -621,7 +621,7 @@ call_variants_ug = {
     var call_conf:5.0, 
         emit_conf:5.0
 
-    transform("bam","bam") to("metrics","vcf") {
+    transform("bam","bam") to("metrics.txt","vcf") {
         exec """
                 $JAVA -Xmx8g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
                    -R $REF 
@@ -632,9 +632,9 @@ call_variants_ug = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
-                   -A AlleleBalance -A Coverage -A FisherStrand 
+                   -A AlleleBalance -A FisherStrand 
                    -glm BOTH
-                   -metrics $output.metrics
+                   -metrics $output.txt
                    -o $output.vcf
             ""","gatk_call_variants"
     }
@@ -878,7 +878,7 @@ calculate_cadd_scores = {
     exec """
         $ANNOVAR/annotate_variation.pl
         $input.av 
-        $ANNOVAR/../humandb/
+        $ANNOVAR_DB/
         -filter 
         -dbtype cadd 
         -buildver hg19 
@@ -1106,14 +1106,14 @@ annovar_table = {
         exec """
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
-            $ANNOVAR/table_annovar.pl $output.av $ANNOVAR/../humandb/  -buildver hg19 
+            $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
             -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb_all
             -operation g,r,r,f,f,f,f,f,f 
             -nastring . 
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,
+            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,'-otherinfo'
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
@@ -1223,7 +1223,7 @@ exon_qc_report = {
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/exon_qc_report.groovy 
                 -cov $input.cov.gz
                 -targets $target_bed_file
-                -refgene $ANNOVAR/../humandb/hg19_refGene.txt 
+                -refgene $ANNOVAR_DB/hg19_refGene.txt 
                 -x $output.xlsx
                 -o $output.tsv
         """

@@ -38,7 +38,7 @@ targetFiles = outputGraph.findAllOutputsBy { it.branchPath.split("/").contains(s
 
 files = [
     rawbam: sampleFiles.grep { it.stageName == "align_bwa" },
-    finalbam: sampleFiles.grep { it.stageName == "recal" },
+    finalbam: sampleFiles.grep { it.stageName.endsWith("recal") },
     vcf: sampleFiles.grep { it.stageName.startsWith("call_variants")  && it.outputFile.name.endsWith("vcf") },
     annovarx: sampleFiles.grep { it.stageName == "vcf_to_excel" && it.outputFile.name.endsWith("annovarx.csv") },
     summary: sampleFiles.grep { it.stageName == "summary_pdf" && it.outputFile.name.endsWith(".pdf") }

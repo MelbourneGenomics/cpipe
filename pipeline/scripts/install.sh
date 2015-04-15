@@ -224,7 +224,7 @@ do
     }
 done
 
-if [ $MISSING_ANNOVAR ];
+if [ -z "$MISSING_ANNOVAR" ];
 then
     echo "
     One or more Annovar database files is not present. Do you want to 
@@ -272,6 +272,10 @@ msg "Check VEP database downloaded for version $VEP_VERSION..."
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
 }
+
+msg "Configuring Condel Plugin ..."
+
+sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
 msg "Check that reference FASTA exists"
 [ -e "$REF" ] ||  {
