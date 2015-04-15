@@ -120,10 +120,29 @@ geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[
 
 AACHANGE_FIELDS = ANNOVAR_FIELDS.grep { it.startsWith("AAChange") }
 
-// Order preferred if clinicians need to review output directly
-OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + AACHANGE_FIELDS + ["Gene Category", "Priority_Index", "Condel", "phastConsElements46way", "esp5400_all", "1000g2010nov_all", "snp138","exac03", "avsift", "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++", "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "CADD","PRIORITY_TX"]
+EXAC_FIELDS=["exac03","ExAC_ALL","ExAC_Freq"]
 
-OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all","exac03","snp138","avsift","LJB_PhyloP","LJB_PhyloP_Pred","LJB_SIFT","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred","LJB_LRT","LJB_LRT_Pred","LJB_MutationTaster","LJB_MutationTaster_Pred","LJB_GERP++","Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD","Gene Category","Priority_Index","CADD","#Obs","RefCount","AltCount","PRIORITY_TX"]
+EXAC_FIELD = EXAC_FIELDS.find { it in ANNOVAR_FIELDS }
+if(EXAC_FIELD == null) 
+    EXAC_FIELD = "exac03"
+
+
+LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
+
+// The LJB fields changed column headings. To preserve backwards compatibility with
+// downstream scripts, we replace them with the old headings in output
+OLD_LJB_FIELDS = [ "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++"]
+
+// Order preferred if clinicians need to review output directly
+OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + 
+                AACHANGE_FIELDS + 
+                ["Gene Category", "Priority_Index", "Condel", "phastConsElements46way", "esp5400_all", "1000g2010nov_all", "snp138",EXAC_FIELD] +
+                LJB_FIELDS + ["CADD_raw"]
+                [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "PRIORITY_TX"]
+
+OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all",EXAC_FIELD,"snp138","avsift"] +
+                    LJB_FIELDS +
+                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD","Gene Category","Priority_Index","CADD","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
 CENTERED_COLUMNS = ["Gene Category", "Priority_Index", "1000g2010nov_all","esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
@@ -136,8 +155,10 @@ HEADING_MAP = OUTPUT_FIELDS.collectEntries{[it,it]} + [
    "1000g2010nov_all"  : "1000g2010nov_ALL",
    "snp138" : "dbSNP138",
    "genomicSuperDups" : "SegDup",
-   "avsift" : "AVSIFT"
-]
+   "avsift" : "AVSIFT",
+   "ExAC_ALL" : "exac03",
+   "ExAC_Freq" : "exac03"
+] + [ LJB_FIELDS, OLD_LJB_FIELDS ].transpose().collectEntries()
 
 extractAAChange = { gene, aaChange ->
     if(gene.indexOf("(")>=0) {

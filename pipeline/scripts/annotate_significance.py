@@ -174,6 +174,8 @@ class Annovar:
         # names for this column
         if name == "exac03" and "ExAC_Freq" in self.columns:
             name = "ExAC_Freq"
+        if name == "exac03" and "ExAC_ALL" in self.columns:
+            name = "ExAC_ALL"
         value = self.line[self.columns.index(name)]
         if value == "" or value ==".":
             return 0

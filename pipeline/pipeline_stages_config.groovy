@@ -1108,13 +1108,13 @@ annovar_table = {
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
             $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
-            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb_all
+            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb26_all
             -operation g,r,r,f,f,f,f,f,f 
             -nastring . 
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,'-otherinfo'
+            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
