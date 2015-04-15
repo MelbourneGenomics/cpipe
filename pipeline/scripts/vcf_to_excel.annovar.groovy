@@ -142,7 +142,7 @@ OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] +
 
 OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all",EXAC_FIELD,"snp138","avsift"] +
                     LJB_FIELDS +
-                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD","Gene Category","Priority_Index","CADD","#Obs","RefCount","AltCount","PRIORITY_TX"]
+                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","Gene Category","Priority_Index","CADD_raw","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
 CENTERED_COLUMNS = ["Gene Category", "Priority_Index", "1000g2010nov_all","esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
@@ -157,7 +157,8 @@ HEADING_MAP = OUTPUT_FIELDS.collectEntries{[it,it]} + [
    "genomicSuperDups" : "SegDup",
    "avsift" : "AVSIFT",
    "ExAC_ALL" : "exac03",
-   "ExAC_Freq" : "exac03"
+   "ExAC_Freq" : "exac03",
+   "CADD_raw": "CADD"
 ] + [ LJB_FIELDS, OLD_LJB_FIELDS ].transpose().collectEntries()
 
 extractAAChange = { gene, aaChange ->
