@@ -224,7 +224,7 @@ do
     }
 done
 
-if [ -z "$MISSING_ANNOVAR" ];
+if [ ! -z "$MISSING_ANNOVAR" ];
 then
     echo "
     One or more Annovar database files is not present. Do you want to 
