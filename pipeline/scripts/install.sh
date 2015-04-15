@@ -185,7 +185,7 @@ msg "Check Annovar is downloaded and available"
 
   ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | head -1`
 
-  if [ ! -e $ANNOVAR_DOWNLOAD ];
+  if [ ! -e "$ANNOVAR_DOWNLOAD" ];
   then
         echo "
   Due to license restrictions, Annovar cannot be included
@@ -209,7 +209,7 @@ msg "Check Annovar is downloaded and available"
 
       set_config_variable ANNOVAR "$BASE/tools/annovar/$ANNOVAR_VERSION"
   else
-      err "Could not find tar.gz file inm$BASE/tools/annovar"
+      err "Could not find tar.gz file in $BASE/tools/annovar"
   fi
   popd > /dev/null
 }
@@ -224,7 +224,7 @@ do
     }
 done
 
-if [ -z "$MISSING_ANNOVAR" ];
+if [ ! -z "$MISSING_ANNOVAR" ];
 then
     echo "
     One or more Annovar database files is not present. Do you want to 
