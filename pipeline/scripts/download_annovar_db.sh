@@ -35,8 +35,9 @@ DBDIR="$2"
 
 #$ANNOVAR/annotate_variation.pl -downdb ALL.sites.2010_11 -buildver hg19 "$DBDIR"
 $ANNOVAR/annotate_variation.pl -downdb 1000g2010nov -buildver hg19  "$DBDIR"
+$ANNOVAR/annotate_variation.pl -downdb 1000g2014oct -buildver hg19  "$DBDIR"
 $ANNOVAR/annotate_variation.pl -downdb snp138 -buildver hg19  "$DBDIR"
-$ANNOVAR/annotate_variation.pl -downdb avsift -webfrom annovar -buildver hg19  "$DBDIR"
+#$ANNOVAR/annotate_variation.pl -downdb avsift -webfrom annovar -buildver hg19  "$DBDIR"
 
 $ANNOVAR/annotate_variation.pl -downdb refGene -buildver hg19  "$DBDIR"
 $ANNOVAR/annotate_variation.pl -downdb knownGene -buildver hg19  "$DBDIR"

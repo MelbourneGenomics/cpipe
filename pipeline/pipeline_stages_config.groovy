@@ -152,12 +152,6 @@ check_tools = {
         to enable or disable corresponding pipeline features
         """
 
-    def CADD_DATA = "$BASE/tools/annovar/humandb/hg19_cadd.txt"
-    if(!file(CADD_DATA).exists()) {
-        msg "Unable to locate data for CADD annotations: CADD scores will not be included"
-        ENABLE_CADD = false
-    }
-
     produce("revision.txt") {
         exec """
             git describe --always > $output.txt || true
@@ -624,7 +618,7 @@ call_variants_ug = {
 
     transform("bam","bam") to("metrics.txt","vcf") {
         exec """
-                $JAVA -Xmx8g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
+                $JAVA -Xmx6g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
                    -R $REF 
                    -I $input.bam 
                    -nt 4
@@ -654,7 +648,7 @@ call_variants_hc = {
     transform("bam") to("vcf") {
         exec """
 
-            $JAVA -Xmx8g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller
+            $JAVA -Xmx6g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller
                    -R $REF 
                    -I $input.bam 
                    --dbsnp $DBSNP 
@@ -848,45 +842,6 @@ augment_condel = {
     }
 }
 
-augment_cadd = {
-
-    doc "Add CADD annotations to an existing file of Annovar annotations"
-
-    if(!ENABLE_CADD) 
-        return
-
-    output.dir = "variants"
-    from("*.exome_summary.*.csv","*.hg19_cadd_dropped" ) filter("cadd") {
-        exec """
-            JAVA_OPTS="-Xmx4g -Djava.awt.headless=true" $GROOVY 
-                -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar 
-                $SCRIPTS/add_cadd_scores.groovy
-                    -a $input.csv
-                    -c $input.hg19_cadd_dropped
-                    -o $output.csv
-        """
-    }
-}
-
-calculate_cadd_scores = {
-
-    doc "Compute CADD scores by running Annovar annotation"
-
-    if(!ENABLE_CADD) 
-        return
-
-    output.dir="variants"
-    exec """
-        $ANNOVAR/annotate_variation.pl
-        $input.av 
-        $ANNOVAR_DB/
-        -filter 
-        -dbtype cadd 
-        -buildver hg19 
-        -out $output.hg19_cadd_dropped.prefix
-    """
-}
-
 index_vcf = {
     output.dir="variants"
     var sort_vcf : true
@@ -980,7 +935,7 @@ vcf_to_family_excel = {
     from(annovar_files) {
         produce(target_name + ".family.xlsx") {
             exec """
-                JAVA_OPTS="-Xmx8g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
+                JAVA_OPTS="-Xmx6g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
                     -p "" 
                     -db $VARIANT_DB
                     -o $output.xlsx
@@ -1108,13 +1063,13 @@ annovar_table = {
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
             $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
-            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2010nov_all,exac03,snp138,avsift,ljb26_all
-            -operation g,r,r,f,f,f,f,f,f 
+            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2014oct_all,exac03,snp138,ljb26_all
+            -operation g,r,r,f,f,f,f,f 
             -nastring . 
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,,
+            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """

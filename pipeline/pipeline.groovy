@@ -92,9 +92,8 @@ run {
                             annovar_table +
                             [ 
                                add_to_database, 
-                               augment_condel + annotate_significance, 
-                               calculate_cadd_scores
-                            ] + augment_cadd +
+                               augment_condel + annotate_significance
+                            ]  +
                          calc_coverage_stats + [ summary_pdf, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics

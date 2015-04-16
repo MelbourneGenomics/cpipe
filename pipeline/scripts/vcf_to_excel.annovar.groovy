@@ -126,6 +126,7 @@ EXAC_FIELD = EXAC_FIELDS.find { it in ANNOVAR_FIELDS }
 if(EXAC_FIELD == null) 
     EXAC_FIELD = "exac03"
 
+ONEKG_FIELD="1000g2014oct_all"
 
 LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
 
@@ -136,17 +137,17 @@ OLD_LJB_FIELDS = [ "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred",
 // Order preferred if clinicians need to review output directly
 OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + 
                 AACHANGE_FIELDS + 
-                ["Gene Category", "Priority_Index", "Condel", "phastConsElements46way", "esp5400_all", "1000g2010nov_all", "snp138",EXAC_FIELD] +
-                LJB_FIELDS + ["CADD_raw"] +
+                ["Gene Category", "Priority_Index", "CADD_raw", "Condel", "phastConsElements46way", "esp5400_all", ONEKG_FIELD, "snp138",EXAC_FIELD] +
+                LJB_FIELDS + 
                 [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "PRIORITY_TX"]
 
 OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] +
                     AACHANGE_FIELDS + 
-                    ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all",EXAC_FIELD,"snp138","avsift"] +
+                    ["phastConsElements46way","genomicSuperDups","esp5400_all",ONEKG_FIELD,EXAC_FIELD,"snp138"] +
                     LJB_FIELDS +
                     ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","Gene Category","Priority_Index","CADD_raw","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
-CENTERED_COLUMNS = ["Gene Category", "Priority_Index", "1000g2010nov_all","esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
+CENTERED_COLUMNS = ["Gene Category", "Priority_Index", ONEKG_FIELD,"esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
 // The output headings are sometimes different to the input headings
 // this is done to preserve compatibility as annovar headings change
@@ -155,9 +156,9 @@ HEADING_MAP = OUTPUT_FIELDS.collectEntries{[it,it]} + [
    "phastConsElements46way" : "Conserved",
    "esp5400_All" : "ESP5400_ALL",
    "1000g2010nov_all"  : "1000g2010nov_ALL",
+   ONEKG_FIELD  : "1000g",
    "snp138" : "dbSNP138",
    "genomicSuperDups" : "SegDup",
-   "avsift" : "AVSIFT",
    "ExAC_ALL" : "exac03",
    "ExAC_Freq" : "exac03",
    "CADD_raw": "CADD"
