@@ -137,10 +137,12 @@ OLD_LJB_FIELDS = [ "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred",
 OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + 
                 AACHANGE_FIELDS + 
                 ["Gene Category", "Priority_Index", "Condel", "phastConsElements46way", "esp5400_all", "1000g2010nov_all", "snp138",EXAC_FIELD] +
-                LJB_FIELDS + ["CADD_raw"]
+                LJB_FIELDS + ["CADD_raw"] +
                 [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "PRIORITY_TX"]
 
-OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] + AACHANGE_FIELDS + ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all",EXAC_FIELD,"snp138","avsift"] +
+OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] +
+                    AACHANGE_FIELDS + 
+                    ["phastConsElements46way","genomicSuperDups","esp5400_all","1000g2010nov_all",EXAC_FIELD,"snp138","avsift"] +
                     LJB_FIELDS +
                     ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","Gene Category","Priority_Index","CADD_raw","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
