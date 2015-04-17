@@ -24,9 +24,6 @@
 #
 ########################################################
 
-# Enter email here to get notified by email about failures
-EMAILS=""
-
 TESTS='*_test'
 
 if [ ! -z "$1" ];
