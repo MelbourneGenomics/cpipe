@@ -104,7 +104,7 @@ class Annovar:
                    if self.is_conserved():
                        return 3 # Missense, novel and conserved => category 3
                    else:
-                       return 2 # Missesnse, novel but not highly conserved => category 2
+                       return 2 # Missense, novel but not highly conserved => category 2
                else:
                     return 1 # Missense & rare but not novel => category 1
            else:
