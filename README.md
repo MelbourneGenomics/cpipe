@@ -8,7 +8,7 @@ needed by diagnostic laboratories added on top.
 
 To set up Cpipe, clone this repository and then run the install script:
 
-    git clone git@github.com:MelbourneGenomics/cpipe.git
+    git clone https://github.com/MelbourneGenomics/cpipe.git
     cd cpipe
     ./pipeline/scripts/install.sh
 
