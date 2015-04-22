@@ -5,7 +5,10 @@
 // In here are configured the locations for all the tools that the
 // pipeline uses. You should copy this file to 'config.groovy'
 // and then read through instructions below to edit it for your 
-// local setup.
+// local setup. 
+//
+// NOTE: please use C-style single line comments (//), and not BASH 
+// style comments in this file (#)
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -19,7 +22,7 @@ BASE="<EDIT THIS>"
 // Set a good location for storing large temp files here (probably not /tmp)
 TMPDIR="/tmp"
 
-# Enter email here to get notified by email about failures
+// Enter email here to get notified by email about failures
 EMAILS=""
 
 // If you are using the default reference data, download it now in 
