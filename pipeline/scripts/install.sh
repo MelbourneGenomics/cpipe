@@ -86,7 +86,8 @@ function load_config() {
     then
         BASE="."
     fi
-    eval `sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+    CONFIG=`sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+    eval "$CONFIG"
 }
 
 function set_config_variable() {
@@ -132,9 +133,10 @@ fi
 }
 
 
+
 load_config
 
-msg "Check base location is correct ..."
+msg "Check base location $BASE is correct ..."
 [ ! -e "$BASE/pipeline" ] &&  \
         err "Cannot see $BASE/pipeline - please check BASE is defined correctly in config.groovy. It should probably be: "`pwd`
 
