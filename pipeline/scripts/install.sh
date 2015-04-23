@@ -93,7 +93,9 @@ function load_config() {
 function set_config_variable() {
     NAME="$1"
     VALUE="$2"
-    sed -i 's,'$NAME'=".*$,'$NAME'="'$VALUE'",g' $BASE/pipeline/config.groovy
+    cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
+    sed 's,'$NAME'=".*$,'$NAME'="'$VALUE'",g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    rm "$BASE/pipeline/config.groovy.tmp"
     load_config
 }
 
@@ -124,7 +126,7 @@ fi
         prompt "You haven't created the file pipeline/config.groovy yet. Do you want me to copy this file from the default template for you? (y/n)" "y"
         if [ "$REPLY" == "y" ]
         then
-            cp -uv pipeline/config.groovy.template pipeline/config.groovy
+            cp -v pipeline/config.groovy.template pipeline/config.groovy
         fi
 
         BASE=`pwd`
