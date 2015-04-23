@@ -344,10 +344,16 @@ msg "Check if genome file $HG19_CHROM_INFO exists ..."
     prompt "The chromosome size file (.genome) does not exist. Create it by downloading from UCSC (requires MySQL client) (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
+      if [ -x "$(command -v mysql)" ];
+      then
         mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e \
             "select chrom, size from hg19.chromInfo"  > $HG19_CHROM_INFO || err "Failed to download genome file"
+      else
+        warn "No mysql client found. Cpipe will not operate correctly unless the $HG19_CHROM_INFO file is created"
+        prompt "Press enter to continue" " "
+      fi
     else
-        msg "WARNING: Cpipe will not operate correctly unless the $HG19_CHROM_INFO file is created"
+        warn "Cpipe will not operate correctly unless the $HG19_CHROM_INFO file is created"
     fi
 }
 
