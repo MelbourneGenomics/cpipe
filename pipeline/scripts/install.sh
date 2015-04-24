@@ -368,7 +368,7 @@ msg "Check ulimit ..."
 MAX_OPEN_FILES=`ulimit -n` 
 if [ "$MAX_OPEN_FILES" -lt 2048 ]; 
 then 
-    warn "The limit on open files is set to $MAX_OPEN_FILES. Cpipe may require more open files than this. Consider adding 'ulimit set -S -n 2048' to your .bashrc file."
+    warn "The limit on open files is set to $MAX_OPEN_FILES. Cpipe may require more open files than this. Consider adding 'ulimit -S -n 2048' to your .bashrc file."
 fi
 
 msg "Success: all the dependencies I know how to check are OK"
