@@ -13,4 +13,5 @@ To download GATK, visit this URL:
 
   http://www.broadinstitute.org/gatk/auth?package=GATK
 
-NOTE: the pipeline NO LONGER works with 2.3.9.
+NOTE: for the pipeline to work with GATK 2.3.9, please edit
+      config.groovy and set GATK_LEGACY=true
