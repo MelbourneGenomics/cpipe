@@ -20,6 +20,7 @@
 BASE="<EDIT THIS>" 
 
 // Set a good location for storing large temp files here (probably not /tmp)
+// or "unset TMPDIR" if your resource manager sets TMPDIR for you (e.g. slurm)
 TMPDIR="/tmp"
 
 // Enter email here to get notified by email about failures
