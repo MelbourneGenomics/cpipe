@@ -59,9 +59,9 @@ trim_columns = opts.t ? opts.t.toInteger() : 0
 ANNOVAR_FIELDS = null
 new File(opts.a).withReader { r -> ANNOVAR_FIELDS = r.readLine().split(",") as List }
 
-// Not all the fields have headers (why?)
-if(!("Qual" in ANNOVAR_FIELDS))
-    ANNOVAR_FIELDS += ["Qual","Depth"]
+// Qual and Depth have now been merged into OtherInfo (annovar 2015-03-22)
+// if(!("Qual" in ANNOVAR_FIELDS))
+//     ANNOVAR_FIELDS += ["Qual","Depth"]
 
 println "Annovar fields are " + ANNOVAR_FIELDS
 
