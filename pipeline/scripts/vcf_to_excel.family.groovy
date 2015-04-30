@@ -61,9 +61,13 @@ def err(msg) {
   System.exit(1)
 }
 
+LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
+
+
 // Note: 'AAChange' comes from Annovar but is handled separately
 def EXPORTED_ANNOVAR_COLUMNS =
-        [ 'Conserved','SegDup','ESP5400_ALL','g1000','AVSIFT','LJB_PhyloP','LJB_PhyloP_Pred','LJB_SIFT','LJB_SIFT_Pred','LJB_PolyPhen2','LJB_PolyPhen2_Pred','LJB_LRT','LJB_LRT_Pred','LJB_MutationTaster','LJB_MutationTaster_Pred' ]
+        [ 'phastConsElements46way','genomicSuperDups','esp5400_all','1000g2014oct_all','ExAC_Freq','SIFT_score'] +
+        LJB_FIELDS
 
 // Genes that will be highlighted in spreadsheet as linked to 
 // phenotype of interest
@@ -118,9 +122,7 @@ new ExcelBuilder().build {
         println "Reading Annovar summary $annovar_summary (vcf file = $vcf_file) ..."
 
         // Read the exome annotations from annovar
-        def annovar = new CSV(annovar_summary,
-                              columnNames: ['Func','Gene','ExonicFunc','AAChange','Conserved','SegDup','ESP5400_ALL','g1000','dbSNP132','AVSIFT','LJB_PhyloP','LJB_PhyloP_Pred','LJB_SIFT','LJB_SIFT_Pred','LJB_PolyPhen2','LJB_PolyPhen2_Pred','LJB_LRT','LJB_LRT_Pred','LJB_MutationTaster','LJB_MutationTaster_Pred','LJB_GERP++','Chr','Start','End','Ref','Obs','Otherinfo'], 
-                              readFirstLine: false)
+        def annovar = new CSV(annovar_summary)
 
         // println "Read ${annovar_variants.size()} annotations"
         def sampleName = "unknown_sample"
@@ -199,9 +201,9 @@ new ExcelBuilder().build {
                 VCFIndex vcfIndex = new VCFIndex(vcf_file)
                 annovar.each { variant ->
 
-                  Map vInfo = vcfIndex.findAnnovarVariant(variant.Chr, variant.Start, variant.End, variant.Obs)
+                  Map vInfo = vcfIndex.findAnnovarVariant(variant.Chr, variant.Start, variant.End, variant.Alt)
                   if(!vInfo) {
-                      println "WARNING: Could not find Annovar variant $variant.Chr:$variant.Start-$variant.End $variant.Ref/$variant.Obs from $annovar_summary in VCF file $vcf_file"
+                      println "WARNING: Could not find Annovar variant $variant.Chr:$variant.Start-$variant.End $variant.Ref/$variant.Alt from $annovar_summary in VCF file $vcf_file"
                       return
                   }
 
@@ -368,8 +370,8 @@ new ExcelBuilder().build {
 
                       // The ESP5400 frequencies can sometimes have ridiculously long precisions: round them
                       // to a few digits
-                      def esp5400 = variant.ESP5400_ALL
-                      if(esp5400) {
+                      def esp5400 = variant.esp5400_all
+                      if(esp5400 && (esp5400 != ".")) {
 						  if(esp5400 instanceof String)
 							esp5400 = Float.parseFloat(esp5400)
                           esp5400 = Float.parseFloat(String.format("%2.3f",esp5400))
@@ -378,15 +380,17 @@ new ExcelBuilder().build {
                           esp5400 = 0f;
                       }
 
-                      def g1000 = variant.g1000?:0f
+                      def g1000 = 0f;
+                      if(variant['1000g2014oct_all'] && variant['1000g2014oct_all'] != ".")
+                          g1000 = variant['1000g2014oct_all'] 
 
                       // def key = v.chr+'_'+v.pos+'_'+v.ref+'_'+v.alt
                       // if(annovar_variants.containsKey(key)) {
                           // def variant = annovar_variants[key]
                           row.add(variant.AAChange) //.replaceAll('^.*?:',''))
                           List exported = EXPORTED_ANNOVAR_COLUMNS.collect { variant[it] }
-                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('ESP5400_ALL')] = esp5400;
-                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('g1000')] = g1000;
+                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('esp5400_all')] = esp5400;
+                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('1000g2014oct_all')] = g1000;
                           row.add(exported)
                       // }
 
