@@ -79,7 +79,7 @@ class Annovar:
         "truncating" : ["frameshift insertion","frameshift deletion","frameshift substitution","stopgain SNV","stoploss SNV","stoploss","stopgain"],
         "missense" : ["nonframeshift insertion","nonframeshift deletion","nonframeshift substitution","nonsynonymous SNV"],
         "synonymous" : ["synonymous SNV"],
-        "noncoding" : ["intronic","intergenic","ncRNA_intronic"]
+        "noncoding" : ["intronic","intergenic","ncRNA_intronic","ncRNA_exonic","upstream","downstream","UTR5","UTR3","ncRNA_splicing","upstream;downstream"]
     }
 
     # These are the Annovar fields that contain population frequency estimates

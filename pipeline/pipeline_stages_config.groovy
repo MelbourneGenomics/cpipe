@@ -929,7 +929,7 @@ vcf_to_family_excel = {
 
     def target_samples = sample_info.grep { it.value.target == target_name }*.value*.sample
     
-    def annovar_files = target_samples*.plus(".*.exome_summary.csv") 
+    def annovar_files = target_samples*.plus(".*.hg19_multianno.con.sig.csv") 
 
     println "Annovar files for target $target_name are " + annovar_files
     from(annovar_files) {
@@ -945,7 +945,7 @@ vcf_to_family_excel = {
     }
 }
 
-family_vcf = segment { merge_target_vcfs + annotate_snpeff + index_vcf.using(sort_vcf:false) }
+family_vcf = segment { merge_target_vcfs + annotate_snpeff + index_vcf.using(sort_vcf:false) + vcf_to_family_excel }
 
 plot_coverage = {
     doc "Create plots showing coverage distributions for alignment"
