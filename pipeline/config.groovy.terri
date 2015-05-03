@@ -28,7 +28,7 @@
 BASE="/vlsci/VR0320/shared"
 
 // Set a good location for storing large temp files here (probably not /tmp)
-TMPDIR="/scratch/VR0193"
+unset TMPDIR // if TMPDIR is unset, the slurm generated tmpdir is used (was TMPDIR="/scratch/VR0193")
 
 // Set location of you reference files here (see below for the files required)
 REFBASE="$BASE/hg19" // <====== YOU MUST EDIT THIS OR CREATE IT
