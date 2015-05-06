@@ -115,7 +115,6 @@ fi
 cd "batches/$BATCH_ID"
 
 echo '
-DISEASE_COHORTS="'$TARGET'"
 EXOME_TARGET="'$EXOME_TARGET'"
 ' > target_regions.txt
 
