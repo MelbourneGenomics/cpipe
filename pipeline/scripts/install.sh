@@ -253,7 +253,9 @@ then
 fi
 
 msg "Check VEP database downloaded for version $VEP_VERSION..."
-[ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] || {
+if [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] && [ -e $VEP/Bio ]; then
+    msg "VEP installed..."
+else
     echo "
     Cpipe uses the Variant Effect Predictor from Ensembl
     to perform annotation of variants.
@@ -275,7 +277,7 @@ msg "Check VEP database downloaded for version $VEP_VERSION..."
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
-}
+fi
 
 msg "Configuring Condel Plugin ..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
