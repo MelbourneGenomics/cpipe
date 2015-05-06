@@ -23,6 +23,8 @@
 #
 ###########################################################################
 
+curl -L http://cpanmin.us | perl - -l ~/perl5 App::cpanminus local::lib   
+export PERL_MM_OPT="INSTALL_BASE=/home/simon/perl5"
 curl -L http://cpanmin.us | perl - Compress::Zlib
 curl -L http://cpanmin.us | perl - DBD::mysql
 curl -L http://cpanmin.us | perl - DBI
