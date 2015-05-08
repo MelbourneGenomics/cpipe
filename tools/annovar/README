@@ -9,4 +9,4 @@ Once Annovar is downloaded / installed, you need to download its data as well. T
 a script to do that in <root>/pipeline/script/download_annovar_db.sh. Make sure you 
 point it at the 'humandb' folder in this folder as the place to store the data, eg:
 
-./pipeline/script/download_annovar_db.sh ./tools/annovar/2013aug23/ ./tools/annovar/humandb
+./pipeline/scripts/download_annovar_db.sh ./tools/annovar/2013aug23/ ./tools/annovar/humandb
