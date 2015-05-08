@@ -140,7 +140,7 @@ msg "Check Annovar is downloaded and available"
         err "Could not locate Annovar script. Please download and install Annovar to $ANNOVAR/"
 
 msg "Check Annovar database exists"
-for i in hg19_snp138.txt hg19_avsift.txt hg19_esp5400_all.txt hg19_refGene.txt hg19_ALL.sites.2010_11.txt hg19_phastConsElements46way.txt; 
+for i in hg19_snp138.txt hg19_esp5400_all.txt hg19_refGene.txt hg19_ALL.sites.2014_10.txt hg19_phastConsElements46way.txt hg19_ljb26_all.txt; 
 do
     [ -e $ANNOVAR/../humandb/$i ] || {
         err "Failed to find all necessary Annovar data files ($i): please use Annovar downdb to download all the data files. See tools/annovar/README for assistance."
