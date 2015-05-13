@@ -2241,7 +2241,7 @@ sub summarise_stats {
     }
     
     # html output
-    else {
+    elsif(@charts && $fh && $config) {
       print $fh stats_html_head($config, \@charts);
       
       # create menu
@@ -2289,7 +2289,9 @@ sub summarise_stats {
       print $fh stats_html_tail();
     }
     
-    $config->{stats_file_handle}->close;
+    if($fh) {
+      $config->{stats_file_handle}->close;
+    }
 }
 
 sub stats_html_head {
