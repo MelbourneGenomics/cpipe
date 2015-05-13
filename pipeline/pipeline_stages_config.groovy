@@ -1063,7 +1063,7 @@ annovar_table = {
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
             $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
-            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2014oct_all,exac03,snp138,ljb26_all
+            -protocol refGene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,1000g2014oct_all,exac03,snp138,ljb26_all
             -operation g,r,r,f,f,f,f,f 
             -nastring . 
             --otherinfo   

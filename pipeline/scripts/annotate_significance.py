@@ -85,7 +85,7 @@ class Annovar:
     # These are the Annovar fields that contain population frequency estimates
     # Note we do some fooling around in the maf_value() method to maintain 
     # compatibility with different versions of Annovar
-    POPULATION_FREQ_FIELDS = ["esp5400_all", "1000g2014oct_all","exac03"]
+    POPULATION_FREQ_FIELDS = ["esp6500siv2_all", "1000g2014oct_all","exac03"]
 
     def __init__(self, line):
         self.line = line

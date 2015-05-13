@@ -220,7 +220,7 @@ msg "Check Annovar is downloaded and available"
 
 msg "Check Annovar database exists"
 MISSING_ANNOVAR=""
-ANNOVAR_DB_FILES="hg19_snp138.txt hg19_esp6500_all.txt hg19_refGene.txt hg19_ALL.sites.2014_10.txt hg19_phastConsElements46way.txt hg19_ljb26_all.txt"
+ANNOVAR_DB_FILES="hg19_snp138.txt hg19_esp6500siv2_all.txt hg19_refGene.txt hg19_ALL.sites.2014_10.txt hg19_phastConsElements46way.txt hg19_ljb26_all.txt"
 for i in $ANNOVAR_DB_FILES ;  
 do
     [ -e $ANNOVAR/../humandb/$i ] || {

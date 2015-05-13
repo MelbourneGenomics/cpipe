@@ -69,8 +69,8 @@ $ANNOVAR/annotate_variation.pl -downdb ljb_pp2 -webfrom annovar  -buildver hg19 
 
 $ANNOVAR/annotate_variation.pl -downdb ljb26_all -webfrom annovar  -buildver hg19  "$DBDIR"
 
-all_exist hg19_esp6500_all.txt || {
-    $ANNOVAR/annotate_variation.pl -downdb esp6500_all   -buildver hg19 -webfrom annovar   "$DBDIR"
+all_exist hg19_esp6500siv2_all.txt || {
+    $ANNOVAR/annotate_variation.pl -downdb esp6500siv2_all   -buildver hg19 -webfrom annovar   "$DBDIR"
 }
 
 all_exist hg19_phastConsElements46way.txt || {
