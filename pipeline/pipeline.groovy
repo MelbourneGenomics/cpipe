@@ -106,6 +106,9 @@ run {
    // The 3rd phase is to produce the output spreadsheet, 1 per analysis profile
    ANALYSIS_PROFILES * [ set_target_info +  [ vcf_to_excel, family_vcf ] ] +
 
+   // Produce a mini bam for each variant to help investigate individual variants
+   samples * [ variant_bams ] +
+
    // And then finally write the provenance report (1 per sample)
    samples * [ provenance_report /* , annovar_to_lovd */ ] +
    
