@@ -1059,12 +1059,21 @@ qc_excel_report = {
 @filter("sig")
 annotate_significance = {
     doc "Add clinical significance category annotations as defined by Melbourne Genomics"
-    output.dir="variants"
-    from("con.csv") {
-        exec """
-            python $SCRIPTS/annotate_significance.py -a $input.csv > $output.csv
-        """
-    }
+        var MAF_THRESHOLD_RARE : 0.01,
+            MAF_THRESHOLD_VERY_RARE : 0.0005,
+            CONDEL_THRESHOLD : 0.7
+
+        output.dir="variants"
+        from("con.csv") {
+            exec """
+                python $SCRIPTS/annotate_significance.py 
+                -a $input.csv
+                -f $MAF_THRESHOLD_RARE
+                -r $MAF_THRESHOLD_VERY_RARE
+                -c $CONDEL_THRESHOLD
+                > $output.csv
+                """
+        }
 }
 
 annovar_table = {
