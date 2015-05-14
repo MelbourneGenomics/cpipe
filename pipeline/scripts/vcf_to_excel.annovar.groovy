@@ -128,26 +128,30 @@ if(EXAC_FIELD == null)
 
 ONEKG_FIELD="1000g2014oct_all"
 
-LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
+ESP_FIELD = ANNOVAR_FIELDS.find { it =~ /^esp/ }
+if(ESP_FIELD == null)
+    ESP_FIELD = "esp5400_all"
+
+LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS", "phyloP100way_vertebrate"]
 
 // The LJB fields changed column headings. To preserve backwards compatibility with
 // downstream scripts, we replace them with the old headings in output
-OLD_LJB_FIELDS = [ "LJB_PhyloP", "LJB_PhyloP_Pred", "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++"]
+OLD_LJB_FIELDS = [ "LJB_SIFT", "LJB_SIFT_Pred", "LJB_PolyPhen2", "LJB_PolyPhen2_Pred", "LJB_LRT", "LJB_LRT_Pred", "LJB_MutationTaster", "LJB_MutationTaster_Pred", "LJB_GERP++", "LJB_PhyloP"]
 
 // Order preferred if clinicians need to review output directly
 OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] + 
                 AACHANGE_FIELDS + 
-                ["Gene Category", "Priority_Index", "CADD_raw", "Condel", "phastConsElements46way", "esp5400_all", ONEKG_FIELD, "snp138",EXAC_FIELD] +
+                ["Gene Category", "Priority_Index", "CADD_raw", "CADD_phred", "Condel", "phastConsElements46way", ESP_FIELD, ONEKG_FIELD, "snp138", EXAC_FIELD] +
                 LJB_FIELDS + 
                 [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "PRIORITY_TX"]
 
 OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] +
                     AACHANGE_FIELDS + 
-                    ["phastConsElements46way","genomicSuperDups","esp5400_all",ONEKG_FIELD,EXAC_FIELD,"snp138"] +
+                    ["phastConsElements46way","genomicSuperDups",ESP_FIELD,ONEKG_FIELD,EXAC_FIELD,"snp138"] +
                     LJB_FIELDS +
-                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","Gene Category","Priority_Index","CADD_raw","#Obs","RefCount","AltCount","PRIORITY_TX"]
+                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","CADD_phred", "Gene Category","Priority_Index","#Obs","RefCount","AltCount","PRIORITY_TX"]
 
-CENTERED_COLUMNS = ["Gene Category", "Priority_Index", ONEKG_FIELD,"esp5400_all", "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
+CENTERED_COLUMNS = ["Gene Category", "Priority_Index", ONEKG_FIELD, ESP_FIELD, "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
 // The output headings are sometimes different to the input headings
 // this is done to preserve compatibility as annovar headings change
@@ -163,6 +167,8 @@ HEADING_MAP = OUTPUT_FIELDS.collectEntries{[it,it]} + [
    "ExAC_Freq" : "exac03",
    "CADD_raw": "CADD"
 ] + [ LJB_FIELDS, OLD_LJB_FIELDS ].transpose().collectEntries()
+
+println HEADING_MAP
 
 extractAAChange = { gene, aaChange ->
     if(gene.indexOf("(")>=0) {

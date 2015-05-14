@@ -721,7 +721,14 @@ filter_variants = {
 annotate_vep = {
     doc "Annotate variants using VEP to add Ensemble annotations"
     output.dir="variants"
+
+    // Note: if the input VCF file is empty, VEP will not create an output.
+    // To avoid this causing the pipeline to fail, we first copy only the
+    // headers from the input file to the output file so that if VEP does not
+    // overwrite the file, we end up with an empty file
     exec """
+        grep '^#' $input.vcf > $output.vcf 
+
         PERL5LIB="$CONDEL:\$PERL5LIB"
         perl $VEP/variant_effect_predictor.pl --cache --dir $VEP/../vep_cache 
             -i $input.vcf 
@@ -848,7 +855,13 @@ index_vcf = {
     if(sort_vcf) {
         transform("vcf") to("sort.vcf") {
             exec """
+
                 $IGVTOOLS/igvtools sort $input.vcf $output.vcf 
+
+                if [ ! -e $output.vcf ];
+                then
+                    grep '^#' $input.vcf > $output.vcf ;
+                fi
 
                 $IGVTOOLS/igvtools index $output.vcf
             """
@@ -1063,7 +1076,7 @@ annovar_table = {
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
             $ANNOVAR/table_annovar.pl $output.av $ANNOVAR_DB/  -buildver hg19 
-            -protocol refGene,phastConsElements46way,genomicSuperDups,esp5400_all,1000g2014oct_all,exac03,snp138,ljb26_all
+            -protocol refGene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,1000g2014oct_all,exac03,snp138,ljb26_all
             -operation g,r,r,f,f,f,f,f 
             -nastring . 
             --otherinfo   
