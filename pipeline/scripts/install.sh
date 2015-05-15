@@ -94,7 +94,7 @@ function set_config_variable() {
     NAME="$1"
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
-    sed 's,'^[\s]*$NAME'=".*$,'$NAME'="'$VALUE'",g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
 }
