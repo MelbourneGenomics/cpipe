@@ -20,7 +20,7 @@
 BASE="<EDIT THIS>" 
 
 // Set a good location for storing large temp files here (probably not /tmp)
-TMPDIR="/tmp"
+TMPDIR="$BASE/tmpdata"
 
 // Enter email here to get notified by email about failures
 EMAILS=""
@@ -172,7 +172,7 @@ JAVA="java"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
-SNPEFF="$TOOLS/snpEff/3.1"
+SNPEFF="$TOOLS/snpeff/3.1"
 
 // Genome needed (currently) only if using expanded splice regions
 HG19_CHROM_INFO="$REFBASE/hg19.genome"
