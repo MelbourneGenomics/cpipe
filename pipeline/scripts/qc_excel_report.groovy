@@ -51,6 +51,7 @@ cli.with {
     s "comma separated list of samples to include", longOpt: "samples", args: 1
     t "threshold of coverage for reporting low coverage regions", args:1
     w "threshold of width for reporting low coverage regions (1)", args:1
+    metrics "metrics file written by Picard MarkDuplicates, one for each sample (optional)", args: Cli.UNLIMITED
     o "name of output file", args:1
     low "directory to write regions of low coverage to", args:1
 }
@@ -80,7 +81,10 @@ args = opts.arguments()
 // TODO: this is not robust enough sample name matching: 
 // need to suffix sample names with underscore
 // when the file names are changed to contain library info
-matchesSample = { fileName, sample, extension -> new File(fileName).name.startsWith(sample) && fileName.endsWith(extension)}
+matchesSample = { fileName, sample, extension -> 
+    fileName && 
+        new File(fileName).name.startsWith(sample) && fileName.endsWith(extension)
+}
 
 files = samples.collectEntries { sample ->
         [ 
@@ -88,7 +92,7 @@ files = samples.collectEntries { sample ->
             [ 
               cov: args.find { matchesSample(it,sample,".sample_cumulative_coverage_proportions") },
               intervals: args.find { matchesSample(it,sample,".sample_interval_statistics") },
-              metrics: args.find { matchesSample(it,sample,".metrics") },
+              metrics: opts.metrics.find { matchesSample(it,sample,".metrics") },
               coverage: args.find { matchesSample(it,sample,".cov.txt") || matchesSample(it,sample,".cov.gz") }
             ]
         ]
@@ -102,17 +106,16 @@ covs = samples.collectEntries { sample ->
        [ sample, [ lines[0][1..-1],lines[1][1..-1]*.toFloat() ].transpose().collectEntries()]
 }
 
+// These are the Picard Metrics we will output for each sample
+METRICS_VALUES=["READ_PAIRS_EXAMINED","UNMAPPED_READS","PERCENT_DUPLICATION"]
 
 // Read the Picard deduplication metrics
 metrics = samples.collectEntries { sample ->
-        if(!files[sample].metrics)
-                err "Unable to find Picard metrics file for sample $sample in provided inputs: $args"
-        lines = new File(files[sample].metrics).readLines()
-        int index = lines.findIndexOf { it.startsWith("LIBRARY") }
-        if(index < 0)
-            err "Unable to locate LIBRARY line in Picard metrics file ${files[sample].metrics}"
-
-        [ sample, [ [ lines[index].split('\t')[1..-1], lines[index+1].split('\t')[1..-1]*.toFloat() ].transpose().collectEntries() ]]
+    if(!files[sample].metrics) {
+        println "Unable to find Picard metrics file for sample $sample in provided inputs: $args"
+        return [sample, [ METRICS_VALUES, [0] ].transpose().collectEntries() ]
+    }
+    [ sample, PicardMetrics.parse(files[sample].metrics)]
 }
 
 class Block {
@@ -219,11 +222,11 @@ new ExcelBuilder().build {
                 center { cells(samples) }
         }}
 
-        for(metric in ["READ_PAIRS_EXAMINED","UNMAPPED_READS","PERCENT_DUPLICATION"]) {
+        for(metric in METRICS_VALUES) {
             row { 
                 cell(metric).bold()
                 center {
-                    cells(samples.collect { metrics[it][metric][0] })
+                    cells(samples.collect { s -> println "Sample $s / $metric"; metrics[s][metric] })
                 }
             }
         }
