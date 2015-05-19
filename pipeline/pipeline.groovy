@@ -42,6 +42,7 @@ requires EXOME_TARGET : """
 
 // All the core pipeline stages in the pipeline
 load 'pipeline_stages_config.groovy'
+// load 'haloplex.groovy'
 
 sample_metadata_file = args[0]
 sample_info = SampleInfo.parse_sample_info(args[0])
@@ -80,7 +81,7 @@ run {
                    "%.gz" * [ fastqc ] + check_fastqc +
                    ~"(.*)_R[0-9][_.].*fastq.gz" * [ trim_fastq + align_bwa + index_bam + cleanup_trim_fastq ] +
                    merge_bams +
-                   dedup + index_bam + 
+                   dedup + 
                    cleanup_initial_bams +
                    realignIntervals + realign + index_bam +
                    bsqr_recalibration + index_bam +
@@ -94,7 +95,7 @@ run {
                                add_to_database, 
                                augment_condel + annotate_significance
                             ]  +
-                         calc_coverage_stats + [ summary_pdf, exon_qc_report ],
+                         calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
                        ]

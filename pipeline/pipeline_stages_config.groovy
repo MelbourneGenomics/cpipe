@@ -493,6 +493,7 @@ dedup = {
              VALIDATION_STRINGENCY=LENIENT 
              AS=true 
              METRICS_FILE=$output.metrics
+             CREATE_INDEX=true
              OUTPUT=$output.bam
     """
 
@@ -768,9 +769,13 @@ calc_coverage_stats = {
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
         """
     }
+}
+
+check_ontarget_perc = {
+    var MIN_ONTARGET_PERCENTAGE : 50
     check {
         exec """
-            RAW_READ_COUNT=`cat $output2.txt`
+            RAW_READ_COUNT=`cat $input.ontarget.txt`
 
             ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / $RAW_READ_COUNT))*100 }'`
 
@@ -951,6 +956,7 @@ vcf_to_family_excel = {
                 JAVA_OPTS="-Xmx6g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
                     -p "" 
                     -db $VARIANT_DB
+                    -ped $input.ped
                     -o $output.xlsx
                     $UNIQUE $input.vcf $inputs.csv 
             """, "vcf_to_family_excel"
@@ -1040,17 +1046,16 @@ qc_excel_report = {
     output.dir="results"
 
     def samples = sample_info.grep { it.value.target == target_name }.collect { it.value.sample }
-    from("*.cov.gz", "*.dedup.metrics") produce(target_name + ".qc.xlsx") {
+    produce(target_name + ".qc.xlsx") {
             exec """
                 JAVA_OPTS="-Xmx16g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/qc_excel_report.groovy 
                     -s ${target_samples.join(",")} 
                     -t $LOW_COVERAGE_THRESHOLD
                     -w $LOW_COVERAGE_WIDTH
-                    -low qc
+                    -low qc ${inputs.dedup.metrics.withFlag('-metrics')}
                     -o $output.xlsx
                     $inputs.sample_cumulative_coverage_proportions  
                     $inputs.sample_interval_statistics 
-                    $inputs.metrics 
                     $inputs.gz
             ""","qc_excel_report"
     }
@@ -1162,11 +1167,12 @@ summary_pdf = {
     output.dir="results"
 
     produce("${sample}.summary.pdf","${sample}.summary.karyotype.tsv") {
+
+        // -metrics $input.metrics
         exec """
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar $SCRIPTS/qc_pdf.groovy 
                 -cov $input.cov.gz
-                -ontarget $input.ontarget.txt
-                -metrics $input.metrics
+                -ontarget $input.ontarget.txt ${inputs.metrics.withFlag("-metrics")}
                 -study $sample 
                 -meta $sample_metadata_file
                 -threshold 20 
