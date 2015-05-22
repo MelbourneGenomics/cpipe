@@ -104,10 +104,17 @@ for(av in annovar_csv) {
     }
 
     // Parse out the VEP annotations - the only one we want is Condel
-    // def veps = variant.info.CSQ.split(",").collect { csq -> [VEP_FIELDS,csq.split("\\|")].transpose().collectEntries() }
     def veps = variant.vepInfo
 
-    def gene = av.Gene.replaceAll(/\(.*$/,"")
+    // Note: new version of Annovar sometimes places multiple genes into the Gene field,
+    // separated by semi-colons. It is not clear if these can be different genes, however
+    // observation so far is that they are always for the same gene
+    // Handle this by generating the list, making unique, and then warning if multiple genes
+    def genes = ((av.Gene.replaceAll(/\(.*$/,"").split(";"))as List).unique()
+    if(genes.size()>1)
+        println "WARNING: Single Annovar annotation is for multiple different genes. Only first will have VEP annotations merged."
+
+    def gene = genes[0]
     vep = veps.grep { it.SYMBOL == gene }.max { it.Condel ? it.Condel.toFloat() : 0 }
     if(!vep) {
         println "WARNING: No vep consequence was for the same gene: ${veps*.SYMBOL} vs $av.Gene"
