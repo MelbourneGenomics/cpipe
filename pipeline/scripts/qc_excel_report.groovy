@@ -204,6 +204,12 @@ GParsPool.withPool(4) {
     }
 }
 
+// Because excel can only handle up to 30 chars in the worksheet name
+int sampleNumber = 1
+MAX_SAMPLE_NAME_LENGTH=30
+sheet_samples = [samples, samples.collect { 
+    it.size() > MAX_SAMPLE_NAME_LENGTH ? "S_" + (sampleNumber++) + "_" + it.substring(0,MAX_SAMPLE_NAME_LENGTH-10) : it 
+}].transpose().collectEntries()
 
 new ExcelBuilder().build {
 
@@ -251,7 +257,7 @@ new ExcelBuilder().build {
     // Per sample summary
     for(sample in samples) {
         println "Writing sheet for $sample"
-        sheet(sample) {
+        sheet(sheet_samples[sample]) {
             def blocks = sampleBlocks[sample]
             row {
                 cell('Total low regions').bold()
@@ -314,7 +320,7 @@ for(sample in samples) {
     new ExcelBuilder().build {
 
         // Per sample summary
-        sheet(sample) {
+        sheet(sheet_samples[sample]) {
             def blocks = sampleBlocks[sample]
 
             if(blocks.size() > MAX_LOW_COVERAGE_BLOCKS) {

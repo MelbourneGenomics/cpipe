@@ -248,6 +248,14 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     return outputValues
 }
 
+// Because excel can only handle up to 30 chars in the worksheet name,
+// we may have to shorten them
+int sampleNumber = 1
+MAX_SAMPLE_NAME_LENGTH=30
+sheet_samples = [samples, samples.collect { 
+    it.size() > MAX_SAMPLE_NAME_LENGTH ? "S_" + (sampleNumber++) + "_" + it.substring(0,MAX_SAMPLE_NAME_LENGTH-10) : it 
+}].transpose().collectEntries()
+
 //
 // Now build our spreadsheet, and export CSV in the same loop
 //
@@ -255,7 +263,7 @@ try {
     new ExcelBuilder().build {
 
         for(sample in samples) { // one sample per spreadsheet tab
-            def s = sheet(sample) { 
+            def s = sheet(sheet_samples[sample]) { 
                 lineIndex = 0
                 sampleCount = 0
                 includeCount=0
