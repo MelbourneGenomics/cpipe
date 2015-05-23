@@ -29,6 +29,10 @@ function err() {
     exit 1
 }
 
+function abs_path() {
+    echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
+}
+
 function usage() {
     echo '
 Usage: create_batch.sh <batch identifier> <target region identifier> <exome bed file>
@@ -94,12 +98,14 @@ TARGET="$2"
 eval `sed 's/\/\/.*$//' pipeline/config.groovy`
 
 
+# Default: exome target is the same as diagnostic target / analysis profile
 EXOME_TARGET="$3"
 if [ -z "$EXOME_TARGET" ];
 then
     EXOME_TARGET=$TARGET.bed
 fi
 
+# The exome target can be a BED file inside the analysis profile directory
 if [ -e "$BASE/designs/${TARGET}/$EXOME_TARGET" ];
 then
     EXOME_TARGET="$BASE/designs/${TARGET}/$EXOME_TARGET"
@@ -111,6 +117,8 @@ fi
 [ -f "$EXOME_TARGET" ] ||
     err "No file called ${EXOME_TARGET} could be found. You may need to specify this file with an absolute path"
 
+# Ensure EXOME_TARGET is expressed as an absolute path
+EXOME_TARGET=`abs_path "$EXOME_TARGET"`
 
 cd "batches/$BATCH_ID"
 
