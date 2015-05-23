@@ -29,9 +29,9 @@ where each line has an HGNC gene symbol and an integer priority, separated by a
 tab character. Higher numbers are treated as more important. By convention, the
 following interpretation is used:
 
-  0 - Exclude from reporting (not yet implemented!)
-  1 - Default
-  2 - Genes with known clinical diagnostic variants (across different diseases)
+    0 - Exclude from reporting (not yet implemented!)
+    1 - Default
+    2 - Genes with known clinical diagnostic variants (across different diseases)
 
 Category 3 and 4 are by convention specified per-patient in the samples.txt 
 file and would not be entered into the analysis profile gene category file.
