@@ -7,9 +7,9 @@ of this folder. Adding new analysis profiles should be performed by running
 the 'pipeline/scripts/new_target_region.sh' script, which performs a number of checks
 and some pre-annotation steps that are required before Cpipe runs on a data set.
 
-## Analysis Profile Structure
+# Analysis Profile Structure
 
-# Diagnostic Target Region
+## Diagnostic Target Region
 The key component of an analysis profile is the set of genes (or genomic regions) to 
 be analysed. These are the genes for which variant calls will be written into
 the final output file. These regions (or genes) are called the "diagnostic
@@ -19,7 +19,7 @@ analysis, both the diagnostic region and the exome regions must be defined.
 The diagnostic target region is supplied as a BED file that defines the regions
 you wish to analyse.
 
-# Prioritised Genes
+## Prioritised Genes
 An analysis profile can define tiered gene categories for the genes within the
 diagnostic target region. These gene categories are defined in a file called
 
@@ -42,7 +42,7 @@ file and would not be entered into the analysis profile gene category file.
   4 - Genes specifically identified by a clinician based on experience or 
       clinical acumen
 
-# Analysis Specific Settings
+## Analysis Specific Settings
 
 Cpipe offers many different adjustable settings and thresholds. For example, the 
 minimum coverage depth for processing samples, the maximum PCR duplication rate,
@@ -54,7 +54,7 @@ profile basis. All of these settings and customisations are performed by the
   PROFILE_ID.settings.txt
 
 
-## Creating a Batch
+# Creating a Batch
 
 Creating an analysis batch is performed using the
 "pipeline/scripts/create_batch.sh" script. This script requires specification of
