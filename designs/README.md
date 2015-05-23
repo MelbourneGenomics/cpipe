@@ -36,11 +36,11 @@ following interpretation is used:
 Category 3 and 4 are by convention specified per-patient in the samples.txt 
 file and would not be entered into the analysis profile gene category file.
 
-  3 - Genes implicated as likely to be significant for the patient (eg: by 
-      phenotype prediction software or implicated by clinical diagnosis for
-      patient)
-  4 - Genes specifically identified by a clinician based on experience or 
-      clinical acumen
+    3 - Genes implicated as likely to be significant for the patient (eg: by 
+        phenotype prediction software or implicated by clinical diagnosis for
+        patient)
+    4 - Genes specifically identified by a clinician based on experience or 
+        clinical acumen
 
 ## Analysis Specific Settings
 
