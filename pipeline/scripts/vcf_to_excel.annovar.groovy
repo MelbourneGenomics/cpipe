@@ -53,6 +53,7 @@ cli.with {
   bam 'BAM file for annotating coverage depth where not available from VCF files', args: Option.UNLIMITED_VALUES
   pgxcov 'Coverage threshold below which a pharmocogenomic site is considered untested (15)', args: 1
   annox 'Directory to send Annovar style per-sample summaries to', args: 1, required: true
+  xprof 'Analysis profiles to exclude from contributing variant counts in variant filtering by internal database', args:1
   log 'Log file for writing information about variants filtered out', args: 1
 }
 opts = cli.parse(args)
@@ -85,7 +86,11 @@ sample_info = SampleInfo.parse_sample_info(opts.si)
 
 // println "sample_info = $sample_info"
 
+
+
+
 exclude_types = opts.x ? opts.x.split(",") : []
+excluded_profiles_from_counts = opts.xprof ? opts.xprof.split(",") as List : ["AML"]
 
 samples = opts.s.split(",")
 
@@ -325,7 +330,10 @@ try {
                     if(db) {
                         variant_counts = db.queryVariantCounts(variant, 
                                                                variant.alleles[variantInfo.allele], 
-                                                               sample, sample_info[sample].target, excludeCohorts:["AML"])
+                                                               sample, 
+                                                               sample_info[sample].target, 
+                                                               excludeCohorts: excluded_profiles_from_counts,
+                                                               batch: sample_info[sample].batch)
                         if(variant_counts.other_target>out_of_cohort_variant_count_threshold) {
                             log.println "Variant $variant excluded by presence ${variant_counts.other_target} times in other targets"
                             continue
