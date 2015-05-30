@@ -86,13 +86,15 @@ matchesSample = { fileName, sample, extension ->
         new File(fileName).name.startsWith(sample) && fileName.endsWith(extension)
 }
 
+println "Metrics files are $opts.metricss"
+
 files = samples.collectEntries { sample ->
         [ 
           sample, 
             [ 
               cov: args.find { matchesSample(it,sample,".sample_cumulative_coverage_proportions") },
               intervals: args.find { matchesSample(it,sample,".sample_interval_statistics") },
-              metrics: opts.metrics.find { matchesSample(it,sample,".metrics") },
+              metrics: opts.metricss.find { matchesSample(it,sample,".metrics") },
               coverage: args.find { matchesSample(it,sample,".cov.txt") || matchesSample(it,sample,".cov.gz") }
             ]
         ]
