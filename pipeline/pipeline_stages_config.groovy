@@ -157,6 +157,9 @@ check_tools = {
             git describe --always > $output.txt || true
         """
     }
+
+    if(file(GROOVY_NGS).name == "1.0")
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.1. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
 }
 
 check_sample_info = {
