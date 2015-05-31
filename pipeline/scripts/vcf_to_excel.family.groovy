@@ -35,13 +35,12 @@ based diagnosis.
 Cli cli = new Cli(usage: "vcf_to_excel.groovy [-s <sample order>] [...csv / vcf / exoncoverage.txt files...]", header: help)
 
 cli.with {
-  s 'define order in which samples should appear in spreadsheet', args:1
   p 'define a list of phenotypically relevant genes to highlight (first column used in tab delimited file)', args:1
   l 'linkify elements (only works for small data sets)'
   unique 'Only output the most significant effect (1 row) for each variant'
   g 'annotate coverage over genes'
   meta 'meta data file for samples. If provided it will be used to resolve pedigree information', args:1
-  ped 'Pedigree file in PED format. If provided, will be used to annotate affected individuals', args:1
+  ped 'Pedigree file in PED format. Specifies the relationships between samples', args:1, required:true
   mindp 'filter out variants when all samples have coverage depth < this value', args:1
   mingq 'filter out variants when all samples have genotype quality < this value', args:1
   db    'database containing historical variant observations. If provided, frequency information within the database will be annotated', args:1
@@ -61,13 +60,30 @@ def err(msg) {
   System.exit(1)
 }
 
-LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
+if(args.size()<2) {
+	cli.usage()
+    System.exit(1)
+}
 
+csvs = args.grep { it.endsWith('.csv') }.collect { new File(it) }
+vcfs = args.grep { it.endsWith('.vcf') }
+
+if(csvs.empty) 
+    err "Please provide one or more Annovar CSV files"
+
+csvs[0].withReader { r -> ANNOVAR_FIELDS = r.readLine().split(",") as List }
+
+ESP_FIELD = ANNOVAR_FIELDS.find { it =~ /^esp/ }
+
+EXAC_FIELDS=["exac03","ExAC_ALL","ExAC_Freq"]
+EXAC_FIELD = EXAC_FIELDS.find { it in ANNOVAR_FIELDS }
+
+LJB_FIELDS = [ "SIFT_score", "SIFT_pred", "Polyphen2_HVAR_score", "Polyphen2_HVAR_pred", "LRT_score", "LRT_pred", "MutationTaster_score", "MutationTaster_pred", "GERP++_RS"]
 
 // Note: 'AAChange' comes from Annovar but is handled separately
 def EXPORTED_ANNOVAR_COLUMNS =
-        [ 'phastConsElements46way','genomicSuperDups','esp5400_all','1000g2014oct_all','ExAC_Freq','SIFT_score'] +
-        LJB_FIELDS
+    [ 'phastConsElements46way','genomicSuperDups',ESP_FIELD,'1000g2014oct_all',EXAC_FIELD,'SIFT_score'] +
+    LJB_FIELDS
 
 // Genes that will be highlighted in spreadsheet as linked to 
 // phenotype of interest
@@ -79,11 +95,17 @@ if(opts.p) {
   phenotype_genes = new File(opts.p).readLines().collect { it.split("\t")[0] } as Set
 }
 
-List affected = []
-if(opts.ped)  {
-    List pedigrees = Pedigree.parse(opts.ped)*.value
-    affected = pedigrees.collect { it.affected }.flatten().unique()
-}
+List affecteds = []
+Pedigrees pedigrees = Pedigrees.parse(opts.ped)
+
+// Find the affecteds from each family
+affecteds = pedigrees.affected.unique()
+
+// Only support a single affected in each family for now
+if(affecteds.size() != pedigrees.families.size())
+    err "This program only supports a single affected per pedigree. More affecteds ($affecteds) were observed than families in ${opts.ped}."
+
+println "Probands are $affecteds"
 
 int minDP = 3
 if(opts.mindp) 
@@ -97,14 +119,6 @@ VariantDB variantDB = null
 if(opts.db)
     variantDB = new VariantDB(opts.db)
 
-if(args.size()<2) {
-	cli.usage()
-    System.exit(1)
-}
-
-csvs = args.grep { it.endsWith('.csv') }
-vcfs = args.grep { it.endsWith('.vcf') }
-
 fileNameParser = new IlluminaFileNameParser()
 
 outputFileName = "results.xlsx"
@@ -113,27 +127,44 @@ if(opts.o)
 
 allSamples = []
 
-annovar_summary = csvs[0]
+// Assmption: a single VCF file containing all samples
+String vcf_file = vcfs[0]
+
+// Our assumption is that there is 1 proband per family
+// Discover the proband by loading the PED file
 
 new ExcelBuilder().build {
 
-  vcfs.each { vcf_file ->
+  affecteds.each { affected_sample ->
+
+        Pedigree pedigree = pedigrees.subjects[affected_sample]
+
+        println "Exporting variants for proband $affected_sample (family = $pedigree.id)"
+
+        def annovars = csvs.grep { it.name.matches(affected_sample+'[_.].*$') }
+        if(annovars.size()>1)
+            err "Unable to identify unique Annovar CSV file for sample $affected_sample from ${csvs}"
+
+        if(annovars.empty) {
+            err "No Annovar input file could be found matching $affected_sample from $csvs"
+        }
+
+        println "Annovar files are $annovars"
+        def annovar_summary = annovars[0]
 
         println "Reading Annovar summary $annovar_summary (vcf file = $vcf_file) ..."
 
         // Read the exome annotations from annovar
-        def annovar = new CSV(annovar_summary)
+        def annovar = new CSV(annovar_summary.path)
 
         // println "Read ${annovar_variants.size()} annotations"
-        def sampleName = "unknown_sample"
         VCF vcfHeader = new VCF(vcf_file)
-        sampleName = vcfHeader.samples[0]
 
-        println "Sample name is $sampleName"
+        println "Sample name is $affected_sample"
 
         def exportedColumns 
 
-        def sht = sheet(sampleName) {
+        def sht = sheet(affected_sample) {
 
             // All lines, including ones we ignored
             int lineCount = 0
@@ -149,26 +180,15 @@ new ExcelBuilder().build {
                 println "Processing $vcf_file"
 
                 def sampleNames = vcfHeader.samples
-                def exportSamples = sampleNames
-                if(opts.s) {
-                    exportSamples = opts.s.split(",").toList()
-                    println "User defined export order: $exportSamples"
-                    if(!exportSamples.every { it in sampleNames })
-                        throw new Exception("Could not find one or more samples $opts.s in sample names from VCF file: $sampleNames")
-                }
-                else {
-                    exportSamples = vcfHeader.samples
-                }
-
+                def exportSamples = pedigree.individuals*.id
 
                 println "Exporting samples $exportSamples from $vcf_file"
 
                 // If the file contains CLR (samtools constraint likelihood ratios), add a column for those
-
                 // Write the header line and make it bold
                 exportedColumns = ['gene','chr','start','end','id','rank','effect','qual','depth'] + 
                     (exportSamples.size()>1?["scount"]:[]) +
-                    (affected.size()>1?["acount"]:[]) +
+                    (affecteds.size()>1?["acount"]:[]) +
                     (vcfHeader.hasInfo("FC")?["mut fm cnt"]:[]) +
                     (vcfHeader.hasInfo("GC")?["gene fm cnt"]:[]) +
                     (opts.db?["db cnt","db fam cnt"]:[]) +
@@ -313,8 +333,8 @@ new ExcelBuilder().build {
                           row.add(dosages.count { it > 0 })
                       }
 
-                      if(affected) {
-                          row.add(affected.count { v.sampleDosage(it) > 0 })
+                      if(affecteds) {
+                          row.add(affecteds.count { v.sampleDosage(it) > 0 })
                       }
 
                       if(vcfHeader.hasInfo("FC")) {
@@ -331,7 +351,7 @@ new ExcelBuilder().build {
                       }
 
                       dosages.eachWithIndex { dosage,index ->
-                          boolean isAffected = affected.contains(exportSamples[index])
+                          boolean isAffected = affecteds.contains(exportSamples[index])
                           withStyle { 
                               if((dosage > 0) && ((gqs[index]<minGQ) || (depths[index]<minDP))) {
                                   applyStyle("gray",null) 
@@ -368,16 +388,17 @@ new ExcelBuilder().build {
 
                       row.add(v.ref + ' / ' + allele.alt)
 
+
                       // The ESP5400 frequencies can sometimes have ridiculously long precisions: round them
                       // to a few digits
-                      def esp5400 = variant.esp5400_all
-                      if(esp5400 && (esp5400 != ".")) {
-						  if(esp5400 instanceof String)
-							esp5400 = Float.parseFloat(esp5400)
-                          esp5400 = Float.parseFloat(String.format("%2.3f",esp5400))
+                      def espMaf = variant[ESP_FIELD]
+                      if(espMaf && (espMaf != ".")) {
+                          if(espMaf instanceof String)
+                              espMaf = Float.parseFloat(espMaf)
+                                  espMaf = Float.parseFloat(String.format("%2.3f",espMaf))
                       }
                       else {
-                          esp5400 = 0f;
+                          espMaf = 0f;
                       }
 
                       def g1000 = 0f;
@@ -386,12 +407,12 @@ new ExcelBuilder().build {
 
                       // def key = v.chr+'_'+v.pos+'_'+v.ref+'_'+v.alt
                       // if(annovar_variants.containsKey(key)) {
-                          // def variant = annovar_variants[key]
-                          row.add(variant.AAChange) //.replaceAll('^.*?:',''))
-                          List exported = EXPORTED_ANNOVAR_COLUMNS.collect { variant[it] }
-                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('esp5400_all')] = esp5400;
-                          exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('1000g2014oct_all')] = g1000;
-                          row.add(exported)
+                      // def variant = annovar_variants[key]
+                      row.add(variant.AAChange) //.replaceAll('^.*?:',''))
+                      List exported = EXPORTED_ANNOVAR_COLUMNS.collect { variant[it] }
+                      exported[EXPORTED_ANNOVAR_COLUMNS.indexOf(ESP_FIELD)] = espMaf;
+                      exported[EXPORTED_ANNOVAR_COLUMNS.indexOf('1000g2014oct_all')] = g1000;
+                      row.add(exported)
                       // }
 
                       // row.addCell(info.find { it.startsWith('EFF=') }?.substring(4))
@@ -399,7 +420,7 @@ new ExcelBuilder().build {
                   }
                   return false
                 }
-                println "Variants filtered from $sampleName : " + reasons
+                println "Variants filtered from $affected_sample : " + reasons
                 // sheet.setAutoFilter(CellRangeAddress.valueOf("A1:AK"+lineIndex))
             }
             catch(Exception e) {
@@ -407,7 +428,7 @@ new ExcelBuilder().build {
                 System.err.println "Failed processing at line $lineCount"
                 throw e
             }
-            println "$lineIndex / $lineCount rows were exported for sample $sampleName"
+            println "$lineIndex / $lineCount rows were exported for sample $affected_sample"
 
     }
 

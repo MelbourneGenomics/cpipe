@@ -73,6 +73,8 @@ run {
 
         set_target_info + 
 
+        init_analysis_profile +
+
         create_splice_site_bed +
         
         // The first phase is to perform alignment and variant calling for each sample

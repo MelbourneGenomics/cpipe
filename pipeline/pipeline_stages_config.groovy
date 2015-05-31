@@ -21,6 +21,35 @@
 
 ENABLE_CADD=true
 
+call_variants_ug = {
+    doc "Call SNPs/SNVs using GATK Unified Genotyper"
+    output.dir="variants"
+
+    // Default values of quality thresholds
+    var call_conf:5.0, 
+        emit_conf:5.0
+
+    transform("bam","bam") to("metrics.txt","vcf") {
+        exec """
+                $JAVA -Xmx6g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
+                   -R $REF 
+                   -I $input.bam 
+                   -nt 4
+                   --dbsnp $DBSNP 
+                   -stand_call_conf $call_conf -stand_emit_conf $emit_conf
+                   -dcov 1600 
+                   -l INFO 
+                   -L $COMBINED_TARGET $splice_region_bed_flag
+                   -A AlleleBalance -A FisherStrand 
+                   -glm BOTH
+                   -metrics $output.txt
+                   -o $output.vcf
+            ""","gatk_call_variants"
+    }
+}
+
+
+
 set_target_info = {
 
     doc "Validate and set information about the target region to be processed"
@@ -86,6 +115,11 @@ set_target_info = {
     }
     
     println "Target $target_name is processing samples $target_samples"
+}
+
+init_analysis_profile = {
+  // This stage is a placeholder to allow individual analysis profiles
+  // to perform initialization steps
 }
 
 create_splice_site_bed = {
@@ -418,14 +452,11 @@ merge_bams = {
 
     output.dir="align"
 
-    // If there is only 1 bam file, then there is no need to merge
     produce(sample + ".merge.bam") {
+        // If there is only 1 bam file, then there is no need to merge,
+        // just alias the name 
         if(inputs.bam.size()==1)  {
-           // It's unfortunate to do a copy for no reason, however 
-           // it is important to have the bam file renamed, and 
-           // we have encountered file systems where symbolic linking
-           // is not possible
-           exec "cp $input.bam $output.bam"
+           alias(input.bam) to(output.bam)
         }
         else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
@@ -612,33 +643,6 @@ cleanup_intermediate_bams = {
     cleanup("*.dedup.bam", "*.realign.bam")
 }
 
-call_variants_ug = {
-    doc "Call SNPs/SNVs using GATK Unified Genotyper"
-    output.dir="variants"
-
-    // Default values of quality thresholds
-    var call_conf:5.0, 
-        emit_conf:5.0
-
-    transform("bam","bam") to("metrics.txt","vcf") {
-        exec """
-                $JAVA -Xmx6g -jar $GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper 
-                   -R $REF 
-                   -I $input.bam 
-                   -nt 4
-                   --dbsnp $DBSNP 
-                   -stand_call_conf $call_conf -stand_emit_conf $emit_conf
-                   -dcov 1600 
-                   -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   -A AlleleBalance -A FisherStrand 
-                   -glm BOTH
-                   -metrics $output.txt
-                   -o $output.vcf
-            ""","gatk_call_variants"
-    }
-}
-
 call_variants_hc = {
     doc "Call SNPs/SNVs using GATK Unified Genotyper"
     output.dir="variants"
@@ -749,10 +753,14 @@ annotate_vep = {
 annotate_snpeff = {
     output.dir="variants"
 
-    var enable_snpeff:false
+    var enable_snpeff:false,
+        SNPEFF : false
 
     if(!enable_snpeff)
         succeed "Snpeff support not enabled"
+
+    if(!SNPEFF)
+        fail "Please define the SNPEFF variable to point to the location of your SNPEFF installation"
 
     exec """
             $JAVA -Xmx2g -jar $SNPEFF/snpEff.jar eff -c $SNPEFF/snpEff.config -treatAllAsProteinCoding false -a 2 hg19 $input.vcf  > $output.vcf
