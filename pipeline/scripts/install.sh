@@ -94,7 +94,7 @@ function set_config_variable() {
     NAME="$1"
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
-    sed 's,'^[\s]*$NAME'=".*$,'$NAME'="'$VALUE'",g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
 }
@@ -264,16 +264,15 @@ else
     files must be downloaded. Would you like to launch the
     VEP installer script now?
 
-    Please answer "y" when asked to install cache files, and choose
-    either homo_sapiens_vep_74.tar.gz or homo_sapiens_refseq_vep_74.tar.gz
-    to download. Note: Cpipe is tested and developed using homo_sapiens_vep_74.tar.gz.
+    NOTE: VEP may take several hours to download and install 
+          reference data.
     "
 
     prompt "Do you want to run the VEP installer now? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
         cd $VEP; 
-        perl INSTALL.pl -c ../vep_cache || err "Failed to run VEP installer"
+        perl INSTALL.pl -c ../vep_cache -a acf -s homo_sapiens_vep || err "Failed to run VEP installer"
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
@@ -377,6 +376,16 @@ MAX_OPEN_FILES=`ulimit -n`
 if [ "$MAX_OPEN_FILES" -lt 2048 ]; 
 then 
     warn "The limit on open files is set to $MAX_OPEN_FILES. Cpipe may require more open files than this. Consider adding 'ulimit -S -n 2048' to your .bashrc file."
+fi
+
+msg "Check versions up to date ..."
+if [ `basename $GROOVY_NGS` == "1.0" ];
+then
+    prompt "Your configuration is set to use an outdated version of groovy-ngs-utils. Update now (y/n)?" "y"
+    if [ "$REPLY" == "y" ];
+    then
+        set_config_variable GROOVY_NGS "$TOOLS/groovy-ngs-utils/1.0.1"
+    fi
 fi
 
 msg "Success: all the dependencies I know how to check are OK"
