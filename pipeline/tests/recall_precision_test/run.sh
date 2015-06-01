@@ -121,7 +121,7 @@ $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.3.4.jar:$GROOVY_NGS/groovy
 
 # Check the output - we expect the difference between the samples to be 
 $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar -e \
-    'x = Matrix.load("shared.tsv"); println(Math.round(100*(1 - (Math.abs(x[0][0] - x[0][1]) / x[0][1]))))' > sensitivity.txt
+    'x = graxxia.Matrix.load("shared.tsv"); println(Math.round(100*(1 - (Math.abs(x[0][0] - x[0][1]) / x[0][1]))))' > sensitivity.txt
 
 SENSITIVITY=`cat sensitivity.txt` 
 MIN_SENSITIVITY=90
