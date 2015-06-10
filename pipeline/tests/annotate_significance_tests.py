@@ -32,7 +32,7 @@ from annotate_significance import Annovar
 class AnnotateSignificanceTest(unittest.TestCase):
     
     
-    header = "Func,Gene,ExonicFunc,AAChange,Conserved,SegDup,esp5400_all,1000g2014oct_all,snp138,AVSIFT,LJB_PhyloP,LJB_PhyloP_Pred,LJB_SIFT,LJB_SIFT_Pred,LJB_PolyPhen2,LJB_PolyPhen2_Pred,LJB_LRT,LJB_LRT_Pred,LJB_MutationTaster,LJB_MutationTaster_Pred,LJB_GERP++,Chr,Start,End,Ref,Obs,Otherinfo,Qual,Depth,Condel,exac03,phastConsElements46way".split(",")
+    header = "Func,Gene,ExonicFunc,AAChange,Conserved,SegDup,esp6500siv2_all,1000g2014oct_all,snp138,AVSIFT,LJB_PhyloP,LJB_PhyloP_Pred,LJB_SIFT,LJB_SIFT_Pred,LJB_PolyPhen2,LJB_PolyPhen2_Pred,LJB_LRT,LJB_LRT_Pred,LJB_MutationTaster,LJB_MutationTaster_Pred,LJB_GERP++,Chr,Start,End,Ref,Obs,Otherinfo,Qual,Depth,Condel,exac03,phastConsElements46way".split(",")
     
     # A prototype line that we use to create test data
     line = '"exonic","SCN5A","nonsynonymous SNV","NM_000335:c.G1339T:p.A447S","437;Name=lod=80",,,,,0.42,,,,,,,,,,,,chr3,38646399,38646399,C,A,"het","14.91","19","0.3",".",""\n'
@@ -43,7 +43,7 @@ class AnnotateSignificanceTest(unittest.TestCase):
         variant = csv.reader([self.line], delimiter=",", quotechar='"').next()
         self.a = Annovar(variant)
         #print "init ", self.a.columns
-     
+
     def testNovel(self):
         
         a = self.a
@@ -71,23 +71,23 @@ class AnnotateSignificanceTest(unittest.TestCase):
         a.set_value('Condel','')
         a.set_value('phastConsElements46way','blah')
         #print a.priority()
-        assert a.priority() == 3
+        assert a.priority() == 4
         
         # Adding high Condel score makes it remain priority 3
         a.set_value('Condel','0.9')
-        assert a.priority() == 3
+        assert a.priority() == 4
         
         # Removing conserved annotation should not make a difference, because there is still a Condel score
         a.set_value('Conserved','')
-        assert a.priority() == 3
+        assert a.priority() == 4
 
         # Setting value to < 0.7 should make it not conserved any more, dropping it down to priority 2
         a.set_value('Condel','0.5')
-        assert a.priority() == 2
+        assert a.priority() == 3
 
         # Set a conservation value, but it should NOT change because there is a Condel score
         a.set_value('Conserved','437;Name=lod=80')
-        assert a.priority() == 2
+        assert a.priority() == 3
 
 
     def testNovelRare(self):
@@ -95,38 +95,48 @@ class AnnotateSignificanceTest(unittest.TestCase):
         # test: variant index 3 can only happen to a novel variant
 
         a = self.a
-        a.set_value('esp5400_all','0.001')
+        a.set_value('esp6500siv2_all','0.001')
         a.set_value('1000g2014oct_all','0.001')
         a.set_value('Condel','0.9')
 
-        assert a.priority() == 1
+        assert a.priority() == 2
         
     def testRareTruncating(self):
         a = self.a
         a.ExonicFunc = "stopgain SNV"
-        assert a.priority() == 4
+        assert a.priority() == 5
 
-        a.set_value('esp5400_all','0.001')
-        assert a.priority() == 1
+        a.set_value('esp6500siv2_all','0.001')
+        assert a.priority() == 2
         
     def testNovelTruncating(self):
         a = self.a
         a.ExonicFunc = "stopgain SNV"
 
         # Make it novel
-        a.set_value('esp5400_all','')
+        a.set_value('esp6500siv2_all','')
         a.set_value('1000g2014oct_all','')
         a.set_value('snp138','')
-        assert a.priority() == 4
+        assert a.priority() == 5
 
     def testMissenseVaryRare(self):
         a = self.a
-        a.set_value('esp5400_all','0.0001')
+        a.set_value('esp6500siv2_all','0.0001')
         a.set_value('1000g2014oct_all','')
         a.set_value('Conserved','')
         a.set_value('Condel','')
-        assert a.priority() == 2
+        assert a.priority() == 3
 
+    def testMissenseCommon(self):
+        a = self.a
+        a.set_value('esp6500siv2_all','0.5')
+        a.set_value('1000g2014oct_all','')
+        a.set_value('Conserved','')
+        a.set_value('Condel','')
+        assert a.priority() == 1
+
+
+     
  
 if __name__ == '__main__':
     unittest.main()             
