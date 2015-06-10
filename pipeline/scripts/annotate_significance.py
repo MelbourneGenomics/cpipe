@@ -29,19 +29,26 @@
 # defined by the Bioinformatics working group and are currently 
 # specified as follows:
 #
-#     (1)     Index 1 - rare missense
+#     (1)     Index 1 - missense
+#     (1)     Index 2 - rare missense
 #             Variant has MAF <0.01 in dbSNP or ESP or 1000G databases
-#     (2)     Index 2 - novel missense
+#     (2)     Index 3 - novel missense
 #             Variant is not in dbSNP or ESP or 1000G databases 
-#     (3)     Index 3 - highly conserved missense
+#     (3)     Index 4 - highly conserved missense
 #             Variant has condel score > 0.7 (other possible filters - for discussion)
-#     (4)     Index 4 - truncating
+#     (4)     Index 5 - truncating
 #             Out of frame indel (non-recurrent*), nonsense, splice site +/-2bp
 #
 #     NOTE: these rules were updated 27/5/2014:
 #
 #             - include 'very rare' variants <0.0005 MAF in cat 2,3
 #             - include truncating variants into priority 1 if rare (but not novel)
+#
+#     NOTE: these rules were updated 2015-6-10:
+#
+#             - all priorities shifted up by 1
+#             - new priority 1 introduced to capture all misense variants 
+#                (even non-rare)
 #
 # Author:   Simon Sadedin, simon.sadedin@mcri.edu.au
 # Date:     23/1/2014
@@ -102,26 +109,26 @@ class Annovar:
            if self.is_rare():
                if self.is_novel() or self.is_very_rare():
                    if self.is_conserved():
-                       return 3 # Missense, novel and conserved => category 3
+                       return 4 # Missense, novel and conserved => category 4
                    else:
-                       return 2 # Missense, novel but not highly conserved => category 2
+                       return 3 # Missesnse, novel but not highly conserved => category 3
                else:
-                    return 1 # Missense & rare but not novel => category 1
+                    return 2 # Missense & rare but not novel => category 2
            else:
-               return 0 # Missense but not even rare => no category
+               return 1 # Missense but not even rare => category 1
 
         elif self.is_truncating():
             # From Natalie, 27/5/2014:
-            # With regard to priority 4 truncating variants:
-            #  novel should stay in priority 4
-            #  rare should be priority 1
+            # With regard to priority 5 truncating variants:
+            #  novel should stay in priority 5
+            #  rare should be priority 2
             if self.is_novel():
-                return 4
+                return 5
             elif self.is_rare():
                 log.debug("%s:%s is rare" % (self.Chr,self.Start))
-                return 1
+                return 2
             else:
-                return 0
+                return 1
 
         elif self.is_noncoding():
             return 0
@@ -145,7 +152,6 @@ class Annovar:
     def is_rare(self):
         # Return true iff at least one database has the variant at > the MAF_THRESHOLD
         log.debug("MAF values for %s:%s are %s", self.Chr, self.Start, map(lambda f: self.maf_value(f),self.POPULATION_FREQ_FIELDS))
-        return not any(map(lambda f: self.maf_value(f)>self.MAF_THRESHOLD, self.POPULATION_FREQ_FIELDS))
         return not any(map(lambda f: self.maf_value(f)>self.MAF_THRESHOLD, self.POPULATION_FREQ_FIELDS))
 
     def is_very_rare(self):
