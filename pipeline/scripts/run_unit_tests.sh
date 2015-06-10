@@ -24,4 +24,6 @@
 #
 ########################################################
 
-python -m unittest discover -p '*_tests.py'
+pushd pipeline/scripts
+python -m unittest discover -s ../tests -p '*_tests.py'
+popd
