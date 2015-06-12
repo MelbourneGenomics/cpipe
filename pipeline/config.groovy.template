@@ -151,6 +151,12 @@ CONDEL="$TOOLS/condel/24-1-2013"
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
 
+// By default variant counts are annotated from the same database as the
+// one that they were added to in the first place
+// However you can modify them to be separate if you wish
+UPDATE_VARIANT_DB=VARIANT_DB
+ANNOTATION_VARIANT_DB=VARIANT_DB
+
 // Location of groovy installation
 GROOVY_HOME="$TOOLS/groovy/2.3.4"
 

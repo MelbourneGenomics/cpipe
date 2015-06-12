@@ -186,6 +186,9 @@ check_tools = {
         to enable or disable corresponding pipeline features
         """
 
+    var UPDATE_VARIANT_DB : VARIANT_DB,
+        ANNOTATION_VARIANT_DB : VARIANT_DB
+
     produce("revision.txt") {
         exec """
             git describe --always > $output.txt || true
@@ -194,6 +197,9 @@ check_tools = {
 
     if(file(GROOVY_NGS).name == "1.0")
         fail "This version of Cpipe requires GROOVY_NGS >= 1.0.1. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+
+    branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
+    branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
 }
 
 check_sample_info = {
@@ -896,7 +902,8 @@ vcf_to_excel = {
 
     doc "Convert a VCF output file to Excel format, merging information from Annovar"
 
-    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)",
+             ANNOTATION_VARIANT_DB : "File name of SQLite variant database for storing variants"
 
     var exclude_variant_types : "synonymous SNV",
         out_of_cohort_filter_threshold : OUT_OF_COHORT_VARIANT_COUNT_FILTER
@@ -931,7 +938,7 @@ vcf_to_excel = {
                 ${inputs.csv.withFlag("-a")}
                 ${inputs.vcf.withFlag("-vcf")}
                 -x "$EXCLUDE_VARIANT_TYPES"
-                -db $VARIANT_DB
+                -db $ANNOTATION_VARIANT_DB
                 -o $output.xlsx
                 -oocf $out_of_cohort_filter_threshold
                 -si $sample_metadata_file
@@ -950,7 +957,7 @@ vcf_to_family_excel = {
          designed for diagnostics from family based sequencing.
         """
 
-    requires VARIANT_DB : "File name of SQLite variant database for storing variants"
+    requires ANNOTATION_VARIANT_DB : "File name of SQLite variant database for storing variants"
 
     output.dir = "results"
 
@@ -966,7 +973,7 @@ vcf_to_family_excel = {
             exec """
                 JAVA_OPTS="-Xmx6g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
                     -p "" 
-                    -db $VARIANT_DB
+                    -db $ANNOTATION_VARIANT_DB
                     -ped $input.ped
                     -o $output.xlsx
                     $UNIQUE $input.vcf $inputs.csv 
@@ -1126,8 +1133,13 @@ merge_annovar_reports = {
 
 
 add_to_database = {
+
     doc "Add discovered variants to a database to enable annotation of number of observations of the variant"
+
+    requires UPDATE_VARIANT_DB : "SQLite database to store variants in"
+
     output.dir="variants"
+
     uses(variantdb:1) {
         exec """
 
@@ -1136,7 +1148,7 @@ add_to_database = {
             JAVA_OPTS="-Xmx24g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_db.groovy 
                    -v $input.recal.vcf 
                    -a $input.csv 
-                   -db $VARIANT_DB 
+                   -db $UPDATE_VARIANT_DB 
                    -cohort $target_name
                    -idmask '$SAMPLE_ID_MASK'
                    -b "$batch"
@@ -1145,16 +1157,6 @@ add_to_database = {
 
             echo "Variants from $input.recal.vcf were added to database $VARIANT_DB on ${new Date()}" > $output.txt
         """, "add_to_database"
-    }
-}
-
-copy_variant_database = {
-    requires VARIANT_DB : "The file name of the primary SQLite database to which variants are added"
-    output.dir = "variants"
-    from(VARIANT_DB) {
-        exec """
-            cp -v $input.db $output.db
-        """
     }
 }
 
