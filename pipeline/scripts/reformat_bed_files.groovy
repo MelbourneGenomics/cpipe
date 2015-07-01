@@ -61,7 +61,7 @@ annotate = {
     exec """
         echo "Annotating genes ..."
 
-        JAVA_OPTS="-Xmx1g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar $BASE/pipeline/scripts/annotate_genes.groovy -r $ANNOVAR/../humandb/hg19_refGene.txt $input.bed > $output.bed
+        JAVA_OPTS="-Xmx1g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar $BASE/pipeline/scripts/annotate_genes.groovy -r $ANNOVAR_DB/hg19_refGene.txt $input.bed > $output.bed
     """
 }
 
