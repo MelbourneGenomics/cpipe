@@ -296,7 +296,7 @@ check_fastqc = {
        // appears to contain natural biases that flag QC failures 
        // here.
        exec """
-           cat fastqc/${sample}_*fastqc/summary.txt |
+           cat fastqc/"${sample}"_*fastqc/summary.txt |
                grep -v "Per base sequence content" |
                grep -v "Per base GC content" |
                grep -q 'FAIL' && exit 1
