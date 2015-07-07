@@ -317,7 +317,7 @@ check_fastqc = {
 
     check("FASTQ Format") {
         exec """
-            awk -F'\\t' '/Illumina/ { match(\$2, /[0-9.]+/ , result); exit(result[0]<1.7) }' fastqc/${sample}_*_fastqc/fastqc_data.txt
+            awk -F'\\t' '/Illumina/ { where=match(\$2, /[0-9.]+/); { result=substr(\$2, where, RLENGTH); exit(result<1.7); } }' fastqc/${sample}_*_fastqc/fastqc_data.txt
         ""","local"
     } otherwise {
         println "=" * 100
