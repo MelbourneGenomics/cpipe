@@ -1103,7 +1103,7 @@ annovar_table = {
 
     output.dir="variants"
 
-    transform("vcf","vcf") to("av", "hg19_multianno.csv") {
+    transform("vcf","vcf","vcf") to("av", "hg19_multianno.csv","refGene.exonic_variant_function") {
         exec """
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
@@ -1260,11 +1260,11 @@ annovar_to_lovd = {
 
 @filter("aug")
 augment_transcript_ids = {
-        doc "Add an additional column indicating the VCGS transcript identifier for the VCGS transcript / isoform affected by each variant"
-                output.dir="variants"
+        doc "Add an additional column indicating the priorty transcript identifier transcript / isoform affected by each variant"
+        output.dir="variants"
 
-                    msg "Augmenting Annovar output with extra columns ($input.csv) ..."
-                        exec "python $SCRIPTS/augment_transcripts.py $transcripts_file $input.csv $input.exonic_variant_function > $output.csv"
+        msg "Augmenting Annovar output with extra columns ($input.csv) ..."
+        exec "python $SCRIPTS/augment_transcripts.py $transcripts_file $input.csv $input.exonic_variant_function > $output.csv"
 }
 
 /*
