@@ -195,8 +195,8 @@ check_tools = {
         """
     }
 
-    if(file(GROOVY_NGS).name == "1.0")
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.1. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+    if(file(GROOVY_NGS).name in ["1.0.1","1.0"])
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.2. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
 
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
