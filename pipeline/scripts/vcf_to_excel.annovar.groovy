@@ -205,7 +205,7 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     if(sample_info[sample].geneCategories[gene])
         geneCategory = sample_info[sample].geneCategories[gene]
 
-    outputValues["Gene Category"] = (geneCategory == null)?:1
+    outputValues["Gene Category"] = (geneCategory == null)?0:1
     
     outputValues["Gene"] = gene
     outputValues["Func"] = func
