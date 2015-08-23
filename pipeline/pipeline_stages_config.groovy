@@ -526,6 +526,7 @@ dedup = {
 
     var MAX_DUPLICATION_RATE : 30
 
+    // note that MarkDuplicates leaves behind a world writable tmp directory, hence the rm
     exec """
         $JAVA -Xmx4g -Djava.io.tmpdir=$TMPDIR -jar $PICARD_HOME/lib/MarkDuplicates.jar
              INPUT=$input.bam 
@@ -535,6 +536,7 @@ dedup = {
              METRICS_FILE=$output.metrics
              CREATE_INDEX=true
              OUTPUT=$output.bam
+        rm -r "$TMPDIR/\$USER"
     """
 
     check {
