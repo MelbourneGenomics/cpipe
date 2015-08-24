@@ -203,7 +203,8 @@ ProgressCounter.withProgress {
 
 // Sort the gene report by category
 if(geneCategories) {
-    geneReport.sort { geneCategories[it.gene] }
+    geneReport.sort { geneCategories[it.gene] ? geneCategories[it.gene].toInteger() : -1 } // no category is lowest
+    geneReport = geneReport.reverse() // highest category first
 }
 
 /////////////////////////////////////////////////////////////////////////
