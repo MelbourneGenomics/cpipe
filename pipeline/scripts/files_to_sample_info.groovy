@@ -45,6 +45,6 @@ else {
   for (sample in samples) {
     fastq = sample.value.files.collect { it.key == "all" ? [] : it.value }.flatten().join(",")
     geneCategories = sample.value.geneCategories.collect { it.key + ":" + it.value.join(",") }.join(" ")
-    println( [ "${sample.value.batch}", "${sample.value.sample}", "", sample.value.sex.encode(), "", "", "", "", "", "", "Normal", fastq, geneCategories, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ].join( '\t' ) )
+    println( [ sample.value.batch, sample.value.sample, "", sample.value.sex.encode(), "", "", "", "", "", sample.value.target, "Normal", fastq, geneCategories, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ].join( '\t' ) )
   }
 }
