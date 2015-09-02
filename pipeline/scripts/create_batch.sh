@@ -131,7 +131,7 @@ EXOME_TARGET="'$EXOME_TARGET'"
 
 # echo "$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET data/*.fastq.gz > samples.txt"
 
-echo "Creating sample meta data file batches/$BATCH_ID/samples.txt ..."
+echo "Creating sample meta data file batches/$BATCH_ID/samples.txt with disease $TARGET..."
 
 $GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET data/*.fastq.gz > samples.txt || \
         err "Configuring the samples.txt file failed. Please check error messages for the reason and ensure your FASTQ files are named correctly"
