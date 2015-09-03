@@ -82,7 +82,12 @@ if(opts.pgx)
 
 int pgx_coverage_threshold = opts.pgxcov ? opts.pgxcov.toInteger() : 15
 
-sample_info = SampleInfo.parse_sample_info(opts.si)
+try {
+  sample_info = SampleInfo.parse_mg_sample_info(opts.si)
+}
+catch ( RuntimeException e ) {
+  sample_info = SampleInfo.parse_sample_info(opts.si)
+}
 
 // println "sample_info = $sample_info"
 
@@ -311,7 +316,7 @@ try {
                     // note: check for exonic, because splice events show up as synonymous but with 
                     // Func="exonic;splicing", and should not be filtered out this way
                     if(av.ExonicFunc in exclude_types && av.Func=="exonic") { 
-                        log.println "Variant $av.Chr:$av.Start-$av.End excluded by being an excluded type: $av.ExonicFunc"
+                        log.println "Variant $av.Chr:$av.Start at line $lineIndex excluded by being an excluded type: $av.ExonicFunc"
                         continue
                     }
 
