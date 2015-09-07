@@ -348,8 +348,9 @@ try {
                     ++includeCount
 
                     ++sampleCount
-                    def funcs = av.Func.split(";")
-                    def genes = av.Gene.split(";")
+                    // don't split annotations
+                    def funcs = [ av.Func ] // av.Func.split(";")
+                    def genes = [ av.Gene ] // av.Gene.split(";")
 
                     [funcs,genes].transpose().each { funcGene ->
                         
