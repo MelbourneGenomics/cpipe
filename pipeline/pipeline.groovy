@@ -44,12 +44,13 @@ requires EXOME_TARGET : """
 load 'pipeline_stages_config.groovy'
 // load 'haloplex.groovy'
 
-sample_metadata_file = args[0]
+sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
+
 try {
-  sample_info = SampleInfo.parse_mg_sample_info(args[0])
+  sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
 }
 catch (RuntimeException e) {
-  sample_info = SampleInfo.parse_sample_info(args[0])
+  sample_info = SampleInfo.parse_sample_info(sample_metadata_file)
 }
 
 // We are specifying that each analysis takes place inside a fixed file structure

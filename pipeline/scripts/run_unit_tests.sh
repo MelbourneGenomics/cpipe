@@ -33,4 +33,5 @@ python -m unittest discover -s ../tests -p annotate_significance_tests.py
 #python -m unittest discover -s ../tests -p merge_pgx_tests.py  
 #python -m unittest discover -s ../tests -p select_variants_tests.py  
 python -m unittest discover -s ../tests -p update_pipeline_run_id_test.py
+python -m unittest discover -s ../tests -p correct_sample_metadata_test.py
 popd
