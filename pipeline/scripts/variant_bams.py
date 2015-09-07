@@ -67,7 +67,14 @@ def main():
         samtools_exec = 'samtools'
 
     # Assume sample name is the first part of the filename before the "."
-    sample = variantfile.split('/')[-1].split('.')[0]
+    #sample = variantfile.split('/')[-1].split('.')[0]
+    variant_filename = variantfile.split('/')[-1]
+    if '_' in variant_filename:
+      # take the last part after the _ and the first part before the .
+      sample = variant_filename.split('_')[-1].split('.')[0]
+    else:
+      # Assume sample name is the first part of the filename before the "."
+      sample = variant_filename.split('.')[0]
 
     with open(variantfile) as variantcsv:
         var_count = 0 
