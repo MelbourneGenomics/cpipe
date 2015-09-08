@@ -952,6 +952,8 @@ vcf_to_excel = {
 
 vcf_to_family_excel = {
 
+    var with_sex_karyotype : false
+
     doc """
          Convert variants annotated with SnpEff and Annovar to an excel based format
          designed for diagnostics from family based sequencing.
@@ -972,9 +974,10 @@ vcf_to_family_excel = {
         produce(target_name + ".family.xlsx") {
             exec """
                 JAVA_OPTS="-Xmx6g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
+                    -targets $target_bed_file ${with_sex_karyotype ? "-sex" : ""}
                     -p "" 
                     -db $ANNOTATION_VARIANT_DB
-                    -ped $input.ped
+                    -ped $input.ped ${inputs.bam.withFlag("-bam")}
                     -o $output.xlsx
                     $UNIQUE $input.vcf $inputs.csv 
             """, "vcf_to_family_excel"
