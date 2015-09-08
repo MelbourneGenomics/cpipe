@@ -23,10 +23,10 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 
 help = """
 --------------------------------------------------------------------
-Produces an excel report containing a single Excel sheet per VCF file 
-provided. Each VCF file may contain multiple samples, in which case 
-the samples are each represented as a column within the same excel
-sheet / tab. This allows for comparison between samples for family
+Produces an excel report containing a single Excel sheet per family
+provided. Families are determined from a PED file that is passed as
+an argument.  The samples within a family are each represented as a column within 
+the same excel sheet / tab. This allows for comparison between samples for family
 based diagnosis.
 --------------------------------------------------------------------
 """
@@ -41,6 +41,9 @@ cli.with {
   g 'annotate coverage over genes'
   meta 'meta data file for samples. If provided it will be used to resolve pedigree information', args:1
   ped 'Pedigree file in PED format. Specifies the relationships between samples', args:1, required:true
+  targets 'Target regions of capture (required for -sex)', args:1
+  sex 'Estimate copies of chrX and SRY from data (requires -targets)'
+  bam 'BAM file containing reads for a sample (required for -sex)', args:Cli.UNLIMITED
   mindp 'filter out variants when all samples have coverage depth < this value', args:1
   mingq 'filter out variants when all samples have genotype quality < this value', args:1
   db    'database containing historical variant observations. If provided, frequency information within the database will be annotated', args:1
@@ -73,6 +76,31 @@ if(csvs.empty)
 
 csvs[0].withReader { r -> ANNOVAR_FIELDS = r.readLine().split(",") as List }
 
+karyotypes = null
+if(opts.sex) {
+    if(!opts.bams)
+        err "The -sex option requires specification of -bam for each sample in the report"
+
+    if(!opts.targets)
+        err "The -sex option requires specification of target regions to analyse using -targets"
+
+    def bams = opts.bams.collect { new SAM(it) }
+    def targets = new BED(opts.targets, withExtra:true).load()
+
+    def karyotypeTargets = new Regions()
+    targets.grep { it.chr in ["chr1","chr22"] || it.extra == "SRY" }.each {
+        karyotypeTargets.addRegion(it)
+    }
+
+    karyotypes = bams.collectEntries { bam ->
+        [bam.samples[0], new SexKaryotyper(bam, targets)]
+    }
+
+    println "Running karyotyping ..."
+    karyotypes*.value*.run()
+}
+
+
 ESP_FIELD = ANNOVAR_FIELDS.find { it =~ /^esp/ }
 
 EXAC_FIELDS=["exac03","ExAC_ALL","ExAC_Freq"]
@@ -102,8 +130,13 @@ Pedigrees pedigrees = Pedigrees.parse(opts.ped)
 affecteds = pedigrees.affected.unique()
 
 // Only support a single affected in each family for now
-if(affecteds.size() != pedigrees.families.size())
-    err "This program only supports a single affected per pedigree. More affecteds ($affecteds) were observed than families in ${opts.ped}."
+// if(affecteds.size() > pedigrees.families.size()) {
+//    err "This program only supports a single affected per pedigree. More affecteds ($affecteds) were observed than families (${pedigrees.families*.key}) in ${opts.ped}."
+//}
+
+noAffecteds = pedigrees.grep { e -> e.affected.empty }*.key
+if(noAffecteds) 
+    err "The following families do not have any sample listed as affected (phenotype > 1): $noAffecteds"
 
 println "Probands are $affecteds"
 
@@ -135,9 +168,13 @@ String vcf_file = vcfs[0]
 
 new ExcelBuilder().build {
 
-  affecteds.each { affected_sample ->
+  pedigrees.families.each { familyId, pedigree ->
 
-        Pedigree pedigree = pedigrees.subjects[affected_sample]
+        affected_sample = pedigree.affected[0]
+        if(!affected_sample)
+            err "Family $familyId does not have an affected sample"
+
+        // Pedigree pedigree = pedigrees.subjects[affected_sample]
 
         println "Exporting variants for proband $affected_sample (family = $pedigree.id)"
 
@@ -186,7 +223,7 @@ new ExcelBuilder().build {
 
                 // If the file contains CLR (samtools constraint likelihood ratios), add a column for those
                 // Write the header line and make it bold
-                exportedColumns = ['gene','chr','start','end','id','rank','effect','qual','depth'] + 
+                exportedColumns = ['gene','chr','start','end','id','priority','effect','qual','depth'] + 
                     (exportSamples.size()>1?["scount"]:[]) +
                     (affecteds.size()>1?["acount"]:[]) +
                     (vcfHeader.hasInfo("FC")?["mut fm cnt"]:[]) +
@@ -214,6 +251,24 @@ new ExcelBuilder().build {
                     }
                   }
                 }
+
+                if(opts.sex) {
+                    row {
+                        cells("SRY", "","","","","","","","","","")
+                        if(opts.db) // 2 extra cols when database info available
+                            cells("","")
+                        cells(allSamples.collect { s -> karyotypes[s].yCoverage.mean < 10 ? 0 : 1 })
+                    }
+
+                    row { bottomBorder {
+                        cells("chrX", "","","","","","","","","","")
+                        if(opts.db) // 2 extra cols when database info available
+                            cells("","")
+                        cells(allSamples.collect { s -> (karyotypes[s].xCoverage.mean/karyotypes[s].autosomeCoverage.mean < 0.7) ? 1 : 2 })
+                        cells([""] * (Math.max(0,exportedColumns.size() - 9 - allSamples.size()))) // only for bottom border
+                    }}
+                }
+
 
                 // Reasons why variants filtered out
                 Map reasons = [minGQ : 0, minDP : 0, dosage:0]
@@ -324,7 +379,8 @@ new ExcelBuilder().build {
                       // if(v.id == '.')
                       //    posCell.link("http://asia.ensembl.org/Homo_sapiens/Location/View?g=${URLEncoder.encode(genes[0])};r=$urlChr:$urlPos")
 
-                      row.add(v.id, rank=="HIGH"?2:1, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
+                      //row.add(v.id, rank=="HIGH"?2:1, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
+                      row.add(v.id, variant.Priority_Index, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
                       // row.add(v.id, rank=="HIGH"?2:1, effect, v.qual, v.info.DP)
 
                       // If there is more than one sample then it's useful to have the count of 
