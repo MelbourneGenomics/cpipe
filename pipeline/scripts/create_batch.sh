@@ -148,7 +148,7 @@ EXOME_TARGET="'$EXOME_TARGET'"
     fi
 }
 
-echo "Creating sample meta data file batches/$BATCH_ID/samples.txt ..."
+echo "Creating sample meta data file batches/$BATCH_ID/samples.txt with disease $TARGET..."
 
 unset GROOVY_HOME
 

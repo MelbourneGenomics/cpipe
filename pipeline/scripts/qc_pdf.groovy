@@ -69,7 +69,15 @@ int coverageThreshold = opts.threshold.toInteger()
 if(!new File(opts.meta).exists())
   err "The sample meta data file ($opts.meta) does not exist or could not be accessed"
 
-Map samples = SampleInfo.parse_sample_info(opts.meta)
+// try both metadata formats
+Map samples;
+try {
+  samples = SampleInfo.parse_mg_sample_info(opts.meta)
+}
+catch (RuntimeException e) {
+  samples = SampleInfo.parse_sample_info(opts.meta)
+}
+
 if(!samples.containsKey(opts.study))
   err "The provided meta data file ($opts.meta) did not contain meta information for study $opts.study"
 
