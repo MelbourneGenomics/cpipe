@@ -223,8 +223,9 @@ new ExcelBuilder().build {
 
                 // If the file contains CLR (samtools constraint likelihood ratios), add a column for those
                 // Write the header line and make it bold
+                boolean hasScount = exportSamples.size() > 1
                 exportedColumns = ['gene','chr','start','end','id','priority','effect','qual','depth'] + 
-                    (exportSamples.size()>1?["scount"]:[]) +
+                    (hasScount?["scount"]:[]) +
                     (affecteds.size()>1?["acount"]:[]) +
                     (vcfHeader.hasInfo("FC")?["mut fm cnt"]:[]) +
                     (vcfHeader.hasInfo("GC")?["gene fm cnt"]:[]) +
@@ -251,24 +252,24 @@ new ExcelBuilder().build {
                     }
                   }
                 }
+                
+                println "All samples = $allSamples, export samples = $exportSamples"
 
                 if(opts.sex) {
                     row {
-                        cells("SRY", "","","","","","","","","","")
-                        if(opts.db) // 2 extra cols when database info available
-                            cells("","")
-                        cells(allSamples.collect { s -> karyotypes[s].yCoverage.mean < 10 ? 0 : 1 })
+                        cells("SRY")
+                        cells([""] * (exportedColumns.indexOf(exportSamples[0])-1))
+                        def srys = exportSamples.collect { s -> karyotypes[s].yCoverage.mean < 10 ? 0 : 1 }
+                        cells(srys)
                     }
 
                     row { bottomBorder {
-                        cells("chrX", "","","","","","","","","","")
-                        if(opts.db) // 2 extra cols when database info available
-                            cells("","")
-                        cells(allSamples.collect { s -> (karyotypes[s].xCoverage.mean/karyotypes[s].autosomeCoverage.mean < 0.7) ? 1 : 2 })
+                        cells("chrX")
+                        cells([""] * (exportedColumns.indexOf(exportSamples[0])-1))
+                        cells(exportSamples.collect { s -> (karyotypes[s].xCoverage.mean/karyotypes[s].autosomeCoverage.mean < 0.7) ? 1 : 2 })
                         cells([""] * (Math.max(0,exportedColumns.size() - 9 - allSamples.size()))) // only for bottom border
                     }}
                 }
-
 
                 // Reasons why variants filtered out
                 Map reasons = [minGQ : 0, minDP : 0, dosage:0]
@@ -389,7 +390,7 @@ new ExcelBuilder().build {
                           row.add(dosages.count { it > 0 })
                       }
 
-                      if(affecteds) {
+                      if(affecteds.size()>1) {
                           row.add(affecteds.count { v.sampleDosage(it) > 0 })
                       }
 
