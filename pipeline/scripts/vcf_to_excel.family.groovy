@@ -397,9 +397,8 @@ new ExcelBuilder().build {
                       // if(v.id == '.')
                       //    posCell.link("http://asia.ensembl.org/Homo_sapiens/Location/View?g=${URLEncoder.encode(genes[0])};r=$urlChr:$urlPos")
 
-                      //row.add(v.id, rank=="HIGH"?2:1, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
-                      row.add(v.id, variant.Priority_Index, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
-                      // row.add(v.id, rank=="HIGH"?2:1, effect, v.qual, v.info.DP)
+                      def annovarFunc = (variant.Func == "exonic" ? variant.ExonicFunc : variant.Func);
+                      row.add(v.id, variant.Priority_Index, effect, annovarFunc, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
 
                       // If there is more than one sample then it's useful to have the count of 
                       // how many total samples the variant was observed in
