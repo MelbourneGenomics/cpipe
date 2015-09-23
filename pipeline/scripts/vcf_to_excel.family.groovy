@@ -143,7 +143,7 @@ affecteds = pedigrees.affected.unique()
 //    err "This program only supports a single affected per pedigree. More affecteds ($affecteds) were observed than families (${pedigrees.families*.key}) in ${opts.ped}."
 //}
 
-noAffecteds = pedigrees.grep { e -> e.affected.empty }*.key
+noAffecteds = pedigrees.families.grep { e -> e.value.affected.empty }*.value*.id
 if(noAffecteds) 
     err "The following families do not have any sample listed as affected (phenotype > 1): $noAffecteds"
 
