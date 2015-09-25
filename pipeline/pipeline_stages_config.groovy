@@ -1162,7 +1162,7 @@ annovar_table = {
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,
+            --argument '-exonicsplicing -splicing $INTERVAL_PADDING_CALL',,,,,,,
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
