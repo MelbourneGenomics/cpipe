@@ -98,7 +98,7 @@ run {
 				   cleanup_intermediate_bams +
                        [
                          call_variants_gatk + call_pgx + merge_pgx +
-                            filter_variants + 
+                            filter_variants + merge_variants +
                             annotate_vep + index_vcf +
                             annovar_table +
                             [ 

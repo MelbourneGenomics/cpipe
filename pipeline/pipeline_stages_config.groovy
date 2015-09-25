@@ -40,6 +40,7 @@ call_variants_ug = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.txt
@@ -681,6 +682,7 @@ call_variants_hc = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -713,6 +715,7 @@ call_pgx = {
                    -dcov 1600 
                    -l INFO 
                    -L ../design/${target_name}.pgx.vcf
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
@@ -730,16 +733,45 @@ filter_variants = {
         pgx_flag = "-L ../design/${target_name}.pgx.vcf"
     }
 
-    filter("filter") {
-        exec """
-            $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
-                 -R $REF
-                 -T SelectVariants 
-                 --variant $input.vcf 
-                 -L $target_bed_file $splice_region_bed_flag $pgx_flag
-                 -o $output.vcf 
-        """
-    }
+    msg "Filtering variants - finding INDELs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file $pgx_flag
+             --interval_padding $INTERVAL_PADDING_SNV
+             --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
+             -o $output.snv
+    """
+
+    msg "Filtering variants - finding SNVs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file $pgx_flag
+             --interval_padding $INTERVAL_PADDING_INDEL
+             --selectTypeToInclude INDEL
+             -o $output.indel
+    """
+}
+
+merge_variants = {
+    doc "Merge SNVs and INDELs"
+    output.dir="variants"
+
+    msg "Merging SNVs and INDELs"
+    exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T CombineVariants
+            -R $REF
+            --variant:indel $input.indel
+            --variant:snv $input.snv
+            --out $output.vcf
+            --setKey set
+         """
 }
 
 @filter("vep")
@@ -919,11 +951,12 @@ vcf_to_excel = {
     var exclude_variant_types : "synonymous SNV",
         out_of_cohort_filter_threshold : OUT_OF_COHORT_VARIANT_COUNT_FILTER
 
-    check {
-        exec "ls results/${target_name}.qc.xlsx > /dev/null 2>&1"
-    } otherwise { 
-        succeed "No samples succeeded for target $target_name" 
-    }
+    // disable this check - attempt to generate results regardless of qc check
+    // check {
+    //     exec "ls results/${target_name}.qc.xlsx > /dev/null 2>&1"
+    // } otherwise { 
+    //     succeed "No samples succeeded for target $target_name" 
+    // }
 
     def pgx_flag = ""
     if(file("../design/${target_name}.pgx.vcf").exists()) {
