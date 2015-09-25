@@ -771,6 +771,7 @@ merge_variants = {
             --variant:snv $input.snv
             --out $output.vcf
             --setKey set
+            --genotypemergeoption UNSORTED
          """
 }
 
