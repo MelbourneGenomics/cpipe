@@ -31,4 +31,3 @@ for idx, line in enumerate(sys.stdin):
   fields = line.strip('\n').split('\t')
   for jdx, field in enumerate(fields):
     print "%24s: %s" % ( headers[jdx], field )
-

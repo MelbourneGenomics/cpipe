@@ -95,8 +95,10 @@ if(meta.geneCategories) {
 
 String onTarget = "Unknown"
 String totalReads = "Unknown"
-if(opts.ontarget) {
-    int onTargetCount = new File(opts.ontarget).text.toInteger()
+if(opts.ontarget && opts.ontarget != "") {
+  String onTargetText = new File(opts.ontarget).text
+  if (onTargetText != "") {
+    int onTargetCount = onTargetText.toInteger()
     if(opts.metrics) {
         Map metrics = PicardMetrics.parse(opts.metrics)
         int totalCount = metrics.READ_PAIRS_EXAMINED.toInteger() * 2
@@ -107,6 +109,7 @@ if(opts.ontarget) {
     else {
         onTarget = String.valueOf(onTargetCount)
     }
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////

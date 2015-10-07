@@ -48,4 +48,3 @@ else {
     println( [ sample.value.batch, sample.value.sample, "", sample.value.sex.encode(), "", "", "", "", "", sample.value.target, "Normal", fastq, geneCategories, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ].join( '\t' ) )
   }
 }
-
