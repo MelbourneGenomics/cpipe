@@ -119,6 +119,7 @@ CONDEL="$TOOLS/condel/24-1-2013"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
+ID_FILE="$BASE/pipeline_id"
 
 // Location of groovy binary
 GROOVY="$TOOLS/groovy/2.2.1/bin/groovy"

@@ -88,7 +88,7 @@ OUT_OF_COHORT_VARIANT_COUNT_FILTER=2
 PLATFORM="illumina"
 
 // The coverage level below which a sample should be failed
-MEDIAN_COVERAGE_THRESHOLD=50
+MEDIAN_COVERAGE_THRESHOLD=90
 
 // Base location of all the tools that we use
 TOOLS="$BASE/tools"
@@ -150,6 +150,7 @@ CONDEL="$TOOLS/condel/24-1-2013"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
+ID_FILE="$BASE/pipeline_id"
 
 // By default variant counts are annotated from the same database as the
 // one that they were added to in the first place

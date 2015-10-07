@@ -53,6 +53,7 @@ cli.with {
     w "threshold of width for reporting low coverage regions (1)", args:1
     metrics "metrics file written by Picard MarkDuplicates, one for each sample (optional)", args: Cli.UNLIMITED
     o "name of output file", args:1
+    p "prefix for filename", args:1
     low "directory to write regions of low coverage to", args:1
 }
 
@@ -65,6 +66,9 @@ if(!opts.s)
 println "opts.o = $opts.o"
 if(!opts.o) 
     err "Please provide -o option to specify output file name"
+
+if(!opts.p) 
+    err "Please provide -p option to specify file name prefix"
 
 int minRegionWidth = 1
 if(opts.w)
@@ -375,6 +379,6 @@ for(sample in samples) {
             }
 
         }.autoSize()
-    }.save("results/"+sample+".gap.xlsx")
+    }.save("results/"+ opts.p + '_' + sample + ".gap.xlsx")
 }
 

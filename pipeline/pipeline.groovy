@@ -73,6 +73,8 @@ run {
     // variants in
     create_combined_target + 
 
+    generate_pipeline_id + // make a new pipeline run ID file if required
+
     // For each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * [
 
@@ -121,6 +123,9 @@ run {
    samples * [ provenance_report /* , annovar_to_lovd */ ] +
    
    // And report on similarity between samples
-   sample_similarity_report
+   sample_similarity_report +
+
+   // update metadata and pipeline ID
+   create_sample_metadata
 }
 
