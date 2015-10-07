@@ -1261,6 +1261,23 @@ annovar_to_lovd = {
     }
 }
 
+variant_bams = {
+
+    doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"
+
+    output.dir = "results/variant_bams"
+
+    from(branch.name+'*annovarx.csv', branch.name+'.*.recal.bam') {   
+        // Slight hack here. Produce a log file that bpipe can track to confirm that the bams were produced.
+        // Bpipe is not actually tracking the variant bams themselves. 
+        produce(branch.name + ".variant_bams_log.txt") {
+            exec """
+                python $SCRIPTS/variant_bams.py --bam $input.bam --csv $input.csv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
+            """
+        }
+    }
+}
+
 @filter("aug")
 augment_transcript_ids = {
         doc "Add an additional column indicating the priorty transcript identifier transcript / isoform affected by each variant"
