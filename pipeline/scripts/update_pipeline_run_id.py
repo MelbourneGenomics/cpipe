@@ -1,22 +1,23 @@
 #!/usr/bin/env python
-####################################################################################
+###########################################################################
 #
-# Melbourne Genomics Pipeline Annotation Script
+# This file is part of Cpipe.
 #
-# Copyright Melbourne Genomics Health Alliance members. All rights reserved.
+# Cpipe is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, under version 3 of the License, subject
+# to additional terms compatible with the GNU General Public License version 3,
+# specified in the LICENSE file that is part of the Cpipe distribution.
 #
-# DISTRIBUTION:
+# Cpipe is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# This source code should not be distributed to a third party without prior
-# approval of the Melbourne Genomics Health Alliance steering committee (via
-# Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
+# You should have received a copy of the GNU General Public License
+# along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
-####################################################################################
-#
-# Purpose:
-# * add a pipeline run ID to the sample metadata file, read from a pipeline run ID file
-# * takes incoming meta from stdin and writes to stdout
-####################################################################################
+###########################################################################
 
 import argparse
 import os.path
