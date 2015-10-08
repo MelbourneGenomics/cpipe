@@ -468,7 +468,7 @@ merge_bams = {
             // However if the ordinary case involves only one
             // bam file then there may be some significant savings
             // from doing this.
-            exec "ln -s ${file(input.bam).name} $output.bam; ln -s ${file(input.bam).name}.bai ${output.bam}.bai;"
+            exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
         }
         else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
