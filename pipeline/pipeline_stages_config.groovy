@@ -1277,6 +1277,10 @@ annovar_to_lovd = {
 // remove spaces from gene lists and point to a new sample metadata file
 // note that this isn't run through bpipe
 correct_sample_metadata_file = {
+    def target = new File( 'results' )
+    if( !target.exists() ) {
+        target.mkdirs()
+    }
     [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
     return "results/samples.corrected"
 }
