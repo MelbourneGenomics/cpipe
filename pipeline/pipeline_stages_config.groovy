@@ -1088,6 +1088,7 @@ qc_excel_report = {
                     -w $LOW_COVERAGE_WIDTH
                     -low qc ${inputs.dedup.metrics.withFlag('-metrics')}
                     -o $output.xlsx
+                    -p $run_id
                     $inputs.sample_cumulative_coverage_proportions  
                     $inputs.sample_interval_statistics 
                     $inputs.gz
