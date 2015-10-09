@@ -24,14 +24,10 @@
 #
 ########################################################
 
-pushd pipeline/scripts
-#python -m unittest discover -s ../tests -p '*_tests.py'
+export GROOVY="$PWD/tools/groovy/2.3.4/bin/groovy"
+export GROOVY_NGS="$PWD/tools/groovy-ngs-utils/1.0.2"
+export EXCEL="$PWD/tools/excel/1.0"
 
-python -m unittest discover -s ../tests -p annotate_significance_tests.py  
-#python -m unittest discover -s ../tests -p annotate_vep_tests.py  
-#python -m unittest discover -s ../tests -p annovar_tests.py  
-#python -m unittest discover -s ../tests -p merge_pgx_tests.py  
-#python -m unittest discover -s ../tests -p select_variants_tests.py  
-python -m unittest discover -s ../tests -p update_pipeline_run_id_test.py
-python -m unittest discover -s ../tests -p correct_sample_metadata_test.py
+pushd pipeline/tests
+python -m unittest discover -s . -p '*_test.py'
 popd

@@ -69,17 +69,22 @@ set_target_info = {
     branch.transcripts_file = "../design/${target_name}.transcripts.txt"
     branch.target_config = "../design/${target_name}.settings.txt"
 
-    println "Checking for target bed file : $target_bed_file"
-
-    produce(target_bed_file) {
-        exec """
-                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
-        """
-    }
-
+    println "Checking for target gene file: $target_gene_file"
     produce(target_gene_file) {
         exec """
             cp $BASE/designs/$target_name/${target_name}.genes.txt $target_gene_file;
+        """
+    }
+
+    println "Checking for target bed file: $target_bed_file"
+    produce(target_bed_file) {
+        exec """
+            if [ -e $BASE/designs/$target_name/${target_name}.bed ];
+            then
+                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
+            else
+                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file;
+            fi
         """
     }
 
@@ -254,22 +259,34 @@ check_sample_info = {
     }
 }
 
+// find additionally specified genes and add new ones that aren't on the incidentalome, to the gene lists
+update_gene_lists = {
+
+    // builds additional genes from sample metadata file, then adds any new ones to the flagship
+    exec """
+        python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+
+        python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
+    """
+}
+
 create_combined_target = {
 
     // Construct the region for variant calling from 
     //
     //   a) all of the disease cohort BED files
     //   b) the EXOME target regions
+    //   c) any additional genes being analyzed
     //
     // This way we avoid calling variants over the entire genome, but still
     // include everything of interest
-    String diseaseBeds = ANALYSIS_PROFILES.collect{"$BASE/designs/${it}/${it}.bed"}.join(",")
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
 
     output.dir = "../design"
 
     produce("combined_target_regions.bed") {
         exec """
-            cat $diseaseBeds $EXOME_TARGET | 
+            { python $SCRIPTS/genelist_to_bed.py $diseaseGeneLists ../design/*.addonce.genes.txt < $BASE/designs/genelists/exons.bed; cat $EXOME_TARGET; } |
                 cut -f 1,2,3 | 
                 $BEDTOOLS/bin/bedtools sort | 
                 $BEDTOOLS/bin/bedtools merge > $output.bed

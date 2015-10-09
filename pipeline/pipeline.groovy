@@ -68,7 +68,9 @@ samples = sample_info.keySet()
 
 run {
     // Check the basic sample information first
-    check_sample_info + check_tools +
+    check_sample_info +  // check that fastq files are present
+    check_tools +
+    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
     // Create a single BED that contains all the regions we want to call
     // variants in

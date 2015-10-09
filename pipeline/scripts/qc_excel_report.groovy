@@ -55,8 +55,8 @@ cli.with {
     o "name of output file", args:1
     p "prefix for filename", args:1
     low "directory to write regions of low coverage to", args:1
+    resultsdir "directory to write file to", args:1
 }
-
 
 opts = cli.parse(args)
 samples = null
@@ -74,6 +74,7 @@ int minRegionWidth = 1
 if(opts.w)
     minRegionWidth = opts.w.toInteger()
 
+resultsdir = opts.resultsdir ?: "results"
 
 lowBedDir = opts.low?:"." 
 
@@ -379,6 +380,6 @@ for(sample in samples) {
             }
 
         }.autoSize()
-    }.save("results/"+ opts.p + '_' + sample + ".gap.xlsx")
+    }.save( resultsdir + "/" + opts.p + '_' + sample + ".gap.xlsx")
 }
 
