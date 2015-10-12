@@ -69,17 +69,22 @@ set_target_info = {
     branch.transcripts_file = "../design/${target_name}.transcripts.txt"
     branch.target_config = "../design/${target_name}.settings.txt"
 
-    println "Checking for target bed file : $target_bed_file"
-
-    produce(target_bed_file) {
-        exec """
-                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
-        """
-    }
-
+    println "Checking for target gene file: $target_gene_file"
     produce(target_gene_file) {
         exec """
             cp $BASE/designs/$target_name/${target_name}.genes.txt $target_gene_file;
+        """
+    }
+
+    println "Checking for target bed file: $target_bed_file"
+    produce(target_bed_file) {
+        exec """
+            if [ -e $BASE/designs/$target_name/${target_name}.bed ];
+            then
+                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
+            else
+                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.*.genes.txt < $BASE/designs/flagships/exons.bed > $target_bed_file;
+            fi
         """
     }
 
@@ -177,7 +182,12 @@ set_sample_info = {
 
     def files = sample_info[sample].files.fastq
 
-    println "Processing input files ${files} for target region ${target_bed_file}"
+    // generate a custom bed file that only includes the incidentalome for this sample
+    exec """
+        python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.${sample}.genes.txt < $BASE/designs/flagships/exons.bed > $target_bed_file.${sample}.bed
+    """
+ 
+    println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
     forward files
 }
 
@@ -254,22 +264,35 @@ check_sample_info = {
     }
 }
 
+// find additionally specified genes and add new ones that aren't on the incidentalome, to the gene lists
+update_gene_lists = {
+
+    // builds additional genes from sample metadata file, then adds any new ones to the flagship
+    // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
+    exec """
+        python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+
+        python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
+    """
+}
+
 create_combined_target = {
 
     // Construct the region for variant calling from 
     //
     //   a) all of the disease cohort BED files
     //   b) the EXOME target regions
+    //   c) any additional genes being analyzed
     //
     // This way we avoid calling variants over the entire genome, but still
     // include everything of interest
-    String diseaseBeds = ANALYSIS_PROFILES.collect{"$BASE/designs/${it}/${it}.bed"}.join(",")
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
 
     output.dir = "../design"
 
     produce("combined_target_regions.bed") {
         exec """
-            cat $diseaseBeds $EXOME_TARGET | 
+            { python $SCRIPTS/genelist_to_bed.py $diseaseGeneLists ../design/*.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed; cat $EXOME_TARGET; } |
                 cut -f 1,2,3 | 
                 $BEDTOOLS/bin/bedtools sort | 
                 $BEDTOOLS/bin/bedtools merge > $output.bed
@@ -739,7 +762,7 @@ filter_variants = {
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
-             -L $target_bed_file $pgx_flag
+             -L $target_bed_file.${sample}.bed $pgx_flag
              --interval_padding $INTERVAL_PADDING_SNV
              --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
              -o $output.snv
@@ -751,7 +774,7 @@ filter_variants = {
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
-             -L $target_bed_file $pgx_flag
+             -L $target_bed_file.${sample}.bed $pgx_flag
              --interval_padding $INTERVAL_PADDING_INDEL
              --selectTypeToInclude INDEL
              -o $output.indel
@@ -825,7 +848,7 @@ calc_coverage_stats = {
 
     transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
         exec """
-          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file | gzip -c > $output.gz
+          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
 
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
         """
@@ -1071,7 +1094,7 @@ gatk_depth_of_coverage = {
                --omitDepthOutputAtEachBase
                -I $input.bam
                -ct 1 -ct 10 -ct 20 -ct 50 -ct 100
-               -L $target_bed_file
+               -L $target_bed_file.${sample}.bed
         """
     }
 }

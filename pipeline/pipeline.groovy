@@ -68,7 +68,9 @@ samples = sample_info.keySet()
 
 run {
     // Check the basic sample information first
-    check_sample_info + check_tools +
+    check_sample_info +  // check that fastq files are present
+    check_tools +
+    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
     // Create a single BED that contains all the regions we want to call
     // variants in
@@ -98,13 +100,13 @@ run {
 				   cleanup_intermediate_bams +
                        [
                          call_variants_gatk + call_pgx + merge_pgx +
-                            filter_variants + merge_variants +
-                            annotate_vep + index_vcf +
-                            annovar_table +
-                            [ 
-                               add_to_database, 
-                               augment_condel + annotate_significance
-                            ]  +
+                         filter_variants + merge_variants +
+                         annotate_vep + index_vcf +
+                         annovar_table +
+                         [ 
+                             add_to_database, 
+                             augment_condel + annotate_significance
+                         ]  +
                          calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
