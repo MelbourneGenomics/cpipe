@@ -51,20 +51,22 @@ reader = csv.reader(open(summary))
 header = reader.next()
 
 # Fix missing column headings
-if len(header)<28:
-        header.append('Qual')
-        header.append('Depth')
-        header.append('PTY_TX')
+header.append('PRIORITY_TX')
+
+chr_index = header.index('Chr')
+pos_index = header.index('Start')
+gene_index = header.index('Gene')
+aachange_index = header.index('AAChange')
 
 w.writerow(header)
 
 debug = False
 
 for l in reader:
-        gene = l[1]
-        chr = l[21]
-        start = l[22]
-        aachange = l[3]
+        gene = l[gene_index]
+        chr = l[chr_index]
+        start = l[pos_index]
+        aachange = l[aachange_index]
 
         if gene == 'unknown':
                 continue
@@ -76,9 +78,13 @@ for l in reader:
         row = l
         found_vtx = ''
         for v in csv.reader(f,delimiter='\t'):
+                #print >>sys.stderr, str(v)
+
                 if v[1] == 'unknown':
                         continue
-                
+
+                #print >>sys.stderr, "Check: %s:%s vs %s:%s" % (chr, start, v[3],v[4])
+
                 # Same location
                 if v[3] != chr:
                         continue
@@ -99,7 +105,7 @@ for l in reader:
                            map(lambda x: ':'.join(x.split(':')[3:5]), v[2].split(','))) # the AA change
                     
                     if debug:
-                        print "Full transcripts for %s are %s" % (aachange, vtxs)
+                        print >>sys.stderr, "Full transcripts for %s are %s" % (aachange, vtxs)
 
                     # vtxs is a list of transcripts, each element is another list
                     # of 2 elements, (tx name, aa change)

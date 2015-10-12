@@ -35,17 +35,19 @@ function abs_path() {
 
 function usage() {
     echo '
-Usage: create_batch.sh <batch identifier> <target region identifier> <exome bed file>
+Usage: create_batch.sh <batch identifier> <target region identifier> [<exome bed file>] [<data files>]
 
 1. The batch identifier should be an existing directory that you have 
-   created under 'batches', already containing a data subdirectory containign 
+   created under 'batches', already containing a data subdirectory containing 
    FASTQ files.
 
-2. The target region identifier should be one of the predefined sub target regions 
-   that is set up in the designs directory. These are the region for
-   analysis within the larger exome.
+2. The target region identifier should be one of the predefined analysis profiles
+   that is set up in the designs directory. These are the regions for
+   analysis within the larger exome. They are created using the pipeline/scripts/new_target_region.sh
+   script.
 
-3. The exome BED file defines the regions covered by the whole exome.
+3. The exome BED file defines the regions covered by the whole exome. If this is omitted,
+   the exome BED file is taken to be the same as the regions defined for the analysis profile.
 
 Example:
 
@@ -120,20 +122,37 @@ fi
 # Ensure EXOME_TARGET is expressed as an absolute path
 EXOME_TARGET=`abs_path "$EXOME_TARGET"`
 
+DATA_FILES="$4"
+if [ -z "$DATA_FILES" ];
+then
+    DATA_FILES="data/*.fastq.gz"
+fi
+
 cd "batches/$BATCH_ID"
 
 echo '
 EXOME_TARGET="'$EXOME_TARGET'"
 ' > target_regions.txt
 
-[ -e samples.txt ] && err \
-        "A samples.txt file already exists for this batch. Please remove it and any previous analysis manually before rerunning this script."
+[ -e samples.txt ] && {
+    read -p """
+        A samples.txt file already exists for this batch. If you continue, new samples generated 
+        will be appended to the existing samples.txt. If you wish to create a brand new batch,
+        please exit and remove the existing samples.txt to start fresh.
 
-# echo "$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET data/*.fastq.gz > samples.txt"
+        Do you want to continue? (y/n)
+    """
+    if [ "$REPLY" != "y" ];
+    then
+        err "Aborted due to user choice"
+    fi
+}
+
+unset GROOVY_HOME
 
 echo "Creating sample meta data file batches/$BATCH_ID/samples.txt with disease $TARGET..."
 
-$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET data/*.fastq.gz > samples.txt || \
+$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.1/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET $DATA_FILES > samples.txt || \
         err "Configuring the samples.txt file failed. Please check error messages for the reason and ensure your FASTQ files are named correctly"
 
 

@@ -1021,6 +1021,8 @@ vcf_to_excel = {
 
 vcf_to_family_excel = {
 
+    var with_sex_karyotype : false
+
     doc """
          Convert variants annotated with SnpEff and Annovar to an excel based format
          designed for diagnostics from family based sequencing.
@@ -1041,9 +1043,10 @@ vcf_to_family_excel = {
         produce(target_name + ".family.xlsx") {
             exec """
                 JAVA_OPTS="-Xmx6g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.family.groovy 
+                    -targets $target_bed_file ${with_sex_karyotype ? "-sex" : ""}
                     -p "" 
                     -db $ANNOTATION_VARIANT_DB
-                    -ped $input.ped
+                    -ped $input.ped ${inputs.bam.withFlag("-bam")}
                     -o $output.xlsx
                     -p $run_id
                     $UNIQUE $input.vcf $inputs.csv 
@@ -1174,7 +1177,7 @@ annovar_table = {
 
     output.dir="variants"
 
-    transform("vcf","vcf") to("av", "hg19_multianno.csv") {
+    transform("vcf","vcf","vcf") to("av", "hg19_multianno.csv","refGene.exonic_variant_function") {
         exec """
             $ANNOVAR/convert2annovar.pl $input.vcf -format vcf4 > $output.av
 
@@ -1382,11 +1385,11 @@ variant_bams = {
 
 @filter("aug")
 augment_transcript_ids = {
-        doc "Add an additional column indicating the VCGS transcript identifier for the VCGS transcript / isoform affected by each variant"
-                output.dir="variants"
+        doc "Add an additional column indicating the priorty transcript identifier transcript / isoform affected by each variant"
+        output.dir="variants"
 
-                    msg "Augmenting Annovar output with extra columns ($input.csv) ..."
-                        exec "python $SCRIPTS/augment_transcripts.py $transcripts_file $input.csv $input.exonic_variant_function > $output.csv"
+        msg "Augmenting Annovar output with extra columns ($input.csv) ..."
+        exec "python $SCRIPTS/augment_transcripts.py $transcripts_file $input.csv $input.exonic_variant_function > $output.csv"
 }
 
 /*
