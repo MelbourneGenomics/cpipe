@@ -60,17 +60,20 @@ def generate_new_genes( sample_lines, log, reference_genes, excluded_genes ):
     return 1
   
   result = {}
-  for line in sample_lines[1:]:
+  for line in sample_lines[1:]: # each sample
     fields = line.split('\t')
     cohort = fields[headers['Cohort']]
     genes = fields[headers['Prioritised_Genes']]
+    sample_id = fields[headers['Sample_ID']]
+    addonce_target = 'addonce.{0}'.format( sample_id )
     if cohort != '':
       if cohort not in result:
-        result[cohort] = { 'add': set(), 'addonce': set(), 'notfound': set() }
+        result[cohort] = { 'add': set(), 'notfound': set() } 
+      result[cohort][addonce_target] = set() # need an addonce for every sample (even if it's empty)
       candidates = re.split( '[:,"]+', genes.upper() )
       for candidate in candidates:
         if candidate in excluded:
-          result[cohort]['addonce'].add( candidate )
+          result[cohort][addonce_target].add( candidate )
         elif candidate in reference:
           result[cohort]['add'].add( candidate )
         else:
@@ -101,3 +104,4 @@ if __name__ == '__main__':
   samples = sys.stdin.readlines()
   additions = generate_new_genes( samples, sys.stderr, open(args.reference, 'r'), open(args.exclude, 'r') )
   write_genes( additions, args.target, sys.stderr, dummy=False )
+

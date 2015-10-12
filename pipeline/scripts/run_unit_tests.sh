@@ -29,5 +29,5 @@ export GROOVY_NGS="$PWD/tools/groovy-ngs-utils/1.0.2"
 export EXCEL="$PWD/tools/excel/1.0"
 
 pushd pipeline/tests
-python -m unittest discover -s . -p '*_test.py'
+python -m unittest discover -s . -p '*_test.py' -v
 popd

@@ -100,13 +100,13 @@ run {
 				   cleanup_intermediate_bams +
                        [
                          call_variants_gatk + call_pgx + merge_pgx +
-                            filter_variants + merge_variants +
-                            annotate_vep + index_vcf +
-                            annovar_table +
-                            [ 
-                               add_to_database, 
-                               augment_condel + annotate_significance
-                            ]  +
+                         filter_variants + merge_variants +
+                         annotate_vep + index_vcf +
+                         annovar_table +
+                         [ 
+                             add_to_database, 
+                             augment_condel + annotate_significance
+                         ]  +
                          calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
