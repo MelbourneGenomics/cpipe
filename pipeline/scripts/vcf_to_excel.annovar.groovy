@@ -56,6 +56,7 @@ cli.with {
   xprof 'Analysis profiles to exclude from contributing variant counts in variant filtering by internal database', args:1
   log 'Log file for writing information about variants filtered out', args: 1
   prefix 'Prefix for generated CSV files', args: 1
+  incidentalome 'File of genes to mark as excluded', args: 1
 }
 opts = cli.parse(args)
 
@@ -128,6 +129,16 @@ if(opts.db)
 
 // Read the gene categories
 geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+
+// read the incidentalome
+if (opts.incidentalome) {
+  incidentalome = new File(opts.incidentalome).readLines().findAll({ it =~ /^[^#]/ } )
+}
+else {
+  incidentalome = []
+}
+
+INCIDENTALOME_CATEGORY = 5
 
 AACHANGE_FIELDS = ANNOVAR_FIELDS.grep { it.startsWith("AAChange") }
 
@@ -207,9 +218,16 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     }
     outputValues.ExonicFunc = func=="splicing"?"":av.ExonicFunc
 
-    def geneCategory = geneCategories[gene]
-    if(sample_info[sample].geneCategories[gene])
+    def geneCategory = null
+    if ( incidentalome.find { it == gene } ) {
+      geneCategory = INCIDENTALOME_CATEGORY
+    }
+    else {
+      geneCategory = geneCategories[gene]
+      if(sample_info[sample].geneCategories[gene]) {
         geneCategory = sample_info[sample].geneCategories[gene]
+      }
+    }
 
     outputValues["Gene Category"] = (geneCategory == null)?1:geneCategory
     

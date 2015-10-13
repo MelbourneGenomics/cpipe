@@ -1014,6 +1014,7 @@ vcf_to_excel = {
                 -annox $output.dir
                 -log ${target_name}_filtering.log
                 -prefix $run_id
+                -incidentalome $BASE/designs/genelists/incidentalome.genes.txt
                 ${inputs.bam.withFlag("-bam")}
         """, "vcf_to_excel"
     }
