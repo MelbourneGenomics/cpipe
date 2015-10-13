@@ -83,7 +83,7 @@ set_target_info = {
             then
                 cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
             else
-                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.*.genes.txt < $BASE/designs/flagships/exons.bed > $target_bed_file;
+                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file;
             fi
         """
     }
@@ -184,7 +184,7 @@ set_sample_info = {
 
     // generate a custom bed file that only includes the incidentalome for this sample
     exec """
-        python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.${sample}.genes.txt < $BASE/designs/flagships/exons.bed > $target_bed_file.${sample}.bed
+        python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.${sample}.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file.${sample}.bed
     """
  
     println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
@@ -1401,4 +1401,26 @@ augment_transcript_ids = {
 }
 */
 
+
+validate_batch = {
+    doc "Validates batch results"
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
+    produce("results/missing_from_exons.genes.txt", "results/${run_id}_batch_validation.md", "results/${run_id}_batch_validation.html") {
+      exec """
+          cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/exons.bed > results/missing_from_exons.genes.txt
+
+          if [ -e $BASE/designs/genelists/annovar.bed ]; then
+            cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/annovar.bed > results/missing_from_annovar.genes.txt;
+          fi
+
+          if [ -e $BASE/designs/genelists/incidentalome.genes.txt ]; then
+            python $SCRIPTS/validate_genelists.py --exclude $BASE/designs/genelists/incidentalome.genes.txt $diseaseGeneLists > results/excluded_genes_analyzed.txt;
+          fi
+
+          python $SCRIPTS/validate_batch.py --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
+
+          python $SCRIPTS/markdown2.py --extras tables < results/${run_id}_batch_validation.md | python $SCRIPTS/prettify_markdown.py > results/${run_id}_batch_validation.html
+      """, "validate_batch"
+    }
+}
 
