@@ -1414,7 +1414,7 @@ validate_batch = {
           fi
 
           if [ -e $BASE/designs/genelists/incidentalome.genes.txt ]; then
-            python $SCRIPTS/validate_genelists.py --exclude $BASE/designs/genelists/incidentalome.genes.txt {$diseaseGeneLists} > results/excluded_genes_analyzed.txt;
+            python $SCRIPTS/validate_genelists.py --exclude $BASE/designs/genelists/incidentalome.genes.txt $diseaseGeneLists > results/excluded_genes_analyzed.txt;
           fi
 
           python $SCRIPTS/validate_batch.py --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
