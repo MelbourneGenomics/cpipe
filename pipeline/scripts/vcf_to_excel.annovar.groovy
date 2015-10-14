@@ -219,13 +219,14 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     outputValues.ExonicFunc = func=="splicing"?"":av.ExonicFunc
 
     def geneCategory = null
-    if ( incidentalome.find { it == gene } ) {
+    def genePrefix = gene.split(';')[0]
+    if ( incidentalome.find { it == genePrefix } ) {
       geneCategory = INCIDENTALOME_CATEGORY
     }
     else {
-      geneCategory = geneCategories[gene]
-      if(sample_info[sample].geneCategories[gene]) {
-        geneCategory = sample_info[sample].geneCategories[gene]
+      geneCategory = geneCategories[genePrefix]
+      if(sample_info[sample].geneCategories[genePrefix]) {
+        geneCategory = sample_info[sample].geneCategories[genePrefix]
       }
     }
 
