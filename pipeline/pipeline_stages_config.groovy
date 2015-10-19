@@ -848,19 +848,23 @@ calc_coverage_stats = {
 
     def tmp_file = ['targeted', UUID.randomUUID().toString(), '.bed'].join( '' )
 
-    transform("bam","bam") to(file(target_bed_file).name+".covall.gz","ontarget.txt", file(target_bed_file).name+".cov.gz") {
+    // only calculate coverage for bases overlapping the exome
+    transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
+        //exec """
+        // $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
+
+        // $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+
         exec """
-          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
+          $BEDTOOLS/bin/bedtools intersect -a $EXOME_TARGET -b $target_bed_file.${sample}.bed > ${tmp_file}
+
+          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output.gz
 
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
 
-          $BEDTOOLS/bin/bedtools intersect -a $EXOME_TARGET -b $target_bed_file.${sample}.bed > ${tmp_file}
-
-          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output3.gz
-
-          rm ${tmp_file}
-
         """
+        //  rm ${tmp_file}
+
     }
 }
 
