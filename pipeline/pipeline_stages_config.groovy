@@ -846,11 +846,20 @@ calc_coverage_stats = {
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
-    transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
+    def tmp_file = ['targeted', UUID.randomUUID().toString(), '.bed'].join( '' )
+
+    transform("bam","bam") to(file(target_bed_file).name+".covall.gz","ontarget.txt", file(target_bed_file).name+".cov.gz") {
         exec """
           $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
 
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+
+          $BEDTOOLS/bin/bedtools intersect -a $EXOME_TARGET -b $target_bed_file.${sample}.bed > ${tmp_file}
+
+          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output3.gz
+
+          rm ${tmp_file}
+
         """
     }
 }
@@ -1259,7 +1268,7 @@ summary_pdf = {
         // -metrics $input.metrics
         exec """
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar $SCRIPTS/qc_pdf.groovy 
-                -cov $input.cov.gz
+                -cov $input.covex.gz
                 -ontarget $input.ontarget.txt ${inputs.metrics.withFlag("-metrics")}
                 -study $sample 
                 -meta $sample_metadata_file
