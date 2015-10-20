@@ -1272,7 +1272,7 @@ summary_pdf = {
         // -metrics $input.metrics
         exec """
              JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar $SCRIPTS/qc_pdf.groovy 
-                -cov $input.covex.gz
+                -cov $input.cov.gz
                 -ontarget $input.ontarget.txt ${inputs.metrics.withFlag("-metrics")}
                 -study $sample 
                 -meta $sample_metadata_file
