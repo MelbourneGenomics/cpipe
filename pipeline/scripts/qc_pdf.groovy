@@ -84,7 +84,8 @@ if(!samples.containsKey(opts.study))
 SampleInfo meta = samples[opts.study]
 
 // Read the gene categories for the target / cohort / flagship
-geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+// geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+geneCategories = new File(opts.gc).readLines().findAll( { it =~ /^[^#]/ } )*.split('\t').collect { [it[0],it[1]] }.collectEntries()
 
 // Update gene categories with sample specific data
 if(meta.geneCategories) {

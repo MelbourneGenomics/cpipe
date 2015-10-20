@@ -846,12 +846,26 @@ calc_coverage_stats = {
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
+    // def tmp_file = ['targeted', UUID.randomUUID().toString(), '.bed'].join( '' )
+
     transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
         exec """
-          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
+         $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
 
-          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+         $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
         """
+
+    // only calculate coverage for bases overlapping the exome
+        // exec """
+        //   $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > ${tmp_file}
+        //
+        //  $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output.gz
+        //
+        //  $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+        //
+        //"""
+        //  rm ${tmp_file}
+
     }
 }
 
