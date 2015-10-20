@@ -856,7 +856,7 @@ calc_coverage_stats = {
         // $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
 
         exec """
-          $BEDTOOLS/bin/bedtools intersect -a $EXOME_TARGET -b $target_bed_file.${sample}.bed > ${tmp_file}
+          $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > ${tmp_file}
 
           $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output.gz
 
