@@ -59,7 +59,7 @@ def get_current_id( f ):
       try:
         run = int(run)
       except ValueError: # rightmost section isn't an id after all
-        site = current_id
+        site = current
         run = 1
       current_id = '%s_%09i' % (site, run)
     elif len(current) == 0: # empty file
