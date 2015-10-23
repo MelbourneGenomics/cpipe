@@ -270,6 +270,8 @@ update_gene_lists = {
     // builds additional genes from sample metadata file, then adds any new ones to the flagship
     // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
     exec """
+        mkdir -p "../design"
+
         python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
 
         python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
