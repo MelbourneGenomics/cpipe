@@ -94,11 +94,11 @@ TARGET="$2"
     fi
 }
 
-[ -e "designs/${TARGET}/${TARGET}.bed" ] ||
-    err "No file called ${TARGET}.bed could be found in designs/${TARGET}. Is this target region configured yet?"
+# need a bed or genes.txt file
+[ -e "designs/${TARGET}/${TARGET}.bed" -o -e "designs/${TARGET}/${TARGET}.genes.txt" ] ||
+    err "No file called ${TARGET}.bed or ${TARGET}.genes.txt could be found in designs/${TARGET}. Is this target region configured yet?"
 
 eval `sed 's/\/\/.*$//' pipeline/config.groovy`
-
 
 # Default: exome target is the same as diagnostic target / analysis profile
 EXOME_TARGET="$3"
@@ -116,8 +116,13 @@ then
     EXOME_TARGET="$BASE/designs/${TARGET}/"`basename $EXOME_TARGET`
 fi
 
-[ -f "$EXOME_TARGET" ] ||
-    err "No file called ${EXOME_TARGET} could be found. You may need to specify this file with an absolute path"
+# make target regions from gene list
+if [ ! -f "$EXOME_TARGET" ];
+then
+    EXOME_TARGET="$BASE/designs/${TARGET}/"`basename $EXOME_TARGET`
+    python ./pipeline/scripts/genelist_to_bed.py "designs/${TARGET}/${TARGET}.genes.txt" < "$BASE/designs/genelists/exons.bed" > ${EXOME_TARGET}
+    #err "No file called ${EXOME_TARGET} could be found. You may need to specify this file with an absolute path"
+fi
 
 # Ensure EXOME_TARGET is expressed as an absolute path
 EXOME_TARGET=`abs_path "$EXOME_TARGET"`
@@ -152,7 +157,7 @@ unset GROOVY_HOME
 
 echo "Creating sample meta data file batches/$BATCH_ID/samples.txt with disease $TARGET..."
 
-$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.1/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET $DATA_FILES > samples.txt || \
+$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET $DATA_FILES > samples.txt || \
         err "Configuring the samples.txt file failed. Please check error messages for the reason and ensure your FASTQ files are named correctly"
 
 
