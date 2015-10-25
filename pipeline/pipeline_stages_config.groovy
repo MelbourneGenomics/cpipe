@@ -1363,12 +1363,15 @@ correct_sample_metadata_file = {
 generate_pipeline_id = {
     doc "Generate a pipeline run ID for this batch"
     output.dir="results"
-    produce("results/run_id") {
+    produce("run_id") {
       exec """
-        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > results/run_id
+        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > $output
       """
-      run_id = new File('results/run_id').text.trim()
     }
+   // This line is necessary on some distributed file systems (e.g. MCRI) to ensure that
+   // files get synced between nodes
+   file("results").listFiles()
+   run_id = new File('results/run_id').text.trim()
 }
 
 create_sample_metadata = {
