@@ -32,6 +32,9 @@ import operator
 import os
 import subprocess
 
+def pdf_to_text(file):
+  return subprocess.Popen(["pdftotext",file,"-"], stdout=subprocess.PIPE).communicate()[0]
+
 def extract_sample( file ):
   file = os.path.basename(file) # remove leading directories
   if '_' in file:
@@ -62,7 +65,7 @@ def check_gene_coverage( dir, bad_threshold=15 ):
   print "Sample     | Outcome  | % Fail | Good | Pass | Fail | Total"
   print "-----------|----------|--------|------|------|------|------"
   for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = subprocess.check_output( "pdftotext %s -" % file, shell=True)
+    out = pdf_to_text(file)
     result = collections.defaultdict(int)
     for line in out.split('\n'):
       result[line.strip()] += 1
@@ -77,7 +80,7 @@ def check_observed_mean_coverage( dir, bad_threshold=90 ):
   print "Sample     | Outcome  | OMC"
   print "-----------|----------|------"
   for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = subprocess.check_output( "pdftotext %s -" % file, shell=True)
+    out = pdf_to_text(file)
     result = collections.defaultdict(int)
     in_omc = False
     sample = extract_sample( file )

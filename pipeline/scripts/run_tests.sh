@@ -68,7 +68,7 @@ function annovar_has() {
   TYPE="$3"
   printf "Check $TYPE at $CHR:$POS "
 
-  cat $ANNOVAR_CSV | grep '"'$CHR'"' | grep '"'$POS'"' | grep -q '"'"$TYPE"'"' \
+  cat $ANNOVAR_CSV | grep '"'$CHR'"' | grep '"'$POS'"' | grep -q "$TYPE" \
     || err "Annovar file $ANNOVAR_CSV did not have expected variant of type '$TYPE' at  $CHR:$POS"
 
   echo "PASS" 

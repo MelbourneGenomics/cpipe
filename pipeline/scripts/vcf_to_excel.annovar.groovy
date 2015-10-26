@@ -128,7 +128,7 @@ if(opts.db)
     db = new VariantDB(opts.db)
 
 // Read the gene categories
-geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+geneCategories = new File(opts.gc).readLines().grep { !it.startsWith("#") }*.split("\t").collect { [it[0],it[1]] }.collectEntries()
 
 // read the incidentalome
 if (opts.incidentalome) {

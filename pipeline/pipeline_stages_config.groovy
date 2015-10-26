@@ -487,16 +487,16 @@ merge_bams = {
     produce(sample + ".merge.bam") {
         // If there is only 1 bam file, then there is no need to merge,
         // just alias the name 
-        if(inputs.bam.size()==1)  {
-           // alias(input.bam) to(output.bam)
-            msg "Skipping merge of $inputs.bam because there is only one file"
+        //if(inputs.bam.size()==1)  {
+        //    alias(input.bam) to(output.bam)
+            // msg "Skipping merge of $inputs.bam because there is only one file"
             // This use of symbolic links may be questionable
             // However if the ordinary case involves only one
             // bam file then there may be some significant savings
             // from doing this.
-            exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
-        }
-        else {
+            // exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
+        //}
+        //else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
             exec """
                 $JAVA -Xmx2g -jar $PICARD_HOME/lib/MergeSamFiles.jar
@@ -506,7 +506,7 @@ merge_bams = {
                     CREATE_INDEX=true
                     OUTPUT=$output.bam
              """, "merge"
-        }
+        //}
     }
 }
 
@@ -877,7 +877,7 @@ check_ontarget_perc = {
         exec """
             RAW_READ_COUNT=`cat $input.ontarget.txt`
 
-            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / $RAW_READ_COUNT))*100 }'`
+            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
             [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
@@ -1363,12 +1363,15 @@ correct_sample_metadata_file = {
 generate_pipeline_id = {
     doc "Generate a pipeline run ID for this batch"
     output.dir="results"
-    produce("results/run_id") {
+    produce("run_id") {
       exec """
-        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > results/run_id
+        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > $output
       """
-      run_id = new File('results/run_id').text.trim()
     }
+   // This line is necessary on some distributed file systems (e.g. MCRI) to ensure that
+   // files get synced between nodes
+   file("results").listFiles()
+   run_id = new File('results/run_id').text.trim()
 }
 
 create_sample_metadata = {
