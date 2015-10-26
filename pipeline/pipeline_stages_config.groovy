@@ -877,7 +877,7 @@ check_ontarget_perc = {
         exec """
             RAW_READ_COUNT=`cat $input.ontarget.txt`
 
-            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / $RAW_READ_COUNT))*100 }'`
+            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
             [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
