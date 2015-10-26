@@ -106,7 +106,7 @@ def check_individual_genes( dir, bad_threshold=75 ):
   genes = {}
 
   for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = subprocess.check_output( "pdftotext %s -" % file, shell=True)
+    out = pdf_to_text(file)
     result = collections.defaultdict(int)
     last = None
     for line in out.split('\n'):
