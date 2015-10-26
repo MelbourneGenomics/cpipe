@@ -487,16 +487,16 @@ merge_bams = {
     produce(sample + ".merge.bam") {
         // If there is only 1 bam file, then there is no need to merge,
         // just alias the name 
-        if(inputs.bam.size()==1)  {
-           // alias(input.bam) to(output.bam)
-            msg "Skipping merge of $inputs.bam because there is only one file"
+        //if(inputs.bam.size()==1)  {
+        //    alias(input.bam) to(output.bam)
+            // msg "Skipping merge of $inputs.bam because there is only one file"
             // This use of symbolic links may be questionable
             // However if the ordinary case involves only one
             // bam file then there may be some significant savings
             // from doing this.
-            exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
-        }
-        else {
+            // exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
+        //}
+        //else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
             exec """
                 $JAVA -Xmx2g -jar $PICARD_HOME/lib/MergeSamFiles.jar
@@ -506,7 +506,7 @@ merge_bams = {
                     CREATE_INDEX=true
                     OUTPUT=$output.bam
              """, "merge"
-        }
+        //}
     }
 }
 
