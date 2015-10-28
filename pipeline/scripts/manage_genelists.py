@@ -31,6 +31,20 @@ DEFAULT_PRIORITY = '1'
 def write_log( log, msg ):
   log.write( '%s: %s\n' % ( datetime.datetime.now().strftime( '%y%m%d-%H%M%S' ), msg ) )
 
+def add_profile( profile_name, fh_out ):
+  '''
+    add ./designs/profile_name/profile_name.genes.txt
+  '''
+  directory = './designs/{0}'.format( profile_name )
+  target = './designs/{0}/{0}.genes.txt'.format( profile_name )
+  if os.path.isfile(target):
+    fh_out.write( 'ERROR: profile "{0}" already exists\n'.format( profile_name ) )
+  else:
+    if not os.path.exists( directory ):
+      os.makedirs( directory )
+      with open( target, 'w' ) as fh:
+        fh.write( '# profile created {0}'.format( datetime.datetime.now().strftime( '%y%m%d' ) ) )
+
 def list_profiles( fh_out ):
   '''
     look for files of the form designs/X/X.genes.txt
@@ -157,7 +171,7 @@ def validate( profile, fh_out ):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Manage gene lists')
-  parser.add_argument('command', help='command to execute', choices=['list_profiles', 'list_genes', 'add_genes', 'remove_genes', 'validate'] )
+  parser.add_argument('command', help='command to execute', choices=['add_profile', 'list_profiles', 'list_genes', 'add_genes', 'remove_genes', 'validate'] )
   parser.add_argument('--profile', required=False, help='profile to update')
   parser.add_argument('--force', action='store_true', help='force addition of genes')
   args = parser.parse_args()
@@ -168,7 +182,9 @@ if __name__ == '__main__':
       parser.print_help()
       sys.exit(1)
 
-    if args.command == 'list_genes':
+    if args.command == 'add_profile':
+      add_profile( args.profile, sys.stdout )
+    elif args.command == 'list_genes':
       list_genes( args.profile, sys.stdout )
     elif args.command == 'add_genes':
       add_genes( args.profile, sys.stdin, sys.stdout, args.force )
