@@ -31,7 +31,7 @@ import os
 import re
 import sys
 
-def generate_new_genes( sample_lines, log, reference_genes, excluded_genes ):
+def generate_new_genes( sample_lines, log, reference_genes, excluded_genes, reference_source, excluded_source ):
   '''
     given samples, make files of the form CS.extra.genes.txt and CS.extra.excluded.genes.txt
   '''
@@ -44,8 +44,10 @@ def generate_new_genes( sample_lines, log, reference_genes, excluded_genes ):
   # get list of excluded genes
   excluded = set()
   for line in excluded_genes:
+    if line.startswith( '#' ):
+      continue
     excluded.add( line.strip().split('\t')[0].upper() )
-  log.write( '%i available reference genes, %i excluded genes\n' % ( len(reference), len(excluded) ) )
+  log.write( '{0} available reference genes found in {1}, {2} excluded genes found in {3}: {4}\n'.format( len(reference), reference_source, len(excluded), excluded_source, ' '.join( sorted( list( excluded ) ) ) ) )
 
   # parse sample
   headers = {}
@@ -102,6 +104,6 @@ if __name__ == '__main__':
   parser.add_argument('--target', required=True, help='target directory')
   args = parser.parse_args()
   samples = sys.stdin.readlines()
-  additions = generate_new_genes( samples, sys.stderr, open(args.reference, 'r'), open(args.exclude, 'r') )
+  additions = generate_new_genes( samples, sys.stderr, open(args.reference, 'r'), open(args.exclude, 'r'), os.path.basename(args.reference), os.path.basename(args.exclude) )
   write_genes( additions, args.target, sys.stderr, dummy=False )
 
