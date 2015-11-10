@@ -25,9 +25,51 @@
 
 import sys
 
-headers = sys.stdin.readline().strip().split('\t')
-for idx, line in enumerate(sys.stdin):
-  print "===== Sample %i =====" % idx
-  fields = line.strip('\n').split('\t')
-  for jdx, field in enumerate(fields):
-    print "%24s: %s" % ( headers[jdx], field )
+is_numeric = set( [ 'dna concentration', 'dna quantity', 'dna quality', 'mean coverage' ] )
+is_enumeration = { 'sex': set( [ 'Male', 'Female', 'Unknown', 'other' ] ), 'sample type': set( [ 'Normal', 'Tumour' ] ), 'consanguinity': set( [ 'No', 'Yes', 'Suspected', 'Unknown' ] ), 'ethnicity': set( [ 'Unknown', 'European', 'African', 'Asian' ] ) }
+is_date = set( [ 'dna_date', 'capture_date', 'sequencing_date' ] )
+
+def is_valid_numeric( field ):
+  if len(field) > 0:
+    try:
+      float(field)
+      return True
+    except ValueError:
+      return False
+  return True
+
+def is_valid_enumeration( field, allowed ):
+  return len(field) == 0 or field in allowed
+
+def is_valid_date( field ):
+  return len(field) == 0 or len(field) == 8 and field.is_digit()
+
+def validate( fh, out, err ):
+  headers = fh.readline().strip().split('\t')
+  idx = -1
+  warnings = []
+  for idx, line in enumerate(fh):
+    out.write( "===== Sample {0} =====\n".format( idx ) )
+    fields = line.strip('\n').split('\t')
+    for jdx, field in enumerate(fields):
+      out.write( "{0:>24}: {1}\n".format( headers[jdx], field ) )
+      if field.startswith( ' ' ):
+        warnings.append( 'Sample {0} field {1} (column {2}) contains leading whitespace'.format( idx, headers[jdx], jdx ) )
+      if field.endswith( ' ' ):
+        warnings.append( 'Sample {0} field {1} (column {2}) contains trailing whitespace'.format( idx, headers[jdx], jdx ) )
+      if headers[jdx].lower() in is_numeric and not is_valid_numeric( field ):
+          warnings.append( 'Sample {0} field {1} (column {2}) cannot be "{3}": must be empty or a number'.format( idx, headers[jdx], jdx, field ) )
+      if headers[jdx].lower() in is_enumeration and not is_valid_enumeration( field, is_enumeration[headers[jdx].lower()] ):
+          warnings.append( 'Sample {0} field {1} (column {2}) cannot be "{3}": must be empty or one of: {4}'.format( idx, headers[jdx], jdx, field, ', '.join( is_enumeration[headers[jdx].lower()] ) ) )
+      if headers[jdx].lower() in is_date and not is_valid_date( field ):
+          warnings.append( 'Sample {0} field {1} (column {2}) cannot be "{3}": must be empty or date (yyyymmdd)'.format( idx, headers[jdx], jdx, field ) )
+
+  if idx == -1:
+    err.write( "ERROR: file only contains one line. Are you using Windows style line feeds?\n" )
+  for warning in warnings:
+    err.write( "WARNING: {0}\n".format( warning ) )
+  if len(warnings) == 0:
+    err.write( "No warnings\n" )
+
+if __name__ == '__main__':
+  validate( sys.stdin, sys.stdout, sys.stderr )

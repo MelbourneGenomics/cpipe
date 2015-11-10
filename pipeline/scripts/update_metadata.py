@@ -37,13 +37,15 @@ def update_metadata( sample_in, sample_out, log, sample, name, value ):
     return 1
 
   if name.lower() not in headers_map:
-    log.write( 'ERROR: %s is not a valid field name\n' % name )
+    log.write( 'ERROR: {0} is not a valid field name. Must be one of: {1}\n'.format( name, ', '.join( headers_map.keys() ) ) )
     return 1
 
   sample_found = False
+  samples = []
   for line in sample_in[1:]:
     fields = line.rstrip('\n').split('\t')
-    if fields[headers_map['sample_id']] == sample:
+    samples.append( fields[headers_map['sample_id']].strip() )
+    if samples[-1] == sample:
       sample_found = True
       fields[headers_map[name.lower()]] = value
       sample_found = True
@@ -52,7 +54,7 @@ def update_metadata( sample_in, sample_out, log, sample, name, value ):
       sample_out.write( line )
 
   if not sample_found:
-    log.write( 'ERROR: sample "%s" not found\n' % sample )
+    log.write( 'ERROR: sample "{0}" not found in: {1}\n'.format( sample, ', '.join( samples ) ) )
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Update metadata')
