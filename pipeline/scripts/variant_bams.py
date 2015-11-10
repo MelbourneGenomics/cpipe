@@ -68,10 +68,11 @@ def main():
 
     # Assume sample name is the first part of the filename before the "."
     #sample = variantfile.split('/')[-1].split('.')[0]
-    variant_filename = variantfile.split('/')[-1]
+    variant_filename = variantfile.split('/')[-1] # vlsci_1.0.2_000000017_012345678.annovarx.csv
     if '_' in variant_filename:
       # take the last part after the _ and the first part before the .
-      sample = variant_filename.split('_')[-1].split('.')[0]
+      #sample = variant_filename.split('_')[-1].split('.')[0]
+      sample = '.'.join( variant_filename.split('.')[:-2] ) # take everything before the last 2 dots
     else:
       # Assume sample name is the first part of the filename before the "."
       sample = variant_filename.split('.')[0]
