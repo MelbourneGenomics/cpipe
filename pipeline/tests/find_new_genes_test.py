@@ -37,7 +37,7 @@ class FindNewGenesTest(unittest.TestCase):
       excluded_genes = StringIO.StringIO( 'ghi' )
       sample_lines = ['Sample_ID\tCohort\tPrioritised_Genes', '123\tCS\t4:def,ghi,jkl']
       log = StringIO.StringIO()
-      result = find_new_genes.generate_new_genes( sample_lines, log, reference_genes, excluded_genes )
+      result = find_new_genes.generate_new_genes( sample_lines, log, reference_genes, excluded_genes, 'ref', 'exc' )
       assert list( result['CS']['notfound'] ) == [ 'JKL' ]
       assert list( result['CS']['add'] ) == [ 'DEF' ]
       assert list( result['CS']['addonce.123'] ) == [ 'GHI' ]

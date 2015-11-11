@@ -145,6 +145,7 @@ IGV="$TOOLS/tools/igv/2.3.15"
 
 // Location and version of BWA
 BWA="$TOOLS/bwa/0.7.5a/bwa"
+BWA_THREADS="5"
 
 CONDEL="$TOOLS/condel/24-1-2013"
 

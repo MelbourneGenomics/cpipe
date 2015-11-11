@@ -396,13 +396,16 @@ align_bwa = {
 
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
     produce(outputFile) {
+        if(!BWA_THREADS) {
+          BWA_THREADS = 1;
+        }
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
         //    GATK and Picard.
         exec """
                 set -o pipefail
 
-                $BWA mem -M -t $threads -k $seed_length 
+                $BWA mem -M -t $BWA_THREADS -k $seed_length 
                          -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
                          $REF $input1.gz $input2.gz | 
                          $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort - $output.prefix
