@@ -397,7 +397,7 @@ align_bwa = {
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
     produce(outputFile) {
         if(!BWA_THREADS) {
-          BWA_THREADS = 1;
+            fail "Please set BWA_THREADS in config.groovy"
         }
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
