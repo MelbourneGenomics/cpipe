@@ -403,9 +403,6 @@ align_bwa = {
     }
 
     produce(outputFile) {
-        if(!BWA_THREADS) {
-            fail "Please set BWA_THREADS in config.groovy"
-        }
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
         //    GATK and Picard.
