@@ -395,6 +395,13 @@ align_bwa = {
     branch.lane = lanes[0]
 
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
+
+    var BWA_THREADS: false;
+
+    if(!BWA_THREADS) {
+        BWA_THREADS = 1
+    }
+
     produce(outputFile) {
         if(!BWA_THREADS) {
             fail "Please set BWA_THREADS in config.groovy"
