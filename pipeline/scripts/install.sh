@@ -252,6 +252,22 @@ then
     fi
 fi
 
+msg "Check VEP reference files downloaded for version $VEP_VERSION..."
+if [ -e $VEP/../vep_cache/homo_sapiens_vep_74.tar.gz ]; then
+    msg "VEP cache files installed..."
+else
+    echo "
+    Cpipe uses the Variant Effect Predictor from Ensembl
+    to perform annotation of variants.
+
+    You can download the reference file directly now, or download it as part of the VEP installation in the following step.
+    "
+    prompt "Do you want to download homo_sapiens_vep_74.tar.gz now? (y/n)" "y"
+    pushd $VEP/../vep_cache /dev/null
+    wget ftp://ftp.ensembl.org:21/pub/release-74/variation/VEP/homo_sapiens_vep_74.tar.gz
+    popd
+fi
+
 msg "Check VEP database downloaded for version $VEP_VERSION..."
 if [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] && [ -e $VEP/Bio ]; then
     msg "VEP installed..."
