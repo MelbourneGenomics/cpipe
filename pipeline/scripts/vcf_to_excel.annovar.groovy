@@ -171,7 +171,7 @@ OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] +
                     AACHANGE_FIELDS + 
                     ["phastConsElements46way","genomicSuperDups",ESP_FIELD,ONEKG_FIELD,EXAC_FIELD,"snp138"] +
                     LJB_FIELDS +
-                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","CADD_phred", "Gene Category","Priority Index", "#ObsNotInCohort","#ObsInCohort","RefCount","AltCount","PRIORITY_TX"]
+                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","CADD_phred", "Gene Category", "#ObsNotInCohort","#ObsInCohort","RefCount","AltCount","PRIORITY_TX"]
 
 CENTERED_COLUMNS = ["Gene Category", "Priority_Index", ONEKG_FIELD, ESP_FIELD, "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
