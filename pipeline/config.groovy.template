@@ -79,9 +79,9 @@ EXOME_TARGET=""
 // the variant database.
 SAMPLE_ID_MASK=".*"
 
-// Filter out variants observed more than 2 times (ie: 3 times or more)
+// Filter out variants observed more than 10 times (ie: 11 times or more)
 // in samples from a different cohort / disease target
-OUT_OF_COHORT_VARIANT_COUNT_FILTER=2
+OUT_OF_COHORT_VARIANT_COUNT_FILTER=10
 
 // This is only used for setting read group information in the
 // BAM files
