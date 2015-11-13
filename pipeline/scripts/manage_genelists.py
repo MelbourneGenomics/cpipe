@@ -44,6 +44,9 @@ def add_profile( profile_name, fh_out ):
       os.makedirs( directory )
       with open( target, 'w' ) as fh:
         fh.write( '# profile created {0}'.format( datetime.datetime.now().strftime( '%y%m%d' ) ) )
+      # also require a transcript file
+      transcript_target = './designs/{0}/{0}.transcripts.txt'.format( profile_name )
+      open( transcript_target, 'w' )
 
 def list_profiles( fh_out ):
   '''
