@@ -34,21 +34,35 @@ import sys
 def find_variants( fh ):
   csvfh = csv.reader( fh, delimiter=',', quotechar='"' )
   indexes = None
+  data_indexes = None
   result = set()
+  extra = {}
   for line in csvfh:
-    if not indexes:
-      indexes = [ line.index(x) for x in ('Gene','Chr','Start', 'Func') ]
+    if not indexes: # first line
+      indexes = [ line.index(x) for x in ('Gene','Chr','Start') ]
+      data_indexes = [ line.index(x) for x in ('Gene','Chr','Start', 'Func') ]
     else:
-      key = '\t'.join( [ line[i] for i in indexes ] )
-      result.add( key )
-  return result
+      key = [ line[i] for i in indexes ]
+      data = [ line[i] for i in data_indexes ]
+      # hack to deal with ;
+      if ';' in key[0]:
+        for i, gene in enumerate( key[0].split(';') ):
+          skey = '\t'.join( [ gene, key[1], key[2] ] )
+          data_fixed = '\t'.join( [ gene, data[1], data[2], data[3].split(';')[i] ] )
+          result.add( skey )
+          extra[ skey ] = data_fixed
+      else:
+        skey = '\t'.join( key )
+        result.add( skey )
+        extra[ skey ] = '\t'.join( data )
+  return result, extra
   
 def compare( d1, d2, s1, s2, out, common=False ):
   # compare the annovars
   a1fn = glob.glob( '{0}/analysis/results/*{1}.annovarx.csv'.format( d1, s1 ) )[0]
   a2fn = glob.glob( '{0}/analysis/results/*{1}.annovarx.csv'.format( d2, s2 ) )[0]
-  a1 = find_variants( open( a1fn, 'r' ) )
-  a2 = find_variants( open( a2fn, 'r' ) )
+  a1, a1extra = find_variants( open( a1fn, 'r' ) )
+  a2, a2extra = find_variants( open( a2fn, 'r' ) )
   out.write( '{0} total variants in {1} {2}\n'.format( len(a1), d1, s1 ) )
   out.write( '{0} total variants in {1} {2}\n'.format( len(a2), d2, s2 ) )
   # common
@@ -56,17 +70,17 @@ def compare( d1, d2, s1, s2, out, common=False ):
     both = a1.intersection(a2)
     out.write( '----- {0} variants in common -----\n'.format( len(both) ) )
     for x in sorted( list( both ) ):
-      out.write( '{0}\n'.format( x ) )
+      out.write( '{0}\n'.format( a1extra[x] ) )
   # only s1
   s1only = a1.difference( a2 )
   out.write( '----- {0} variants only in {1} {2} -----\n'.format( len(s1only), d1, s1 ) )
   for x in sorted( list( s1only ) ):
-    out.write( '{0}\n'.format( x ) )
+    out.write( '{0}\n'.format( a1extra[x] ) )
   # only s2
   s2only = a2.difference( a1 )
   out.write( '----- {0} variants only in {1} {2} -----\n'.format( len(s2only), d2, s2 ) )
   for x in sorted( list( s2only ) ):
-    out.write( '{0}\n'.format( x ) )
+    out.write( '{0}\n'.format( a2extra[x] ) )
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Compare two analyses')
