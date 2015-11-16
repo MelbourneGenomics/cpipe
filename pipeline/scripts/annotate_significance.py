@@ -106,7 +106,7 @@ class Annovar:
             Note: unknown categories are returned as 9 - that is, extremely high.
         """
 
-        if self.is_missense():
+        if self.is_missense(): # nonframeshift...
            if self.is_rare():
                if self.is_novel() or self.is_very_rare():
                    if self.is_conserved():
@@ -118,7 +118,7 @@ class Annovar:
            else:
                return 1 # Missense but not even rare => category 1
 
-        elif self.is_truncating():
+        elif self.is_truncating(): # frameshift, stopgain, stoploss
             # From Natalie, 27/5/2014:
             # With regard to priority 5 truncating variants:
             #  novel should stay in priority 5
