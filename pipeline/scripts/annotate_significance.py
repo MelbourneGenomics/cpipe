@@ -55,7 +55,12 @@
 #
 ####################################################################################
 
-import csv, getopt, sys, logging as log
+import argparse
+import collections
+import csv
+import datetime
+import logging as log
+import sys
 
 log.basicConfig(level=log.INFO)
 
@@ -95,8 +100,9 @@ class Annovar:
     # compatibility with different versions of Annovar
     POPULATION_FREQ_FIELDS = ["esp6500siv2_all", "1000g2014oct_all","exac03"]
 
-    def __init__(self, line):
+    def __init__(self, line, synonymous=None):
         self.line = line
+        self.synonymous = synonymous
 
     def priority(self):
         """
@@ -134,11 +140,23 @@ class Annovar:
         elif self.is_noncoding():
             return 0
 
-        elif self.ExonicFunc in ["synonymous SNV", "unknown"]:
-            return 0
+        elif self.ExonicFunc == "synonymous SNV":
+            # From Natalie, 18/11/15
+            if '{0},{1}'.format( self.Chr, self.Start ) in self.synonymous:
+                if self.is_novel():
+                    log.info( "variant %s:%s %s/%s func=%s not filtered due to exon boundary proximity" % (self.Chr, self.Start, self.Ref, self.Obs, self.ExonicFunc) )
+                    return 5
+                elif self.is_rare():
+                    log.info( "variant %s:%s %s/%s func=%s not filtered due to exon boundary proximity" % (self.Chr, self.Start, self.Ref, self.Obs, self.ExonicFunc) )
+                    return 2
+                else:
+                    return 0
+            else:
+                return 0
+        elif self.ExonicFunc == "unknown":
+             return 0
         else:
-            print >>sys.stderr, "WARNING: variant %s:%s %s/%s func=%s failed to be categorized" % \
-                    (self.Chr, self.Start, self.Ref, self.Alt, self.ExonicFunc)
+            log.warn( "variant %s:%s %s/%s func=%s failed to be categorized" % (self.Chr, self.Start, self.Ref, self.Alt, self.ExonicFunc) )
             return 9
         
     def is_noncoding(self):
@@ -195,6 +213,55 @@ class Annovar:
     def set_value(self,name,value):
         self.line[self.columns.index(name)]=value
     
+def process_annovar( annovar, output, synonymous=None ):
+    log.info( "started processing..." )
+    # prepare synonymous set
+    synonymous_set = set()
+    if synonymous is not None:
+      for line in synonymous:
+        fields = line.strip().split('\t')
+        if len(fields) > 2:
+          for x in xrange(int(fields[1]), int(fields[2])):
+            key = '{0},{1}'.format( fields[0], x )
+            synonymous_set.add( key )
+    log.info( "finished reading synonymous set: {0} positions.".format( len( synonymous_set ) ) )
+
+    # Read the file
+    reader = csv.reader(annovar, delimiter=',', quotechar='"', doublequote=True)
+
+    # Open CSV writer to standard output, first for header (for body comes in the loop below)
+    header_out = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+    is_header = True
+    priorities = collections.defaultdict( int )
+    log.info( "calculating priorities with thresholds: rare {0}, very rare {1}, condel {2}".format( Annovar.MAF_THRESHOLD, Annovar.MAF_THRESHOLD_VERY_RARE, Annovar.CONDEL_THRESHOLD ) )
+    for line in reader:
+
+        if is_header:
+            is_header = False
+            # Note: Annovar does not seem to provide Qual and Depth headings itself
+            if "Qual" not in line:
+                line = line + ["Qual"]
+
+            if "Depth" not in line:
+                line = line + ["Depth"]
+
+            Annovar.init_columns(line)
+
+            header_out.writerow(Annovar.columns + ["Priority_Index"])
+            output.flush()
+            csv_output = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            continue
+
+        av = Annovar(line, synonymous_set)
+
+        while len(line)<len(Annovar.columns):
+                line.append("")
+
+        priority = av.priority()
+        priorities[priority] += 1
+        csv_output.writerow(line + [priority])
+    log.info( "priority distribution: {0}".format( priorities ) )
+
 ####################################################################################
 #
 # Main body
@@ -203,58 +270,27 @@ class Annovar:
 
 def main():
     # Parse command line options
-    optstring = "a:f:c:r:"
-    opts,args = getopt.getopt(sys.argv[1:],optstring)
-    
-    options = {}
-    for opt in opts:
-       options[opt[0]] = opt[1]
-    
-    def usage(msg):
-        print >>sys.stderr, "\nERROR: %s\n\nUsage: annotate_significance.py -a <annovar file>\n" % msg
-        sys.exit(1)
-            
-    if not '-a' in options:
-        usage("Please provide -a option.")
-    
-    # Read the file
-    reader = csv.reader(open(options["-a"]), delimiter=',', quotechar='"', doublequote=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--annovar', required=True, help='annovar file')
+    parser.add_argument('--rare', required=False, help='threshold for rare')
+    parser.add_argument('--very_rare', required=False, help='threshold for very rare')
+    parser.add_argument('--condel', required=False, help='threshold for condel')
+    parser.add_argument('--synonymous', required=False, help='bed file allowing synonymous variants')
+    args = parser.parse_args()
 
-    # Open CSV writer to standard output, first for header (for body comes in the loop below)
-    header_out = csv.writer(sys.stdout, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
-    is_header = True
-    for line in reader:
-    
-        if is_header:
-            is_header = False
-            # Note: Annovar does not seem to provide Qual and Depth headings itself
-            if "Qual" not in line:
-                line = line + ["Qual"]
-            
-            if "Depth" not in line:
-                line = line + ["Depth"]
-    
-            Annovar.init_columns(line)
-            if '-f' in options:
-                Annovar.MAF_THRESHOLD = float(options['-f'])
+    if args.rare:
+        Annovar.MAF_THRESHOLD = float(args.rare)
 
-            if '-c' in options:
-                Annovar.CONDEL_THRESHOLD = float(options['-c'])
+    if args.condel:
+        Annovar.CONDEL_THRESHOLD = float(args.condel)
 
-            if '-r' in options:
-                Annovar.MAF_THRESHOLD_VERY_RARE = float(options['-r'])
+    if args.very_rare:
+        Annovar.MAF_THRESHOLD_VERY_RARE = float(args.very_rare)
 
-            header_out.writerow(Annovar.columns + ["Priority_Index"])
-            sys.stdout.flush()
-            output = csv.writer(sys.stdout, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            continue
-    
-        av = Annovar(line)
-    
-        while len(line)<len(Annovar.columns):
-                line.append("")
-          
-        output.writerow(line + [av.priority()])
+    if args.synonymous:
+      process_annovar( open( args.annovar, 'r' ), sys.stdout, synonymous=open( args.synonymous, 'r' ) )
+    else:
+      process_annovar( open( args.annovar, 'r' ), sys.stdout )
     
 if __name__ == "__main__":    
     main()

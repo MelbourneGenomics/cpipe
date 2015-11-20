@@ -304,6 +304,28 @@ create_combined_target = {
     }
 }
 
+create_synonymous_target = {
+    // find regions that allow synonymous variants
+    output.dir = "../design"
+    produce( "combined_synonymous_regions.bed" ) {
+        def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
+
+        exec """
+            mkdir -p "$safe_tmp_dir"
+
+            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b $ALLOW_SYNONYMOUS_INTRON > "$safe_tmp_dir/intron.bed"
+
+            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b -$ALLOW_SYNONYMOUS_EXON > "$safe_tmp_dir/exon.bed"
+
+            $BEDTOOLS/bin/bedtools subtract -a "$safe_tmp_dir/intron.bed" -b "$safe_tmp_dir/exon.bed" > $output.bed
+
+            rm -r "$safe_tmp_dir"
+        """
+
+        branch.COMBINED_SYNONYMOUS = output.bed
+    }
+}
+
 fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
@@ -1188,10 +1210,11 @@ annotate_significance = {
         from("con.csv") {
             exec """
                 python $SCRIPTS/annotate_significance.py 
-                -a $input.csv
-                -f $MAF_THRESHOLD_RARE
-                -r $MAF_THRESHOLD_VERY_RARE
-                -c $CONDEL_THRESHOLD
+                --annovar $input.csv
+                --rare $MAF_THRESHOLD_RARE
+                --very_rare $MAF_THRESHOLD_VERY_RARE
+                --condel $CONDEL_THRESHOLD
+                --synonymous $COMBINED_SYNONYMOUS
                 > $output.csv
                 """
         }
