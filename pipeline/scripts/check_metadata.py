@@ -42,7 +42,7 @@ def is_valid_enumeration( field, allowed ):
   return len(field) == 0 or field in allowed
 
 def is_valid_date( field ):
-  return len(field) == 0 or len(field) == 8 and field.is_digit()
+  return len(field) == 0 or len(field) == 8 and field.isdigit()
 
 def validate( fh, out, err ):
   headers = fh.readline().strip().split('\t')

@@ -182,7 +182,7 @@ JAVA="java"
 // Note: snpeff is not needed by default pipeline
 SNPEFF="$TOOLS/snpeff/3.1"
 
-// Genome needed (currently) only if using expanded splice regions
+// Genome needed for expanded splice regions
 HG19_CHROM_INFO="$REFBASE/hg19.genome"
 
 // Trimmomatic location
@@ -204,3 +204,7 @@ INTERVAL_PADDING_SNV=10
 
 // interval padding for indels in filter_variants
 INTERVAL_PADDING_INDEL=25
+
+// do not filter synonymous with this range
+ALLOW_SYNONYMOUS_INTRON=25
+ALLOW_SYNONYMOUS_EXON=2

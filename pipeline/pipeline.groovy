@@ -75,6 +75,7 @@ run {
     // Create a single BED that contains all the regions we want to call
     // variants in
     create_combined_target + 
+    create_synonymous_target + // regions where synonymous snvs are not filtered
 
     generate_pipeline_id + // make a new pipeline run ID file if required
 
