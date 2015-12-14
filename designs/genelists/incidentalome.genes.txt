@@ -1,0 +1,4 @@
+#version demo
+#notes simple incidentalome, overwrite with your own
+BRCA1
+BRCA2

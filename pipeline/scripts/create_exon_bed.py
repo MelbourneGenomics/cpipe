@@ -96,6 +96,8 @@ genes = {}
 gene_ranges = {}
 gene_chr = {}
 for g in gene_file:
+    if not g or g[0].startswith('#'):
+        continue
     chr,start,stop,gene = g
     genes[gene] = []
     gene_chr[gene] = chr
