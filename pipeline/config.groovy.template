@@ -88,7 +88,7 @@ OUT_OF_COHORT_VARIANT_COUNT_FILTER=10
 PLATFORM="illumina"
 
 // The coverage level below which a sample should be failed
-MEDIAN_COVERAGE_THRESHOLD=50
+MEDIAN_COVERAGE_THRESHOLD=0
 
 // Base location of all the tools that we use
 TOOLS="$BASE/tools"
@@ -166,7 +166,7 @@ GROOVY_HOME="$TOOLS/groovy/2.3.4"
 GROOVY="$GROOVY_HOME/bin/groovy"
 
 // Whether to fail analysis if FASTQC produces warnings
-CHECK_FASTQC_FAILURES=true
+CHECK_FASTQC_FAILURES=false
 
 // If adapter sequence for exome capture is known, put here
 ADAPTERS_FASTA=false
@@ -206,5 +206,5 @@ INTERVAL_PADDING_SNV=10
 INTERVAL_PADDING_INDEL=25
 
 // do not filter synonymous with this range
-ALLOW_SYNONYMOUS_INTRON=25
-ALLOW_SYNONYMOUS_EXON=2
+ALLOW_SYNONYMOUS_INTRON=0
+ALLOW_SYNONYMOUS_EXON=0
