@@ -1,4 +1,4 @@
-// vim: ts=4:sw=4:expandtab:cindent:number
+// vim: ts=4:sw=4:expandtab:cindent
 /////////////////////////////////////////////////////////////////////////////////
 //
 // This file is part of Cpipe.
@@ -315,7 +315,7 @@ create_synonymous_target = {
 
             $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b $ALLOW_SYNONYMOUS_INTRON > "$safe_tmp_dir/intron.bed"
 
-            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b -$ALLOW_SYNONYMOUS_EXON > "$safe_tmp_dir/exon.bed"
+            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b -$ALLOW_SYNONYMOUS_EXON | python $SCRIPTS/filter_bed.py > "$safe_tmp_dir/exon.bed"
 
             $BEDTOOLS/bin/bedtools subtract -a "$safe_tmp_dir/intron.bed" -b "$safe_tmp_dir/exon.bed" > $output.bed
 
