@@ -26,59 +26,65 @@
 # (arg3)
 '''
 
-import csv, sys
+import csv
+import sys
 
-if len(sys.argv) < 4:
-    print "Usage: python add_splice_variants.py <exons.bed> <genome_summary.csv> <width>"
-    sys.exit(1)
+def process(exons, genome, width):
+    '''
+      write variants to stdout
+    '''
+    search_width = int(width)
+    exon_file = csv.reader(open(exons), delimiter='\t')
 
-search_width = int(sys.argv[3])
+    exons = {}
+    count = 0
+    for ex in exon_file:
+        chrom, start, end, desc = (ex[0], ex[1], ex[2], ex[3])
+        exons.setdefault(chrom, []).append([int(start), int(end), desc])
+        count += 1
 
-exon_file = csv.reader(open(sys.argv[1]), delimiter='\t')
+    #print "Parsed %d exons (%d chromosomes)" % (count, len(exons))
 
-exons = {}
-count = 0
-for e in exon_file:
-    chr, start, end, desc = (e[0], e[1], e[2], e[3])
-    exons.setdefault(chr, []).append([int(start), int(end), desc])
-    count += 1
+    wout = csv.writer(sys.stdout)
 
-#print "Parsed %d exons (%d chromosomes)" % (count, len(exons))
+    # Now read the annovar file
+    annovar_file = csv.reader(open(genome))
+    #header = annovar_file.next()
 
-w = csv.writer(sys.stdout)
+    #w.writerow(header)
 
-# Now read the annovar file
-annovar_file = csv.reader(open(sys.argv[2]))
-header = annovar_file.next()
+    for line in annovar_file:
+        #gene = l[1]
+        #if gene != 'CACNB2':
+        #     continue
 
-#w.writerow(header)
+        chrom = line[21]
+        start = int(line[22])
+        end = int(line[23])
+        #aachange = line[3]
 
-for l in annovar_file:
-    gene = l[1]
-    #if gene != 'CACNB2':
-    #     continue
+        #print  ",".join([chrom, str(start), str(end), aachange])
 
-    chr = l[21]
-    start = int(l[22])
-    end = int(l[23])
-    aachange = l[3]
+        if chrom not in exons:
+            print >>sys.stderr, "WARNING: Chromosome not in capture in output variants: " + chrom
+            continue
 
-    #print  ",".join([chr, str(start), str(end), aachange])
+        for exon_start, exon_end, desc in exons[chrom]:
+            #if exon_start == 18439811 and start == 18439809:
+            #print "Exon [%d,%d] " % (exon_start, exon_end)
+            if end <= exon_start and end > exon_start - search_width:
+                line[0] = "extra_splicing;"+line[0]
+                wout.writerow(line)
+            elif start >= exon_end and start < exon_end + search_width:
+                line[0] = "extra_splicing;"+line[0]
+                wout.writerow(line)
+            else:
+                # Not interesting
+                pass
 
-    if not chr in exons:
-        print >>sys.stderr, "WARNING: Chromosome not in capture in output variants: " + chr
-        continue
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print "Usage: python add_splice_variants.py <exons.bed> <genome_summary.csv> <width>"
+        sys.exit(1)
 
-    for exon_start, exon_end, desc in exons[chr]:
-        #if exon_start == 18439811 and start == 18439809:
-        #print "Exon [%d,%d] " % (exon_start, exon_end)
-        if end <= exon_start and end > exon_start - search_width:
-            l[0] = "extra_splicing;"+l[0]
-            w.writerow(l)
-        elif start >= exon_end and start < exon_end + search_width:
-            l[0] = "extra_splicing;"+l[0]
-            w.writerow(l)
-        else:
-            # Not interesting
-            pass
-
+    process(sys.argv[1], sys.argv[2], sys.argv[3])
