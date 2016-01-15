@@ -326,6 +326,14 @@ create_synonymous_target = {
     }
 }
 
+build_capture_stats = {
+    produce( "qc/exon_coverage_stats.txt" ) {
+        exec """
+            python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
+        """
+    }
+}
+
 fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
@@ -877,27 +885,28 @@ calc_coverage_stats = {
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
-    // def tmp_file = ['targeted', UUID.randomUUID().toString(), '.bed'].join( '' )
+    transform("bam") to([file(target_bed_file).name+".cov.txt", file(target_bed_file).name+".cov.gz", "exome.txt", "ontarget.txt"]) {
+        // only calculate coverage for bases overlapping the capture
+        def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
 
-    transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
+        // coverage calculation for qc_report.py
         exec """
-         $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
+          mkdir -p "$safe_tmp_dir"
+        
+          $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > "$safe_tmp_dir/intersect.bed"
 
-         $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b "$safe_tmp_dir/intersect.bed" > $output.txt
+
+          gzip < $output.txt > $output2.gz
+
+          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b $EXOME_TARGET > $output3.txt
+        
+          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output4.txt
+
+          rm -r "$safe_tmp_dir"
         """
+     }
 
-    // only calculate coverage for bases overlapping the exome
-        // exec """
-        //   $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > ${tmp_file}
-        //
-        //  $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output.gz
-        //
-        //  $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
-        //
-        //"""
-        //  rm ${tmp_file}
-
-    }
 }
 
 check_ontarget_perc = {
@@ -1291,6 +1300,24 @@ reorder = {
                 VALIDATION_STRINGENCY=LENIENT
                 REFERENCE=$REF
             """ 
+    }
+}
+
+summary_report = {
+    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    output.dir="results"
+
+    produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
+        exec """
+            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv > $output.md
+
+            python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+        """
+
+        branch.karyotype = output.tsv
+
+        send text {"Sequencing Results for Study $sample"} to channel: cpipe_operator, file: output.htm
     }
 }
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+'''
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -17,13 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
-####################################################################################
+#############################################################################
 # Purpose:
 # * Validate batch results and generate a markdown flavoured report
 #
-# Dependencies:
-# * pdftotext
-####################################################################################
+##############################################################################
+'''
 
 import argparse
 import collections
@@ -34,6 +34,9 @@ import subprocess
 
 def pdf_to_text(file):
   return subprocess.Popen(["pdftotext",file,"-"], stdout=subprocess.PIPE).communicate()[0]
+
+def md_to_text(file):
+  return open(file, 'r').readlines()
 
 def extract_sample( file ):
   file = os.path.basename(file) # remove leading directories
@@ -57,18 +60,23 @@ def check_sex( dir ):
     if "Inferred Sex" not in result:
       print "%s | **Inferred Sex not found** | | " % sample
     if "Sex" in result and "Inferred Sex" in result:
-      outcome = "OK" if result["Sex"] == result["Inferred Sex"] else "**FAIL*"
+      outcome = "OK" if result["Sex"].upper() == result["Inferred Sex"].upper() else "**FAIL*"
       print "%s | %s | %s | %s" % ( sample.ljust(10), outcome.ljust(8), result["Sex"].ljust(6), result["Inferred Sex"].ljust(8) )
 
 def check_gene_coverage( dir, bad_threshold=15 ):
   print "\n# Gene coverage by sample (flagged if >%i%% fail)" % bad_threshold
   print "Sample     | Outcome  | % Fail | Good | Pass | Fail | Total"
   print "-----------|----------|--------|------|------|------|------"
-  for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = pdf_to_text(file)
+  for file in glob.glob( os.path.join( dir, '*.summary.htm' ) ):
+    out = md_to_text(file)
     result = collections.defaultdict(int)
-    for line in out.split('\n'):
-      result[line.strip()] += 1
+    for line in out: 
+      if 'GOOD' in line:
+          result['GOOD'] += 1
+      if 'FAIL' in line:
+          result['FAIL'] += 1
+      if 'PASS' in line:
+          result['PASS'] += 1
     total = result['GOOD'] + result['FAIL'] + result['PASS']
     bad_percent = 100. * result['FAIL'] / total if total > 0 else 100
     sample = extract_sample( file )
@@ -79,25 +87,19 @@ def check_observed_mean_coverage( dir, bad_threshold=90 ):
   print "\n# Observed mean coverage by sample (flagged if coverage <%i)" % bad_threshold
   print "Sample     | Outcome  | OMC"
   print "-----------|----------|------"
-  for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = pdf_to_text(file)
+  for file in glob.glob( os.path.join( dir, '*.summary.md' ) ):
+    out = md_to_text(file)
     result = collections.defaultdict(int)
-    in_omc = False
     sample = extract_sample( file )
-    for line in out.split('\n'):
-      line = line.strip()
-      if in_omc:
-        if len(line) > 0:
-          try:
-            omc = float(line)
-            outcome = "OK\t" if omc > bad_threshold else "**FAIL**"
-            print "%s | %s | %s" % ( sample.ljust(10), outcome.ljust(8), str( '%.1f' % omc ).rjust(4) )
-            break
-          except:
-            print "%s | %s | Unexpected string: %s" % ( sample, "**FAIL**", line )
-      else:
-        if line == 'Observed Mean Coverage':
-          in_omc = True
+    for line in out:
+      if 'Observed Mean Coverage' in line:
+        try:
+          omc = float(line.split('|')[1])
+          outcome = "OK\t" if omc > bad_threshold else "**FAIL**"
+          print "%s | %s | %s" % ( sample.ljust(10), outcome.ljust(8), str( '%.1f' % omc ).rjust(4) )
+          break
+        except:
+          print "%s | %s | Unexpected string: %s" % ( sample, "**FAIL**", line )
 
 def check_individual_genes( dir, bad_threshold=75 ):
   print "\n# Individual genes with >%i%% fail across samples" % bad_threshold
@@ -105,21 +107,21 @@ def check_individual_genes( dir, bad_threshold=75 ):
   print "---------|----------|--------|------|------|------|------"
   genes = {}
 
-  for file in glob.glob( os.path.join( dir, '*.summary.pdf' ) ):
-    out = pdf_to_text(file)
+  for file in glob.glob( os.path.join( dir, '*.summary.md' ) ):
+    out = md_to_text(file)
     result = collections.defaultdict(int)
     last = None
-    for line in out.split('\n'):
-      line = line.strip()
-      if line in ('GOOD', 'FAIL', 'PASS') and last is not None:
-        if last not in genes:
-          genes[last] = { 'GOOD': 0, 'FAIL': 0, 'PASS': 0 }
-        genes[last][line] += 1
-      elif len(line) > 0 and '%' not in line:
-        try:
-          _ = float(line)
-        except:
-          last = line
+    for line in out:
+      if 'GOOD' in line or 'FAIL' in line or 'PASS' in line:
+        gene = line.split('|')[0].strip()
+        if gene not in genes:
+          genes[gene] = { 'GOOD': 0, 'FAIL': 0, 'PASS': 0 }
+          if 'GOOD' in line:
+            genes[gene]['GOOD'] += 1
+          if 'FAIL' in line:
+            genes[gene]['FAIL'] += 1
+          if 'PASS' in line:
+            genes[gene]['PASS'] += 1
 
   bad_percent = {}
   for gene in genes:
