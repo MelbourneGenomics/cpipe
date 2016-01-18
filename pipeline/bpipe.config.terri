@@ -124,6 +124,9 @@ commands {
             walltime="14:00:00"
             jobtype="smp" // to get exclusive node
         }
+        validate_batch {
+            executor="local" // pdftotext requirement
+        }
 }
 
 /*

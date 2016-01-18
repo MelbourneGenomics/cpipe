@@ -69,14 +69,23 @@ int coverageThreshold = opts.threshold.toInteger()
 if(!new File(opts.meta).exists())
   err "The sample meta data file ($opts.meta) does not exist or could not be accessed"
 
-Map samples = SampleInfo.parse_sample_info(opts.meta)
+// try both metadata formats
+Map samples;
+try {
+  samples = SampleInfo.parse_mg_sample_info(opts.meta)
+}
+catch (RuntimeException e) {
+  samples = SampleInfo.parse_sample_info(opts.meta)
+}
+
 if(!samples.containsKey(opts.study))
   err "The provided meta data file ($opts.meta) did not contain meta information for study $opts.study"
 
 SampleInfo meta = samples[opts.study]
 
 // Read the gene categories for the target / cohort / flagship
-geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+// geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+geneCategories = new File(opts.gc).readLines().findAll( { it =~ /^[^#]/ } )*.split('\t').collect { [it[0],it[1]] }.collectEntries()
 
 // Update gene categories with sample specific data
 if(meta.geneCategories) {
@@ -87,8 +96,10 @@ if(meta.geneCategories) {
 
 String onTarget = "Unknown"
 String totalReads = "Unknown"
-if(opts.ontarget) {
-    int onTargetCount = new File(opts.ontarget).text.toInteger()
+if(opts.ontarget && opts.ontarget != "") {
+  String onTargetText = new File(opts.ontarget).text
+  if (onTargetText != "") {
+    int onTargetCount = onTargetText.toInteger()
     if(opts.metrics) {
         Map metrics = PicardMetrics.parse(opts.metrics)
         int totalCount = metrics.READ_PAIRS_EXAMINED.toInteger() * 2
@@ -99,6 +110,7 @@ if(opts.ontarget) {
     else {
         onTarget = String.valueOf(onTargetCount)
     }
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////

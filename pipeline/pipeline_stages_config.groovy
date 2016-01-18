@@ -40,6 +40,7 @@ call_variants_ug = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.txt
@@ -68,17 +69,22 @@ set_target_info = {
     branch.transcripts_file = "../design/${target_name}.transcripts.txt"
     branch.target_config = "../design/${target_name}.settings.txt"
 
-    println "Checking for target bed file : $target_bed_file"
-
-    produce(target_bed_file) {
-        exec """
-                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
-        """
-    }
-
+    println "Checking for target gene file: $target_gene_file"
     produce(target_gene_file) {
         exec """
             cp $BASE/designs/$target_name/${target_name}.genes.txt $target_gene_file;
+        """
+    }
+
+    println "Checking for target bed file: $target_bed_file"
+    produce(target_bed_file) {
+        exec """
+            if [ -e $BASE/designs/$target_name/${target_name}.bed ];
+            then
+                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
+            else
+                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file;
+            fi
         """
     }
 
@@ -176,7 +182,12 @@ set_sample_info = {
 
     def files = sample_info[sample].files.fastq
 
-    println "Processing input files ${files} for target region ${target_bed_file}"
+    // generate a custom bed file that only includes the incidentalome for this sample
+    exec """
+        python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.${sample}.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file.${sample}.bed
+    """
+ 
+    println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
     forward files
 }
 
@@ -253,22 +264,37 @@ check_sample_info = {
     }
 }
 
+// find additionally specified genes and add new ones that aren't on the incidentalome, to the gene lists
+update_gene_lists = {
+
+    // builds additional genes from sample metadata file, then adds any new ones to the flagship
+    // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
+    exec """
+        mkdir -p "../design"
+
+        python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+
+        python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
+    """
+}
+
 create_combined_target = {
 
     // Construct the region for variant calling from 
     //
     //   a) all of the disease cohort BED files
     //   b) the EXOME target regions
+    //   c) any additional genes being analyzed
     //
     // This way we avoid calling variants over the entire genome, but still
     // include everything of interest
-    String diseaseBeds = ANALYSIS_PROFILES.collect{"$BASE/designs/${it}/${it}.bed"}.join(",")
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
 
     output.dir = "../design"
 
     produce("combined_target_regions.bed") {
         exec """
-            cat $diseaseBeds $EXOME_TARGET | 
+            { python $SCRIPTS/genelist_to_bed.py $diseaseGeneLists ../design/*.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed; cat $EXOME_TARGET; } |
                 cut -f 1,2,3 | 
                 $BEDTOOLS/bin/bedtools sort | 
                 $BEDTOOLS/bin/bedtools merge > $output.bed
@@ -369,6 +395,13 @@ align_bwa = {
     branch.lane = lanes[0]
 
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
+
+    var BWA_THREADS: false;
+
+    if(!BWA_THREADS) {
+        BWA_THREADS = 1
+    }
+
     produce(outputFile) {
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
@@ -376,7 +409,7 @@ align_bwa = {
         exec """
                 set -o pipefail
 
-                $BWA mem -M -t $threads -k $seed_length 
+                $BWA mem -M -t $BWA_THREADS -k $seed_length 
                          -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
                          $REF $input1.gz $input2.gz | 
                          $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort - $output.prefix
@@ -461,10 +494,16 @@ merge_bams = {
     produce(sample + ".merge.bam") {
         // If there is only 1 bam file, then there is no need to merge,
         // just alias the name 
-        if(inputs.bam.size()==1)  {
-           alias(input.bam) to(output.bam)
-        }
-        else {
+        //if(inputs.bam.size()==1)  {
+        //    alias(input.bam) to(output.bam)
+            // msg "Skipping merge of $inputs.bam because there is only one file"
+            // This use of symbolic links may be questionable
+            // However if the ordinary case involves only one
+            // bam file then there may be some significant savings
+            // from doing this.
+            // exec "ln -sf ${file(input.bam).name} $output.bam; ln -sf ${file(input.bam).name}.bai ${output.bam}.bai;"
+        //}
+        //else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
             exec """
                 $JAVA -Xmx2g -jar $PICARD_HOME/lib/MergeSamFiles.jar
@@ -474,7 +513,7 @@ merge_bams = {
                     CREATE_INDEX=true
                     OUTPUT=$output.bam
              """, "merge"
-        }
+        //}
     }
 }
 
@@ -526,8 +565,11 @@ dedup = {
 
     var MAX_DUPLICATION_RATE : 30
 
+    def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
     exec """
-        $JAVA -Xmx4g -Djava.io.tmpdir=$TMPDIR -jar $PICARD_HOME/lib/MarkDuplicates.jar
+        mkdir -p "$safe_tmp_dir"
+
+        $JAVA -Xmx4g -Djava.io.tmpdir=$safe_tmp_dir -jar $PICARD_HOME/lib/MarkDuplicates.jar
              INPUT=$input.bam 
              REMOVE_DUPLICATES=true 
              VALIDATION_STRINGENCY=LENIENT 
@@ -535,6 +577,8 @@ dedup = {
              METRICS_FILE=$output.metrics
              CREATE_INDEX=true
              OUTPUT=$output.bam
+
+        rm -r "$safe_tmp_dir"
     """
 
     check {
@@ -670,6 +714,7 @@ call_variants_hc = {
                    -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -702,6 +747,7 @@ call_pgx = {
                    -dcov 1600 
                    -l INFO 
                    -L ../design/${target_name}.pgx.vcf
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
@@ -719,16 +765,46 @@ filter_variants = {
         pgx_flag = "-L ../design/${target_name}.pgx.vcf"
     }
 
-    filter("filter") {
-        exec """
-            $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
-                 -R $REF
-                 -T SelectVariants 
-                 --variant $input.vcf 
-                 -L $target_bed_file $splice_region_bed_flag $pgx_flag
-                 -o $output.vcf 
-        """
-    }
+    msg "Filtering variants - finding INDELs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file.${sample}.bed $pgx_flag
+             --interval_padding $INTERVAL_PADDING_SNV
+             --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
+             -o $output.snv
+    """
+
+    msg "Filtering variants - finding SNVs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file.${sample}.bed $pgx_flag
+             --interval_padding $INTERVAL_PADDING_INDEL
+             --selectTypeToInclude INDEL
+             -o $output.indel
+    """
+}
+
+merge_variants = {
+    doc "Merge SNVs and INDELs"
+    output.dir="variants"
+
+    msg "Merging SNVs and INDELs"
+    exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T CombineVariants
+            -R $REF
+            --variant:indel $input.indel
+            --variant:snv $input.snv
+            --out $output.vcf
+            --setKey set
+            --genotypemergeoption UNSORTED
+         """
 }
 
 @filter("vep")
@@ -779,12 +855,26 @@ calc_coverage_stats = {
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
+    // def tmp_file = ['targeted', UUID.randomUUID().toString(), '.bed'].join( '' )
+
     transform("bam","bam") to(file(target_bed_file).name+".cov.gz","ontarget.txt") {
         exec """
-          $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file | gzip -c > $output.gz
+         $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b $target_bed_file.${sample}.bed | gzip -c > $output.gz
 
-          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+         $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
         """
+
+    // only calculate coverage for bases overlapping the exome
+        // exec """
+        //   $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > ${tmp_file}
+        //
+        //  $BEDTOOLS/bin/coverageBed -d  -abam $input.bam -b ${tmp_file} | gzip -c > $output.gz
+        //
+        //  $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output2.txt
+        //
+        //"""
+        //  rm ${tmp_file}
+
     }
 }
 
@@ -794,7 +884,7 @@ check_ontarget_perc = {
         exec """
             RAW_READ_COUNT=`cat $input.ontarget.txt`
 
-            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / $RAW_READ_COUNT))*100 }'`
+            ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
             [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
@@ -839,7 +929,7 @@ check_karyotype = {
 
     doc "Compare the inferred sex of the sample to the inferred karyotype from the sequencing data"
 
-    def karyotype_file = "results/" + sample + '.summary.karyotype.tsv'
+    def karyotype_file = "results/" + run_id + '_' + sample + '.summary.karyotype.tsv'
     check {
         exec """
             [ `grep '^Sex' $karyotype_file | cut -f 2` == "UNKNOWN" ] || [ `grep '^Sex' $karyotype_file | cut -f 2` == `grep 'Inferred Sex' $karyotype_file | cut -f 2` ]
@@ -908,11 +998,12 @@ vcf_to_excel = {
     var exclude_variant_types : "synonymous SNV",
         out_of_cohort_filter_threshold : OUT_OF_COHORT_VARIANT_COUNT_FILTER
 
-    check {
-        exec "ls results/${target_name}.qc.xlsx > /dev/null 2>&1"
-    } otherwise { 
-        succeed "No samples succeeded for target $target_name" 
-    }
+    // disable this check - attempt to generate results regardless of qc check
+    // check {
+    //     exec "ls results/${target_name}.qc.xlsx > /dev/null 2>&1"
+    // } otherwise { 
+    //     succeed "No samples succeeded for target $target_name" 
+    // }
 
     def pgx_flag = ""
     if(file("../design/${target_name}.pgx.vcf").exists()) {
@@ -927,7 +1018,7 @@ vcf_to_excel = {
 
     output.dir="results"
 
-    def all_outputs = [target_name + ".xlsx"] + target_samples.collect { it + ".annovarx.csv" }
+    def all_outputs = [target_name + ".xlsx"] + target_samples.collect { run_id + '_' + it + ".annovarx.csv" }
     from("*.hg19_multianno.*.csv", "*.vcf") produce(all_outputs) {
         exec """
             echo "Creating $outputs.csv"
@@ -945,6 +1036,8 @@ vcf_to_excel = {
                 -gc $target_gene_file ${pgx_flag}
                 -annox $output.dir
                 -log ${target_name}_filtering.log
+                -prefix $run_id
+                -incidentalome $BASE/designs/genelists/incidentalome.genes.txt
                 ${inputs.bam.withFlag("-bam")}
         """, "vcf_to_excel"
     }
@@ -983,6 +1076,7 @@ vcf_to_family_excel = {
                     -gc $target_gene_file
                     -ped $input.ped ${inputs.bam.withFlag("-bam")}
                     -o $output.xlsx
+                    -p $run_id
                     $UNIQUE $input.vcf $inputs.csv 
             """, "vcf_to_family_excel"
         }
@@ -1028,7 +1122,7 @@ gatk_depth_of_coverage = {
                --omitDepthOutputAtEachBase
                -I $input.bam
                -ct 1 -ct 10 -ct 20 -ct 50 -ct 100
-               -L $target_bed_file
+               -L $target_bed_file.${sample}.bed
         """
     }
 }
@@ -1079,6 +1173,7 @@ qc_excel_report = {
                     -w $LOW_COVERAGE_WIDTH
                     -low qc ${inputs.dedup.metrics.withFlag('-metrics')}
                     -o $output.xlsx
+                    -p $run_id
                     $inputs.sample_cumulative_coverage_proportions  
                     $inputs.sample_interval_statistics 
                     $inputs.gz
@@ -1121,7 +1216,7 @@ annovar_table = {
             --otherinfo   
             --csvout
             --outfile $output.csv.prefix.prefix
-            --argument '-exonicsplicing -splicing $splice_region_window',,,,,,,
+            --argument '-exonicsplicing -splicing $INTERVAL_PADDING_CALL',,,,,,,
 
             sed -i '/^Chr,/ s/\\.refGene//g' $output.csv
         """
@@ -1186,7 +1281,7 @@ summary_pdf = {
 
     output.dir="results"
 
-    produce("${sample}.summary.pdf","${sample}.summary.karyotype.tsv") {
+    produce("${run_id}_${sample}.summary.pdf","${run_id}_${sample}.summary.karyotype.tsv") {
 
         // -metrics $input.metrics
         exec """
@@ -1250,7 +1345,7 @@ sample_similarity_report = {
 provenance_report = {
     branch.sample = branch.name
     output.dir = "results"
-    produce(sample + ".provenance.pdf") {
+    produce(run_id + '_' + sample + ".provenance.pdf") {
        send report("scripts/provenance_report.groovy") to file: output.pdf
     }
 }
@@ -1258,10 +1353,64 @@ provenance_report = {
 annovar_to_lovd = {
     branch.sample = branch.name
     output.dir="results/lovd"
-    produce(sample +"_LOVD") {
+    produce(run_id + '_' + sample +"_LOVD") {
         exec """
             python $SCRIPTS/annovar2LOVD.py --csv $input.annovarx.csv --meta $sample_metadata_file --dir results/lovd
         """
+    }
+}
+
+// remove spaces from gene lists and point to a new sample metadata file
+// note that this isn't run through bpipe
+correct_sample_metadata_file = {
+    def target = new File( 'results' )
+    if( !target.exists() ) {
+        target.mkdirs()
+    }
+    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
+    return "results/samples.corrected"
+}
+
+generate_pipeline_id = {
+    doc "Generate a pipeline run ID for this batch"
+    output.dir="results"
+    produce("run_id") {
+      exec """
+        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > $output
+      """
+    }
+   // This line is necessary on some distributed file systems (e.g. MCRI) to ensure that
+   // files get synced between nodes
+   file("results").listFiles()
+   run_id = new File('results/run_id').text.trim()
+}
+
+create_sample_metadata = {
+    doc "Create a new samples.txt file that includes the pipeline ID"
+    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    output.dir="results"
+    produce("results/samples.meta") {
+      exec """
+          python $SCRIPTS/update_pipeline_run_id.py --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
+      """
+    }
+}
+
+variant_bams = {
+
+    doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"
+
+    output.dir = "results/variant_bams"
+
+    from(branch.name+'*annovarx.csv', branch.name+'.*.recal.bam') {   
+        // Slight hack here. Produce a log file that bpipe can track to confirm that the bams were produced.
+        // Bpipe is not actually tracking the variant bams themselves. 
+        produce(branch.name + ".variant_bams_log.txt") {
+            exec """
+                python $SCRIPTS/variant_bams.py --bam $input.bam --csv $input.csv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
+            """
+        }
     }
 }
 
@@ -1283,4 +1432,26 @@ augment_transcript_ids = {
 }
 */
 
+
+validate_batch = {
+    doc "Validates batch results"
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
+    produce("results/missing_from_exons.genes.txt", "results/${run_id}_batch_validation.md", "results/${run_id}_batch_validation.html") {
+      exec """
+          cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/exons.bed > results/missing_from_exons.genes.txt
+
+          if [ -e $BASE/designs/genelists/annovar.bed ]; then
+            cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/annovar.bed > results/missing_from_annovar.genes.txt;
+          fi
+
+          if [ -e $BASE/designs/genelists/incidentalome.genes.txt ]; then
+            python $SCRIPTS/validate_genelists.py --exclude $BASE/designs/genelists/incidentalome.genes.txt $diseaseGeneLists > results/excluded_genes_analyzed.txt;
+          fi
+
+          python $SCRIPTS/validate_batch.py --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
+
+          python $SCRIPTS/markdown2.py --extras tables < results/${run_id}_batch_validation.md | python $SCRIPTS/prettify_markdown.py > results/${run_id}_batch_validation.html
+      """, "validate_batch"
+    }
+}
 

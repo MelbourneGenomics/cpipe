@@ -55,6 +55,8 @@ cli.with {
   annox 'Directory to send Annovar style per-sample summaries to', args: 1, required: true
   xprof 'Analysis profiles to exclude from contributing variant counts in variant filtering by internal database', args:1
   log 'Log file for writing information about variants filtered out', args: 1
+  prefix 'Prefix for generated CSV files', args: 1
+  incidentalome 'File of genes to mark as excluded', args: 1
 }
 opts = cli.parse(args)
 
@@ -82,7 +84,12 @@ if(opts.pgx)
 
 int pgx_coverage_threshold = opts.pgxcov ? opts.pgxcov.toInteger() : 15
 
-sample_info = SampleInfo.parse_sample_info(opts.si)
+try {
+  sample_info = SampleInfo.parse_mg_sample_info(opts.si)
+}
+catch ( RuntimeException e ) {
+  sample_info = SampleInfo.parse_sample_info(opts.si)
+}
 
 // println "sample_info = $sample_info"
 
@@ -121,7 +128,17 @@ if(opts.db)
     db = new VariantDB(opts.db)
 
 // Read the gene categories
-geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
+geneCategories = new File(opts.gc).readLines().grep { !it.startsWith("#") }*.split("\t").collect { [it[0],it[1]] }.collectEntries()
+
+// read the incidentalome
+if (opts.incidentalome) {
+  incidentalome = new File(opts.incidentalome).readLines().findAll({ it =~ /^[^#]/ } )
+}
+else {
+  incidentalome = []
+}
+
+INCIDENTALOME_CATEGORY = 5
 
 AACHANGE_FIELDS = ANNOVAR_FIELDS.grep { it.startsWith("AAChange") }
 
@@ -201,9 +218,17 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     }
     outputValues.ExonicFunc = func=="splicing"?"":av.ExonicFunc
 
-    def geneCategory = geneCategories[gene]
-    if(sample_info[sample].geneCategories[gene])
-        geneCategory = sample_info[sample].geneCategories[gene]
+    def geneCategory = null
+    def genePrefix = gene.split(';')[0]
+    if ( incidentalome.find { it == genePrefix } ) {
+      geneCategory = INCIDENTALOME_CATEGORY
+    }
+    else {
+      geneCategory = geneCategories[genePrefix]
+      if(sample_info[sample].geneCategories[genePrefix]) {
+        geneCategory = sample_info[sample].geneCategories[genePrefix]
+      }
+    }
 
     outputValues["Gene Category"] = (geneCategory == null)?1:geneCategory
     
@@ -300,7 +325,7 @@ try {
                 // We are going to write out a CSV that is identical to the original annovar output
                 // but which includes our custom fields on the end
                 // Start by writing the headers
-                def writer = new FileWriter("${opts.annox}/${sample}.annovarx.csv")
+                def writer = new FileWriter("${opts.annox}/${opts.prefix}_${sample}.annovarx.csv")
                 writer.println(OUTPUT_CSV_FIELDS.collect{HEADING_MAP[it]}.join(","))
                 CSVWriter csvWriter = new CSVWriter(writer);
                 for(av in annovar_csv) {
@@ -311,7 +336,7 @@ try {
                     // note: check for exonic, because splice events show up as synonymous but with 
                     // Func="exonic;splicing", and should not be filtered out this way
                     if(av.ExonicFunc in exclude_types && av.Func=="exonic") { 
-                        log.println "Variant $av.Chr:$av.Start-$av.End excluded by being an excluded type: $av.ExonicFunc"
+                        log.println "Variant $av.Chr:$av.Start at line $lineIndex excluded by being an excluded type: $av.ExonicFunc"
                         continue
                     }
 
@@ -342,8 +367,9 @@ try {
                     ++includeCount
 
                     ++sampleCount
-                    def funcs = av.Func.split(";")
-                    def genes = av.Gene.split(";")
+                    // don't split annotations
+                    def funcs = [ av.Func ] // av.Func.split(";")
+                    def genes = [ av.Gene ] // av.Gene.split(";")
 
                     [funcs,genes].transpose().each { funcGene ->
                         
