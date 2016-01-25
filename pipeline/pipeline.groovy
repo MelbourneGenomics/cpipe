@@ -76,6 +76,7 @@ run {
     // variants in
     create_combined_target + 
     create_synonymous_target + // regions where synonymous snvs are not filtered
+    build_capture_stats + // how well covered genes are by the capture
 
     generate_pipeline_id + // make a new pipeline run ID file if required
 
@@ -108,7 +109,7 @@ run {
                              add_to_database, 
                              augment_condel + annotate_significance
                          ]  +
-                         calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
+                         calc_coverage_stats + check_ontarget_perc + [ summary_report, exon_qc_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
                        ]

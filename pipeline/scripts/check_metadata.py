@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+'''
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -21,7 +22,7 @@
 # This script takes a sample metadata file as input (stdin) and
 # prints out the field values in a human readable form
 ###########################################################################
-
+'''
 
 import sys
 
