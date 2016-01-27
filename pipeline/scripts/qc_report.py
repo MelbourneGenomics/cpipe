@@ -1,38 +1,44 @@
 #!/usr/bin/env python
 '''
-#############################################################################
+###########################################################################
 #
-# Melbourne Genomics Coverage Report Script
+# This file is part of Cpipe.
 #
-# Copyright Melbourne Genomics Health Alliance members. All rights reserved.
+# Cpipe is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, under version 3 of the License, subject
+# to additional terms compatible with the GNU General Public License version 3,
+# specified in the LICENSE file that is part of the Cpipe distribution.
 #
-# DISTRIBUTION:
+# Cpipe is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# This source code should not be distributed to a third party without prior
-# approval of the Melbourne Genomics Health Alliance steering committee (via
-# Natalie Thorne - natalie.thorne@melbournegenomics.org.au).
+# You should have received a copy of the GNU General Public License
+# along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
-##############################################################################
+###########################################################################
 #
 # Purpose:
 #   Generate coverage stats
 # Usage:
 #
 # arguments:
-#    cov "Coverage file from Bedtools", args:1, required:true
-#    ontarget "file containing count of on target reads", args: 1
-#    metrics "metrics output from Picard", args: 1
-#    bam "Final alignment of sample reads", args:1, required:true
-#    study "ID of study for which this QC report is being generated"
-#    meta "Meta data for the sample to produce the QC report for"
-#    threshold "Coverage threshold for signalling a region as having
-#        satisfactory coverage"
-#    classes "Percentages of bases and corresponding classes of regions in
-#        the form: GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED"
-#    exome "BED file containing target regions for the whole exome"
-#    gc "Gene categories indicating the categories of genes in the
-#        cohort / target / flagship"
-#    o    "Output file name (PDF format)"
+# --report_cov: intersected coverage file with genes from bedtools
+# --gene_cov: coverage of each gene
+# --exome_cov: exome coverage file with genes
+# --ontarget: target reads count file
+# --metrics: metrics output from Picard
+# --study: ID of study
+# --meta: meta data file
+# --threshold: threshold for satisfactory coverage
+# --classes: how to categorise results
+# --exome: target regions for entire exome
+# --gc: gene categories of genes
+# --anonymous: do not show study ID
+# --write_karyotype: write karyotype details to this file
+# --fragments: file containing fragment details
 #
 ##############################################################################
 '''
@@ -240,6 +246,17 @@ def build_metrics(picard, ontarget, log):
             return result
     write_log(log, "ERROR: failed to parse metrics file")
 
+def parse_tsv(tsv):
+    '''
+        turn lines of the form key\tvalue into a dictionary
+    '''
+    result = {}
+    for line in tsv:
+        fields = line.strip('\n').split()
+        if len(fields) > 1:
+            result[fields[0]] = fields[1]
+    return result
+
 def parse_date(date):
     '''
       convert yyyymmdd into something nicer
@@ -271,7 +288,7 @@ def find_first_of(meta, keys, default='N/A'):
             return meta[key]
     return default
 
-def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, out):
+def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, out):
     '''
         generate a report from the provided summary
     '''
@@ -324,6 +341,10 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     out.write('**% Coverage within 20% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
     out.write('**% Coverage at 1x, 10x, 20x, 50x** | {0:.1f}%, {1:.1f}%, {2:.1f}%, {3:.1f}%\n'.format(summary['mean_stats'][1], summary['mean_stats'][2], summary['mean_stats'][3], summary['mean_stats'][4]))
 
+    # fragments
+    if fragments is not None:
+        out.write('**Mean fragment size (Stdev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['mean']), float(fragments['sd'])))
+
     # gene summary
     out.write('\n## Gene Summary\n')
     out.write('Gene | Category | % > {0}x  | Median | OK? | % in capture\n'.format(threshold))
@@ -337,12 +358,14 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     out.write('\n## Definitions\n')
 
     out.write('\n\n**Mean Coverage Reported by Lab**: the mean coverage reported by the sequencing lab')
-    out.write('\n\n**Observed Mean Coverage**: the mean coverage across the disease cohort region')
-    out.write('\n\n**Observed Median Coverage**: the median coverage across the disease cohort region')
+    out.write('\n\n**Observed Mean Coverage**: the mean coverage across the capture region')
+    out.write('\n\n**Observed Median Coverage**: the median coverage across the capture region')
     out.write('\n\n**Total Reads**: the total number of reads generated by the sequencer')
     out.write('\n\n**Unmapped Reads**: reads that were not mapped to the genome')
     out.write('\n\n**Mapped Paired Reads**: paired reads that were mapped to the genome')
     out.write('\n\n**% Mapped on Target**: the proportion of mapped reads that have any part align to any part of the capture region')
+    out.write('\n\n**% Coverage within 20% of Mean**: bases in the capture region with coverage within 20% of the observed mean coverage')
+    out.write('\n\n**Mean Fragment Size**: the average distance between correctly mapped and paired reads')
     out.write('\n\n**Perc**: the percentage of the gene overlapping the capture region with acceptable coverage')
     out.write('\n\n**Median**: the median coverage across the gene overlapping the capture region')
     out.write('\n\n**% in capture**: the proportion of the gene that overlaps the capture region')
@@ -402,7 +425,8 @@ def main():
     #parser.add_argument('--exome', required=True, #   help='target regions for entire exome')
     parser.add_argument('--gc', required=True, help='gene categories of genes')
     parser.add_argument('--anonymous', action='store_true', required=False, help='do not show study ID')
-    parser.add_argument('--write_karyotype', required=False, help='do not show study ID')
+    parser.add_argument('--write_karyotype', required=False, help='write karyotype details to specified file')
+    parser.add_argument('--fragments', required=False, help='file containing fragment statistics')
     args = parser.parse_args()
     write_log(sys.stderr, 'opening {0} for karyotype'.format(args.exome_cov))
     karyotype = calculate_karyotype(open(args.exome_cov, 'r'), log=sys.stderr)
@@ -413,7 +437,11 @@ def main():
     categories = build_categories(open(args.gc, 'r'), sample['prioritised_genes'], log=sys.stderr)
     metrics = build_metrics(open(args.metrics, 'r'), open(args.ontarget, 'r'), log=sys.stderr)
     capture = build_capture(open(args.gene_cov, 'r'), log=sys.stderr)
-    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, out=sys.stdout)
+    if args.fragments:
+        fragments = parse_tsv(open(args.fragments, 'r'))
+    else:
+        fragments = None
+    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, out=sys.stdout)
 
 if __name__ == '__main__':
     main()

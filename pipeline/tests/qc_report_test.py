@@ -36,7 +36,6 @@ class QCReportTest(unittest.TestCase):
         exome_cov = ['chr1\t100\t200\t1\t20', 'chrX\t100\t200\t1\t10', 'chrY\t100\t200\t1\t10']
         log = StringIO.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
-        print result
         assert result['sex'] == 'MALE'
         assert result['x_mean_coverage'] == 10.
         assert result['y_mean_coverage'] == 10.
@@ -46,7 +45,6 @@ class QCReportTest(unittest.TestCase):
         exome_cov = ['chr1\t100\t200\t1\t5', 'chrX\t100\t200\t1\t40', 'chrX\t400\t500\t1\t60']
         log = StringIO.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
-        print result
         assert result['sex'] == 'FEMALE'
         assert result['x_mean_coverage'] == 50.
         assert result['y_mean_coverage'] == 0.
@@ -92,6 +90,12 @@ class QCReportTest(unittest.TestCase):
 #        out = StringIO.StringIO()
 #        qc_report.generate_report(s, k, p, threshold, out, log)
 #        print out.getvalue()
+
+    def test_parse_tsv(self):
+        frags = ['mean\t123.4\n', 'sd\t567.9\n']
+        res = qc_report.parse_tsv(frags)
+        assert res['mean'] == '123.4'
+        assert res['sd'] == '567.9'
 
     def test_parse_date(self):
         d = ''

@@ -20,6 +20,7 @@
 #   python calculate_exon_coverage --capture capture_file --exons exon_file
 # Outputs:
 #   writes a tab separated file of genes and what proportion is covered by the capture
+##############################################################################
 '''
 
 import collections

@@ -1154,6 +1154,16 @@ gatk_depth_of_coverage = {
     }
 }
 
+calculate_fragment_statistics = {
+    doc "Calculate fragment size statistics"
+    output.dir="qc"
+    transform("bam") to("fragments.tsv") {
+        exec """
+            $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_fragment_statistics.py > $output.tsv
+        """
+    }
+}
+
 insert_size_metrics = {
 
     doc "Generates statistics about distribution of DNA fragment sizes"
@@ -1310,7 +1320,7 @@ summary_report = {
 
     produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
         exec """
-            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv > $output.md
+            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input.fragments.tsv > $output.md
 
             python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
         """
