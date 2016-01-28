@@ -853,11 +853,13 @@ annotate_vep = {
         perl $VEP/variant_effect_predictor.pl --cache --dir $VEP/../vep_cache 
             -i $input.vcf 
             --vcf -o $output.vcf 
-            -species human 
+            -species homo_sapiens 
             --canonical --per_gene --protein 
             --sift=b --polyphen=b
             --symbol hgnc --force_overwrite --hgvs  --maf_1kg --maf_esp --pubmed
             --plugin Condel,$CONDEL/config,s
+            --offline
+            --verbose
     """, "vep"
 }
 
