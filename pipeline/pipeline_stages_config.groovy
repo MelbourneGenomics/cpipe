@@ -1313,6 +1313,19 @@ reorder = {
     }
 }
 
+gap_report = {
+    output.dir="results"
+    
+    var LOW_COVERAGE_THRESHOLD : 15,
+        LOW_COVERAGE_WIDTH : 1
+
+    produce("${run_id}_${sample}.gap.csv") {
+        exec """
+            python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input.cov.txt > $output.csv
+        """
+    }
+}
+
 summary_report = {
     requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
 
