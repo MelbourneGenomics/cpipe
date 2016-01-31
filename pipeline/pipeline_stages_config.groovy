@@ -1468,6 +1468,29 @@ create_sample_metadata = {
     }
 }
 
+filtered_on_exons = {
+    doc "Create a bam filtered on exons with 100bp padding and excluding the incidentalome"
+    // bedtools exons.bed + padding100bp - incidentalome
+    // TODO this might be faster if we sorted the bam and used -sorted
+    var GENE_BAM_PADDING: 100
+
+    def safe_tmp = ['tmp', UUID.randomUUID().toString()].join( '' )
+
+    output.dir = "results"
+    exec """
+        python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
+        $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
+        
+        python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
+        $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
+        $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
+        sort -k1,1 -k2,2n |
+        $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
+
+        rm "$safe_tmp"
+    """
+}
+
 variant_bams = {
 
     doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"

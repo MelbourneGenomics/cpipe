@@ -28,8 +28,131 @@
 ###########################################################################
 '''
 
+import collections
 import datetime
 import sys
+
+# interval matching from https://bitbucket.org/james_taylor/bx-python/raw/ebf9a4b352d3/lib/bx/intervals/operations/quicksect.py
+import math
+import time
+import sys
+import random
+
+#class IntervalTree( object ):
+#    def __init__( self ):
+#        self.chroms = {}
+#    def insert( self, interval, linenum=0, other=None ):
+#        chrom = interval.chrom
+#        start = interval.start
+#        end = interval.end
+#        if interval.chrom in self.chroms:
+#            self.chroms[chrom] = self.chroms[chrom].insert( start, end, linenum, other )
+#        else:
+#            self.chroms[chrom] = IntervalNode( start, end, linenum, other )
+#    def intersect( self, interval, report_func ):
+#        chrom = interval.chrom
+#        start = interval.start
+#        end = interval.end
+#        if chrom in self.chroms:
+#            self.chroms[chrom].intersect( start, end, report_func )
+#    def traverse( self, func ):
+#        for item in self.chroms.itervalues():
+#            item.traverse( func )
+#
+#class IntervalNode( object ):
+#    def __init__( self, start, end, linenum=0, other=None ):
+#        # Python lacks the binomial distribution, so we convert a
+#        # uniform into a binomial because it naturally scales with
+#        # tree size.  Also, python's uniform is perfect since the
+#        # upper limit is not inclusive, which gives us undefined here.
+#        self.priority = math.ceil( (-1.0 / math.log(.5)) * math.log( -1.0 / (random.uniform(0,1) - 1)))
+#        self.start = start
+#        self.end = end
+#        self.maxend = self.end
+#        self.minend = self.end
+#        self.left = None
+#        self.right = None
+#        self.linenum = linenum
+#        self.other = other
+#    def insert( self, start, end, linenum=0, other=None ):
+#        root = self
+#        if start > self.start:
+#            # insert to right tree
+#            if self.right:
+#                self.right = self.right.insert( start, end, linenum, other )
+#            else:
+#                self.right = IntervalNode(start, end, linenum, other )
+#            # rebalance tree
+#            if self.priority < self.right.priority:
+#                root = self.rotateleft()
+#        else:
+#            # insert to left tree
+#            if self.left:
+#                self.left = self.left.insert( start, end, linenum, other )
+#            else:
+#                self.left = IntervalNode(start, end, linenum, other )
+#            # rebalance tree
+#            if self.priority < self.left.priority:
+#                root = self.rotateright()
+#        if root.right and root.left: 
+#            root.maxend = max( root.end, root.right.maxend, root.left.maxend )
+#            root.minend = min( root.end, root.right.minend, root.left.minend )
+#        elif root.right: 
+#            root.maxend = max( root.end, root.right.maxend )
+#            root.minend = min( root.end, root.right.minend )
+#        elif root.left:
+#            root.maxend = max( root.end, root.left.maxend )
+#            root.minend = min( root.end, root.left.minend )
+#        return root
+#
+#    def rotateright( self ):
+#        root = self.left
+#        self.left = self.left.right
+#        root.right = self
+#        if self.right and self.left: 
+#            self.maxend = max(self.end, self.right.maxend, self.left.maxend)
+#            self.minend = min(self.end, self.right.minend, self.left.minend )
+#        elif self.right:
+#            self.maxend = max(self.end, self.right.maxend)
+#            self.minend = min(self.end, self.right.minend)
+#        elif self.left:
+#            self.maxend = max(self.end, self.left.maxend)
+#            self.minend = min(self.end, self.left.minend )
+#        return root
+#        
+#    def rotateleft( self ):
+#        root = self.right
+#        self.right = self.right.left
+#        root.left = self
+#        if self.right and self.left: 
+#            self.maxend = max(self.end, self.right.maxend, self.left.maxend)
+#            self.minend = min(self.end, self.right.minend, self.left.minend )
+#        elif self.right:
+#            self.maxend = max(self.end, self.right.maxend)
+#            self.minend = min(self.end, self.right.minend)
+#        elif self.left:
+#            self.maxend = max(self.end, self.left.maxend)
+#            self.minend = min(self.end, self.left.minend )
+#        return root
+#
+#    def intersect( self, start, end, report_func ):
+#        if start < self.end and end > self.start: report_func( self )
+#        if self.left and start < self.left.maxend:
+#            self.left.intersect( start, end, report_func )
+#        if self.right and end > self.start:
+#            self.right.intersect( start, end, report_func )
+#
+#    def traverse( self, func ):
+#        if self.left: self.left.traverse( func )
+#        func( self )
+#        if self.right: self.right.traverse( func )
+
+def annotate_gap(gap, db):
+    '''
+        given a gap, annotate it 
+    '''
+    # find overlapping cds interval, or nearest
+    return {}
 
 def write_log(log, msg):
     '''
@@ -51,14 +174,15 @@ def median(items):
         mid = (len(items) - 1) / 2
         return sorted_list[mid]
 
-def annotate_gap(gap, target):
+def write_gap(gap, target, db):
     '''
       write out the found gap
     '''
     # note that start and end are inclusive
+    annotation = annotate_gap(gap, db)
     target.write('{0},{1},{2},{3},{4},{5},{6},{7}\n'.format(gap['chr'], gap['gene'], gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] + gap['length'] - 1 - 1, min(gap['coverage']), max(gap['coverage']), median(gap['coverage']), gap['length']))
 
-def find_gaps(coverage, min_width, max_coverage, target, log):
+def find_gaps(coverage, min_width, max_coverage, target, db, log):
     '''
         find gaps and annotate
     '''
@@ -80,7 +204,7 @@ def find_gaps(coverage, min_width, max_coverage, target, log):
                     current['coverage'].append(coverage)
                 else: # end of gap
                     if current['length'] >= min_width: # write it out
-                        annotate_gap(current, target)
+                        write_gap(current, target, db)
                         gaps += 1
                     if coverage <= max_coverage: # start a new gap?
                         current = {'start': int(fields[1]), 'start_offset': int(fields[4]), 'length': 1, 'chr': fields[0], 'gene': fields[3], 'coverage': [coverage]}
@@ -94,8 +218,35 @@ def find_gaps(coverage, min_width, max_coverage, target, log):
 
     # still a gap in progress?
     if current is not None and current['length'] >= min_width:
-        annotate_gap(current, target)
+        write_gap(current, target, db)
     write_log(log, 'finding gaps: {0} lines; {1} gaps: done'.format(idx, gaps))
+
+Interval = collections.namedtuple('Interval', ['start', 'end', 'chrom'])
+
+def init_db(db, log):
+    '''
+        prepare annotation db
+    '''
+    write_log(log, 'starting init_db...')
+    result = {'cds': IntervalTree()}
+    added = 0
+    first = True
+    for i, line in enumerate(db):
+        if first:
+            first = False
+            continue
+        fields = line.strip('\n').split('\t')
+        chrom = fields[2]
+        cds_start = fields[6].split(',')
+        cds_end = fields[7].split(',')
+        for j, start in enumerate(cds_start):
+            item = Interval(start=int(start), end=int(cds_end[j]), chrom=chrom)
+            result['cds'].insert(item)
+            added += 1
+        if i % 10000 == 0:
+            write_log(log, 'init_db: {0} lines processed {1} cds intervals last {2}...'.format(i, added, item))
+    write_log(log, 'init_db: done with {0} intervals'.format(added))
+    return result
 
 def main():
     '''
@@ -106,8 +257,13 @@ def main():
     parser.add_argument('--min_coverage_ok', required=False, type=int, default=0, help='maximum value to consider to be low coverage')
     parser.add_argument('--min_gap_width', required=False, type=int, default=1, help='minimum width of a gap to report')
     parser.add_argument('--coverage', required=True, help='coverage file to examine for gaps')
+    parser.add_argument('--db', required=False, help='db to annotate gaps')
     args = parser.parse_args()
-    find_gaps(open(args.coverage, 'r'), args.min_gap_width, args.min_coverage_ok, sys.stdout, sys.stderr)
+    if args.db:
+        db = init_db(open(args.db, 'r'), sys.stderr)
+    else:
+        db = {}
+    find_gaps(open(args.coverage, 'r'), args.min_gap_width, args.min_coverage_ok, sys.stdout, db, sys.stderr)
 
 if __name__ == '__main__':
     main()
