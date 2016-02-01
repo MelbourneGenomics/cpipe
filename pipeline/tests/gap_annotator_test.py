@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+'''
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -18,6 +19,7 @@
 # along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
 ###########################################################################
+'''
 
 import unittest
 import imp
@@ -36,7 +38,7 @@ class GapAnnotatorTest(unittest.TestCase):
         cov = ['chr1\t100\t200\tA\t1\t0', 'chr1\t100\t200\tA\t2\t0', 'chr1\t100\t200\tA\t3\t10']
         log = StringIO.StringIO()
         target = StringIO.StringIO()
-        gap_annotator.find_gaps(cov, 0, 0, target, log)
+        gap_annotator.find_gaps(cov, 0, 0, target, {}, log)
         lines = target.getvalue().split('\n')
         assert lines[1] == 'chr1,A,100,101,0,0,0.0,2'
         assert len(lines) == 3
