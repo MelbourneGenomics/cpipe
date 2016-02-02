@@ -1477,18 +1477,21 @@ filtered_on_exons = {
     def safe_tmp = ['tmp', UUID.randomUUID().toString()].join( '' )
 
     output.dir = "results"
-    exec """
-        python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
-        $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
-        
-        python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
-        $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
-        $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
-        sort -k1,1 -k2,2n |
-        $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
 
-        rm "$safe_tmp"
-    """
+    produce("${run_id}_" + branch.name + ".filtered_on_exons.bam") {
+        exec """
+            python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
+            $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
+            
+            python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
+            $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
+            $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
+            sort -k1,1 -k2,2n |
+            $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
+    
+            rm "$safe_tmp"
+        """
+    }
 }
 
 variant_bams = {
@@ -1549,3 +1552,13 @@ validate_batch = {
     }
 }
 
+write_run_info = {
+    doc "write out all versions that are relevant to this particular run"
+    output.dir = "results"
+
+    produce("${run_id}_pipeline_run_info.txt") {
+        exec """
+            python $SCRIPTS/write_run_info.py --run_id ${run_id} --base "$BASE" > $output.txt
+        """
+    }
+}
