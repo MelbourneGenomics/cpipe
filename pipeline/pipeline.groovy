@@ -133,6 +133,9 @@ run {
    // check overall quality of results
    validate_batch +
 
+   // write all genelist versions to results
+   write_run_info +
+
    // update metadata and pipeline ID
    create_sample_metadata
 }
