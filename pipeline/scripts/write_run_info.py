@@ -41,55 +41,64 @@ def write_info(info, target):
     for key in sorted(info.keys()):
         target.write('{0}\t{1}\n'.format(key, info[key]))
 
-def find_version(fh):
+def find_version(handle):
     '''
         find a line of the form '#version nnn'
     '''
-    for line in fh:
+    for line in handle:
         if line.startswith('#version '):
             return line.strip().split()[1]
 
     return 'unknown'
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser(description='Write pipeline run info')
-    parser.add_argument('--run_id', required=False, help='run id of this analysis')
-    parser.add_argument('--base', required=False, help='cpipe base directory')
-    args = parser.parse_args()
+def build_run_info(run_id, base):
+    '''
+        generate run info from provided parameters
+    '''
     info = {}
-    info['run_id'] = 'unknown' if args.run_id is None else args.run_id
+    info['run_id'] = 'unknown' if run_id is None else run_id
     info['date_run'] = datetime.datetime.now().strftime('%Y%m%d')
-    if args.base:
+    if base:
         # cpipe version
-        version_file = os.path.join(args.base, 'version.txt')
+        version_file = os.path.join(base, 'version.txt')
         if os.path.isfile(version_file):
             info['cpipe_version'] = open(version_file, 'r').readline().strip()
 
         # capture
-        config_file = os.path.join(args.base, 'pipeline', 'config.groovy')
+        config_file = os.path.join(base, 'pipeline', 'config.groovy')
         if os.path.isfile(config_file):
             for line in open(config_file, 'r'):
                 if 'EXOME_TARGET' in line:
                     info['capture'] = line.split('=')[1].strip('"\'\n')
 
         # incidentalome
-        incidentalome = os.path.join(args.base, 'designs', 'genelists', 'incidentalome.genes.txt')
+        incidentalome = os.path.join(base, 'designs', 'genelists', 'incidentalome.genes.txt')
         if os.path.isfile(incidentalome):
             info['incidentalome'] = find_version(open(incidentalome, 'r'))
         # exons
-        exons = os.path.join(args.base, 'designs', 'genelists', 'exons.bed')
+        exons = os.path.join(base, 'designs', 'genelists', 'exons.bed')
         if os.path.isfile(exons):
             info['exons'] = find_version(open(exons, 'r'))
 
         # genes
-        for profile in glob.glob(os.path.join(args.base, 'designs/*/*.genes.txt')):
+        for profile in glob.glob(os.path.join(base, 'designs/*/*.genes.txt')):
             if 'genelists' in profile:
                 continue
             version = find_version(open(profile, 'r'))
             name = os.path.basename(profile).split('.')[0]
             info['genelist_{0}'.format(name)] = version
+    return info
 
+def main():
+    '''
+        determine run parameters from command line
+    '''
+    import argparse
+    parser = argparse.ArgumentParser(description='Write pipeline run info')
+    parser.add_argument('--run_id', required=False, help='run id of this analysis')
+    parser.add_argument('--base', required=False, help='cpipe base directory')
+    args = parser.parse_args()
+    info = build_run_info(args.run_id, args.base)
     write_info(info, sys.stdout)
 
 if __name__ == '__main__':
