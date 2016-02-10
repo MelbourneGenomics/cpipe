@@ -53,9 +53,10 @@ cli.with {
     w "threshold of width for reporting low coverage regions (1)", args:1
     metrics "metrics file written by Picard MarkDuplicates, one for each sample (optional)", args: Cli.UNLIMITED
     o "name of output file", args:1
+    p "prefix for filename", args:1
     low "directory to write regions of low coverage to", args:1
+    resultsdir "directory to write file to", args:1
 }
-
 
 opts = cli.parse(args)
 samples = null
@@ -66,10 +67,14 @@ println "opts.o = $opts.o"
 if(!opts.o) 
     err "Please provide -o option to specify output file name"
 
+if(!opts.p) 
+    err "Please provide -p option to specify file name prefix"
+
 int minRegionWidth = 1
 if(opts.w)
     minRegionWidth = opts.w.toInteger()
 
+resultsdir = opts.resultsdir ?: "results"
 
 lowBedDir = opts.low?:"." 
 
@@ -177,25 +182,45 @@ GParsPool.withPool(4) {
             ++totalBP
             sampleGenes.add(gene)
 
-            if(block && block.region != region) 
-                write()
+            if(block && block.region != region) { // end of region
+                if (block.end - block.start + 1 >= minRegionWidth) { // only write if long enough
+                    write()
+                    block = null;
+                }
+                else {
+                    block = null; // forget this (too short) block
+                }
+            }
 
             if(cov < threshold) {
                 if(!block)  {
                    block = new Block(chr:chr, region:region, gene:gene, start:pos)
                 }
                 block.stats.addValue(cov.toInteger())
-                block.end = pos
+                block.end = pos // note that end is the last position that is a gap
             }
-            else {
-                if(block && (block.end - block.start >= minRegionWidth))
+            else { // coverage is ok
+                if(block && (block.end - block.start + 1 >= minRegionWidth)) {
                     write()
+                    block = null;
+                }
+                else { // forget any block as it's too short
+                    block = null;
+                }
             }
 
             if(lineCount % 10000 == 0) {
                 println(new Date().toString() + "\t" + lineCount + " ($blockCount low coverage blocks observed)")
             }
         }
+
+        // we might still have a block
+        if(block && (block.end - block.start + 1 >= minRegionWidth)) {
+            println(new Date().toString() + "\t" + "final block written")
+            write()
+            block = null;
+        }
+
         synchronized(sampleBlocks) {
             allGenes.addAll(sampleGenes)
             sampleBlocks[sample] = blocks
@@ -270,12 +295,12 @@ new ExcelBuilder().build {
             }
             row {
                 cell('Total low bp').bold()
-                cell(blocks.sum { it.end-it.start})
+                cell(blocks.sum { it.end - it.start + 1 }) // gaps are inclusive
             }
             row {
                 cell('Frac low bp').bold()
                 if(blocks)
-                    cell(blocks.sum { it.end-it.start} / (float)sampleStats[sample].lowbp)
+                    cell(blocks.sum { it.end - it.start + 1 } / (float)sampleStats[sample].lowbp) // gaps are inclusive
             }
             row {
                 cell('Genes containing low bp').bold()
@@ -301,7 +326,7 @@ new ExcelBuilder().build {
                 b.with {
                     if(blocks.size() < MAX_LOW_COVERAGE_BLOCKS) {
 						row { 
-							cells(gene, chr, start, end, stats.min, stats.max, stats.getPercentile(50), end-start);
+							cells(gene, chr, start, end, stats.min, stats.max, stats.getPercentile(50), end - start + 1);
 							cell("ucsc").link("http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=$chr%3A$start-$end&refGene=pack")
 						}
 				    }
@@ -340,12 +365,12 @@ for(sample in samples) {
             }
             row {
                 cell('Total low bp').bold()
-                cell(blocks.sum { it.end-it.start})
+                cell(blocks.sum { it.end - it.start + 1 }) // gaps are inclusive
             }
             row {
                 cell('Frac low bp').bold()
                 if(blocks)
-                    cell(blocks.sum { it.end-it.start} / (float)sampleStats[sample].lowbp)
+                    cell(blocks.sum { it.end - it.start + 1 } / (float)sampleStats[sample].lowbp) // gaps are inclusive
             }
             row {
                 cell('Genes containing low bp').bold()
@@ -375,6 +400,6 @@ for(sample in samples) {
             }
 
         }.autoSize()
-    }.save("results/"+sample+".gap.xlsx")
+    }.save( resultsdir + "/" + opts.p + '_' + sample + ".gap.xlsx")
 }
 
