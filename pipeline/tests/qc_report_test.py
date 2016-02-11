@@ -65,6 +65,14 @@ class QCReportTest(unittest.TestCase):
         p = qc_report.parse_metadata(m, 'noway')
         assert p is None
 
+    def test_calculate_mean_stats(self):
+        log = StringIO.StringIO()
+        mean = 20
+        # expect first to include those in the range 4 -> 36 (80% either side)
+        stats = [0, 10, 20, 100]
+        result = qc_report.calculate_mean_stats(stats, mean, log)
+        assert result == [50.0, 75.0, 75.0, 50.0, 25.0]
+
     def test_calculate_summary(self):
         cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
         log = StringIO.StringIO()
