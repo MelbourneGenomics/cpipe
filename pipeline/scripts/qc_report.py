@@ -350,7 +350,7 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
 
     # coverage uniformity
-    out.write('**% Coverage within 20% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
+    out.write('**% Coverage within 80% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
     out.write('**% Coverage at 1x, 10x, 20x, 50x** | {0:.1f}%, {1:.1f}%, {2:.1f}%, {3:.1f}%\n'.format(summary['mean_stats'][1], summary['mean_stats'][2], summary['mean_stats'][3], summary['mean_stats'][4]))
 
     # fragments
