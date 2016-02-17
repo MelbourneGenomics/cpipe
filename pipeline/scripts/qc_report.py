@@ -114,7 +114,7 @@ def write_karyotype(target, karyotype, meta):
     '''
         write karyotype details to target
     '''
-    target.write('Sex\t{0}\n'.format(meta['sex']))
+    target.write('Sex\t{0}\n'.format(meta['sex'].upper()))
     target.write('Inferred Sex\t{0}\n'.format(karyotype['sex']))
     target.write('xCoverage\t{0}\n'.format(karyotype['x_mean_coverage']))
     target.write('yCoverage\t{0}\n'.format(karyotype['y_mean_coverage']))
