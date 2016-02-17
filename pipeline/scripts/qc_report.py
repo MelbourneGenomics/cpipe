@@ -399,6 +399,8 @@ def build_categories(categories, prioritized, log):
     '''
     result = {}
     for line in categories:
+        if line.startswith('#'):
+            continue
         fields = line.strip().split('\t')
         if len(fields) > 1:
             result[fields[0].lower()] = int(fields[1])
@@ -407,10 +409,11 @@ def build_categories(categories, prioritized, log):
     prioritized = prioritized.strip('"')
     override = 0
     for item in prioritized.split(' '):
-        priority, genes = item.split(':')
-        for gene in genes.split(','):
-            result[gene.strip().lower()] = priority
-            override += 1
+        if ':' in item:
+            priority, genes = item.split(':')
+            for gene in genes.split(','):
+                result[gene.strip().lower()] = priority
+                override += 1
 
     write_log(log, 'Added {0} prioritized genes to category list'.format(override))
 

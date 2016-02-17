@@ -119,3 +119,10 @@ class QCReportTest(unittest.TestCase):
         log = StringIO.StringIO()
         m = qc_report.build_metrics(p, o, log)
         assert m['read_pairs_examined'] == '45114896'
+
+    def test_build_empty_categories(self):
+        categories = ''
+        prioritized = ''
+        log = StringIO.StringIO()
+        qc_report.build_categories(categories, prioritized, log)
+
