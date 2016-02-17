@@ -44,8 +44,14 @@ requires EXOME_TARGET : """
 load 'pipeline_stages_config.groovy'
 // load 'haloplex.groovy'
 
-sample_metadata_file = args[0]
-sample_info = SampleInfo.parse_sample_info(args[0])
+sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
+
+try {
+  sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
+}
+catch (RuntimeException e) {
+  sample_info = SampleInfo.parse_sample_info(sample_metadata_file)
+}
 
 // We are specifying that each analysis takes place inside a fixed file structure
 // where the parent directory is named according to the batch name. Thus we
@@ -62,11 +68,17 @@ samples = sample_info.keySet()
 
 run {
     // Check the basic sample information first
-    check_sample_info + check_tools +
+    check_sample_info +  // check that fastq files are present
+    check_tools +
+    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
     // Create a single BED that contains all the regions we want to call
     // variants in
     create_combined_target + 
+    create_synonymous_target + // regions where synonymous snvs are not filtered
+    build_capture_stats + // how well covered genes are by the capture
+
+    generate_pipeline_id + // make a new pipeline run ID file if required
 
     // For each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * [
@@ -90,14 +102,14 @@ run {
 				   cleanup_intermediate_bams +
                        [
                          call_variants_gatk + call_pgx + merge_pgx +
-                            filter_variants + 
-                            annotate_vep + index_vcf +
-                            annovar_table +
-                            [ 
-                               add_to_database, 
-                               augment_condel + annotate_significance
-                            ]  +
-                         calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
+                         filter_variants + merge_variants +
+                         annotate_vep + index_vcf +
+                         annovar_table +
+                         [ 
+                             add_to_database, 
+                             augment_condel + annotate_significance
+                         ]  +
+                         [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + [ summary_report, exon_qc_report, gap_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
                        ]
@@ -109,10 +121,22 @@ run {
    // The 3rd phase is to produce the output spreadsheet, 1 per analysis profile
    ANALYSIS_PROFILES * [ set_target_info +  [ vcf_to_excel, family_vcf ] ] +
 
+   // Produce a mini bam for each variant to help investigate individual variants
+   samples * [ variant_bams, filtered_on_exons + index_bam ] +
+
    // And then finally write the provenance report (1 per sample)
    samples * [ provenance_report /* , annovar_to_lovd */ ] +
    
    // And report on similarity between samples
-   sample_similarity_report
+   sample_similarity_report +
+
+   // check overall quality of results
+   validate_batch +
+
+   // write all genelist versions to results
+   write_run_info +
+
+   // update metadata and pipeline ID
+   create_sample_metadata
 }
 

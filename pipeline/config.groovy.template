@@ -79,16 +79,16 @@ EXOME_TARGET=""
 // the variant database.
 SAMPLE_ID_MASK=".*"
 
-// Filter out variants observed more than 2 times (ie: 3 times or more)
+// Filter out variants observed more than 10 times (ie: 11 times or more)
 // in samples from a different cohort / disease target
-OUT_OF_COHORT_VARIANT_COUNT_FILTER=2
+OUT_OF_COHORT_VARIANT_COUNT_FILTER=10
 
 // This is only used for setting read group information in the
 // BAM files
 PLATFORM="illumina"
 
 // The coverage level below which a sample should be failed
-MEDIAN_COVERAGE_THRESHOLD=50
+MEDIAN_COVERAGE_THRESHOLD=0
 
 // Base location of all the tools that we use
 TOOLS="$BASE/tools"
@@ -145,11 +145,13 @@ IGV="$TOOLS/tools/igv/2.3.15"
 
 // Location and version of BWA
 BWA="$TOOLS/bwa/0.7.5a/bwa"
+BWA_THREADS="5"
 
 CONDEL="$TOOLS/condel/24-1-2013"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
+ID_FILE="$BASE/pipeline_id"
 
 // By default variant counts are annotated from the same database as the
 // one that they were added to in the first place
@@ -164,7 +166,7 @@ GROOVY_HOME="$TOOLS/groovy/2.3.4"
 GROOVY="$GROOVY_HOME/bin/groovy"
 
 // Whether to fail analysis if FASTQC produces warnings
-CHECK_FASTQC_FAILURES=true
+CHECK_FASTQC_FAILURES=false
 
 // If adapter sequence for exome capture is known, put here
 ADAPTERS_FASTA=false
@@ -180,7 +182,7 @@ JAVA="java"
 // Note: snpeff is not needed by default pipeline
 SNPEFF="$TOOLS/snpeff/3.1"
 
-// Genome needed (currently) only if using expanded splice regions
+// Genome needed for expanded splice regions
 HG19_CHROM_INFO="$REFBASE/hg19.genome"
 
 // Trimmomatic location
@@ -194,3 +196,15 @@ PYTHON="python"
 
 splice_region_window=2
 
+// interval padding to pass to the variant caller
+INTERVAL_PADDING_CALL=25
+
+// interval padding for SNVs in filter_variants
+INTERVAL_PADDING_SNV=10
+
+// interval padding for indels in filter_variants
+INTERVAL_PADDING_INDEL=25
+
+// do not filter synonymous with this range
+ALLOW_SYNONYMOUS_INTRON=0
+ALLOW_SYNONYMOUS_EXON=0
