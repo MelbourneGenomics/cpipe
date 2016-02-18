@@ -327,7 +327,8 @@ create_synonymous_target = {
 }
 
 build_capture_stats = {
-    produce( "qc/exon_coverage_stats.txt" ) {
+    output.dir = "qc"
+    produce( "exon_coverage_stats.txt" ) {
         exec """
             python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
         """

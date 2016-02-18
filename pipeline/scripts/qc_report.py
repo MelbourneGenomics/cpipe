@@ -45,6 +45,7 @@
 
 import collections
 import datetime
+import locale
 import re
 import sys
 
@@ -114,7 +115,7 @@ def write_karyotype(target, karyotype, meta):
     '''
         write karyotype details to target
     '''
-    target.write('Sex\t{0}\n'.format(meta['sex']))
+    target.write('Sex\t{0}\n'.format(meta['sex'].upper()))
     target.write('Inferred Sex\t{0}\n'.format(karyotype['sex']))
     target.write('xCoverage\t{0}\n'.format(karyotype['x_mean_coverage']))
     target.write('yCoverage\t{0}\n'.format(karyotype['y_mean_coverage']))
@@ -344,9 +345,12 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     unmapped_reads = int(metrics['unmapped_reads'])
     total_reads = unmapped_reads + mapped_reads + int(metrics['unpaired_reads_examined'])
 
-    out.write('**Total Reads** | {0:,d}\n'.format(total_reads))
-    out.write('**Unmapped Reads (% of total)** | {0:,d} ({1:.1f}%)\n'.format(unmapped_reads, 100. * unmapped_reads / total_reads))
-    out.write('**Mapped Paired Reads (% of total)** | {0:,d} ({1:.1f}%)\n'.format(mapped_reads, 100. * mapped_reads / total_reads))
+    # this is for python2.6 compatibility with 000 separators
+    locale.setlocale(locale.LC_ALL, 'en_US')
+    out.write('**Total Reads** | {0}\n'.format(locale.format("%d", total_reads, grouping=True)))
+    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", unmapped_reads, grouping=True), 100. * unmapped_reads / total_reads))
+    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", mapped_reads, grouping=True), 100. * mapped_reads / total_reads))
+
     out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
 
     # coverage uniformity
@@ -399,6 +403,8 @@ def build_categories(categories, prioritized, log):
     '''
     result = {}
     for line in categories:
+        if line.startswith('#'):
+            continue
         fields = line.strip().split('\t')
         if len(fields) > 1:
             result[fields[0].lower()] = int(fields[1])
@@ -407,10 +413,11 @@ def build_categories(categories, prioritized, log):
     prioritized = prioritized.strip('"')
     override = 0
     for item in prioritized.split(' '):
-        priority, genes = item.split(':')
-        for gene in genes.split(','):
-            result[gene.strip().lower()] = priority
-            override += 1
+        if ':' in item:
+            priority, genes = item.split(':')
+            for gene in genes.split(','):
+                result[gene.strip().lower()] = priority
+                override += 1
 
     write_log(log, 'Added {0} prioritized genes to category list'.format(override))
 

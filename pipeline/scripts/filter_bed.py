@@ -28,7 +28,7 @@ def filter_bed(fh_in, fh_out, exclude=None, include=None, log=None):
             fields = [x.strip() for x in line.split('\t')]
             if len(fields) > 2:
                 if int(fields[2]) > int(fields[1]): # size ok
-                    if len(fields) > 3 and fields[3].upper() not in exclude_genes and (len(include_genes) == 0 or fields[3].upper() in include_genes):
+                    if len(fields) <= 3 or (fields[3].upper() not in exclude_genes and (len(include_genes) == 0 or fields[3].upper() in include_genes)):
                         fh_out.write(line)
                 else:
                     pass # filter negative
