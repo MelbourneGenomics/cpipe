@@ -45,6 +45,7 @@
 
 import collections
 import datetime
+import locale
 import re
 import sys
 
@@ -344,9 +345,12 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     unmapped_reads = int(metrics['unmapped_reads'])
     total_reads = unmapped_reads + mapped_reads + int(metrics['unpaired_reads_examined'])
 
-    out.write('**Total Reads** | {0:,d}\n'.format(total_reads))
-    out.write('**Unmapped Reads (% of total)** | {0:,d} ({1:.1f}%)\n'.format(unmapped_reads, 100. * unmapped_reads / total_reads))
-    out.write('**Mapped Paired Reads (% of total)** | {0:,d} ({1:.1f}%)\n'.format(mapped_reads, 100. * mapped_reads / total_reads))
+    # this is for python2.6 compatibility with 000 separators
+    locale.setlocale(locale.LC_ALL, 'en_US')
+    out.write('**Total Reads** | {0}\n'.format(locale.format("%d", total_reads, grouping=True)))
+    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", unmapped_reads, grouping=True), 100. * unmapped_reads / total_reads))
+    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", mapped_reads, grouping=True), 100. * mapped_reads / total_reads))
+
     out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
 
     # coverage uniformity
