@@ -109,7 +109,7 @@ run {
                              add_to_database, 
                              augment_condel + annotate_significance
                          ]  +
-                         [ calc_coverage_stats + check_ontarget_perc, calculate_fragment_statistics ] + [ summary_report, exon_qc_report, gap_report ],
+                         [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + [ summary_report, exon_qc_report, gap_report ],
                          gatk_depth_of_coverage,
                          insert_size_metrics
                        ]

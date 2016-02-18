@@ -48,6 +48,8 @@ import datetime
 import re
 import sys
 
+MEAN_RANGE = 0.8 # calculate proportion of coverage within this fraction of the mean
+
 def write_log(log, msg):
     '''
         write a date stamped message to log
@@ -112,7 +114,7 @@ def write_karyotype(target, karyotype, meta):
     '''
         write karyotype details to target
     '''
-    target.write('Sex\t{0}\n'.format(meta['sex']))
+    target.write('Sex\t{0}\n'.format(meta['sex'].upper()))
     target.write('Inferred Sex\t{0}\n'.format(karyotype['sex']))
     target.write('xCoverage\t{0}\n'.format(karyotype['x_mean_coverage']))
     target.write('yCoverage\t{0}\n'.format(karyotype['y_mean_coverage']))
@@ -158,6 +160,30 @@ def parse_metadata(meta, study):
     # problem
     return None
 
+def calculate_mean_stats(overall_stats, overall_mean, log):
+    '''
+        calculate coverage stats of the form: [in mean range, cov >1, >10, >20, >50]
+    '''
+    write_log(log, 'calculating coverage stats...')
+    mean_stats = [0, 0, 0, 0, 0]
+
+    for coverage in overall_stats:
+        if coverage > overall_mean * (1.0 - MEAN_RANGE) and coverage < overall_mean * (1.0 + MEAN_RANGE):
+            mean_stats[0] += 1
+        if coverage >= 1:
+            mean_stats[1] += 1
+        if coverage >= 10:
+            mean_stats[2] += 1
+        if coverage >= 20:
+            mean_stats[3] += 1
+        if coverage >= 50:
+            mean_stats[4] += 1
+
+    mean_stats = [100. * x / len(overall_stats) for x in mean_stats]
+    write_log(log, 'calculating: done')
+
+    return mean_stats
+ 
 def calculate_summary(report_cov, threshold, log):
     '''
       calculate a summary of coverage across genes in report_cov
@@ -181,28 +207,14 @@ def calculate_summary(report_cov, threshold, log):
             #write_log(log, 'processed {0} lines... {1} > {2}'.format(idx, cov, threshold))
             write_log(log, 'processed {0} lines...'.format(idx))
 
-    write_log(log, 'calculating coverage stats...')
     overall_mean = mean(overall_stats)
-    mean_stats = [0, 0, 0, 0, 0]
+    mean_stats = calculate_mean_stats(overall_stats, overall_mean, log)
 
-    for coverage in overall_stats:
-        if coverage > overall_mean * 0.8 and coverage < overall_mean * 1.2:
-            mean_stats[0] += 1
-        if coverage >= 1:
-            mean_stats[1] += 1
-        if coverage >= 10:
-            mean_stats[2] += 1
-        if coverage >= 20:
-            mean_stats[3] += 1
-        if coverage >= 50:
-            mean_stats[4] += 1
-
-    mean_stats = [100. * x / len(overall_stats) for x in mean_stats]
-    write_log(log, 'calculating: done')
     # now record medians of each gene
     gene_results = {}
     for gene in stats:
         gene_results[gene] = {'ok': 100. * total_ok[gene] / total[gene], 'median': int(median(stats[gene]))}
+
     return {'mean': overall_mean, 'median': median(overall_stats), 'genes': gene_results, 'mean_stats': mean_stats}
 
 def is_ok(percent, conversion):
@@ -288,7 +300,7 @@ def find_first_of(meta, keys, default='N/A'):
             return meta[key]
     return default
 
-def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, out):
+def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out):
     '''
         generate a report from the provided summary
     '''
@@ -338,12 +350,19 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
 
     # coverage uniformity
-    out.write('**% Coverage within 20% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
+    out.write('**% Coverage within 80% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
     out.write('**% Coverage at 1x, 10x, 20x, 50x** | {0:.1f}%, {1:.1f}%, {2:.1f}%, {3:.1f}%\n'.format(summary['mean_stats'][1], summary['mean_stats'][2], summary['mean_stats'][3], summary['mean_stats'][4]))
 
     # fragments
     if fragments is not None:
-        out.write('**Mean fragment size (Stdev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['mean']), float(fragments['sd'])))
+        out.write('**Mean fragment size (Std. dev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['fragment_mean']), float(fragments['fragment_sd'])))
+        out.write('**Mean read length (Std. dev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['read_mean']), float(fragments['read_sd'])))
+        out.write('**% Bases >= Q30** | {0:.1f}%\n'.format(100. * float(fragments['base_pass']) / float(fragments['base_count'])))
+
+    # padding
+    if padding is not None:
+        padding_items = padding.split(',')
+        out.write('**Exon Padding: Overall, Indels, SNVs** | {0}, {1}, {2}\n'.format(padding_items[0], padding_items[1], padding_items[2]))
 
     # gene summary
     out.write('\n## Gene Summary\n')
@@ -366,6 +385,9 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     out.write('\n\n**% Mapped on Target**: the proportion of mapped reads that have any part align to any part of the capture region')
     out.write('\n\n**% Coverage within 20% of Mean**: bases in the capture region with coverage within 20% of the observed mean coverage')
     out.write('\n\n**Mean Fragment Size**: the average distance between correctly mapped and paired reads')
+    out.write('\n\n**Mean Read Length**: the average length of all sequenced reads')
+    out.write('\n\n**% Bases >= Q30**: what percentage of bases were given a recalibrated quality of at least 30')
+    out.write('\n\n**Exon Padding**: when calling variants, how much padding is given to the exon boundary, overall, for indels, and for SNVs')
     out.write('\n\n**Perc**: the percentage of the gene overlapping the capture region with acceptable coverage')
     out.write('\n\n**Median**: the median coverage across the gene overlapping the capture region')
     out.write('\n\n**% in capture**: the proportion of the gene that overlaps the capture region')
@@ -377,6 +399,8 @@ def build_categories(categories, prioritized, log):
     '''
     result = {}
     for line in categories:
+        if line.startswith('#'):
+            continue
         fields = line.strip().split('\t')
         if len(fields) > 1:
             result[fields[0].lower()] = int(fields[1])
@@ -385,10 +409,11 @@ def build_categories(categories, prioritized, log):
     prioritized = prioritized.strip('"')
     override = 0
     for item in prioritized.split(' '):
-        priority, genes = item.split(':')
-        for gene in genes.split(','):
-            result[gene.strip().lower()] = priority
-            override += 1
+        if ':' in item:
+            priority, genes = item.split(':')
+            for gene in genes.split(','):
+                result[gene.strip().lower()] = priority
+                override += 1
 
     write_log(log, 'Added {0} prioritized genes to category list'.format(override))
 
@@ -427,6 +452,7 @@ def main():
     parser.add_argument('--anonymous', action='store_true', required=False, help='do not show study ID')
     parser.add_argument('--write_karyotype', required=False, help='write karyotype details to specified file')
     parser.add_argument('--fragments', required=False, help='file containing fragment statistics')
+    parser.add_argument('--padding', required=False, help='comma separated padding stats for all,indel,snv')
     args = parser.parse_args()
     write_log(sys.stderr, 'opening {0} for karyotype'.format(args.exome_cov))
     karyotype = calculate_karyotype(open(args.exome_cov, 'r'), log=sys.stderr)
@@ -441,7 +467,7 @@ def main():
         fragments = parse_tsv(open(args.fragments, 'r'))
     else:
         fragments = None
-    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, out=sys.stdout)
+    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout)
 
 if __name__ == '__main__':
     main()

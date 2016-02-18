@@ -327,7 +327,8 @@ create_synonymous_target = {
 }
 
 build_capture_stats = {
-    produce( "qc/exon_coverage_stats.txt" ) {
+    output.dir = "qc"
+    produce( "exon_coverage_stats.txt" ) {
         exec """
             python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
         """
@@ -1160,12 +1161,12 @@ gatk_depth_of_coverage = {
     }
 }
 
-calculate_fragment_statistics = {
-    doc "Calculate fragment size statistics"
+calculate_qc_statistics = {
+    doc "Calculate additional qc statistics"
     output.dir="qc"
     transform("bam") to("fragments.tsv") {
         exec """
-            $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_fragment_statistics.py > $output.tsv
+            $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
         """
     }
 }
@@ -1327,7 +1328,7 @@ gap_report = {
 
     produce("${run_id}_${sample}.gap.csv") {
         exec """
-            python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input.cov.txt > $output.csv
+            python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input.cov.txt --db $BASE/designs/genelists/refgene.txt > $output.csv
         """
     }
 }
@@ -1339,7 +1340,7 @@ summary_report = {
 
     produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
         exec """
-            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input.fragments.tsv > $output.md
+            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input.fragments.tsv --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
             python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
         """
