@@ -39,7 +39,7 @@ cli.with {
   l 'linkify elements (only works for small data sets)'
   unique 'Only output the most significant effect (1 row) for each variant'
   g 'annotate coverage over genes'
-  meta 'meta data file for samples. If provided it will be used to resolve pedigree information', args:1
+  gc 'File containing gene,priority 2 columns, tab separated', args:1
   ped 'Pedigree file in PED format. Specifies the relationships between samples', args:1, required:true
   targets 'Target regions of capture (required for -sex)', args:1
   sex 'Estimate copies of chrX and SRY from data (requires -targets)'
@@ -47,6 +47,7 @@ cli.with {
   mindp 'filter out variants when all samples have coverage depth < this value', args:1
   mingq 'filter out variants when all samples have genotype quality < this value', args:1
   db    'database containing historical variant observations. If provided, frequency information within the database will be annotated', args:1
+  minpri 'Minimum priority to include', args:1
   o     'output file name (results.xlsx)', args:1
 }
 
@@ -100,6 +101,9 @@ if(opts.sex) {
     karyotypes*.value*.run()
 }
 
+geneCategories = [:]
+if(opts.gc)
+    geneCategories = new File(opts.gc).readLines()*.split('\t').collect { [it[0],it[1]] }.collectEntries()
 
 ESP_FIELD = ANNOVAR_FIELDS.find { it =~ /^esp/ }
 
@@ -123,6 +127,11 @@ if(opts.p) {
   phenotype_genes = new File(opts.p).readLines().collect { it.split("\t")[0] } as Set
 }
 
+int minPriority = 0
+if(opts.minpri != false) {
+    minPriority = opts.minpri.toInteger()
+}
+
 List affecteds = []
 Pedigrees pedigrees = Pedigrees.parse(opts.ped)
 
@@ -134,7 +143,7 @@ affecteds = pedigrees.affected.unique()
 //    err "This program only supports a single affected per pedigree. More affecteds ($affecteds) were observed than families (${pedigrees.families*.key}) in ${opts.ped}."
 //}
 
-noAffecteds = pedigrees.grep { e -> e.affected.empty }*.key
+noAffecteds = pedigrees.families.grep { e -> e.value.affected.empty }*.value*.id
 if(noAffecteds) 
     err "The following families do not have any sample listed as affected (phenotype > 1): $noAffecteds"
 
@@ -224,7 +233,7 @@ new ExcelBuilder().build {
                 // If the file contains CLR (samtools constraint likelihood ratios), add a column for those
                 // Write the header line and make it bold
                 boolean hasScount = exportSamples.size() > 1
-                exportedColumns = ['gene','chr','start','end','id','priority','effect','qual','depth'] + 
+                exportedColumns = ['gene','genep','chr','start','end','id','priority','snpeff','annovar','qual','depth'] + 
                     (hasScount?["scount"]:[]) +
                     (affecteds.size()>1?["acount"]:[]) +
                     (vcfHeader.hasInfo("FC")?["mut fm cnt"]:[]) +
@@ -272,7 +281,7 @@ new ExcelBuilder().build {
                 }
 
                 // Reasons why variants filtered out
-                Map reasons = [minGQ : 0, minDP : 0, dosage:0]
+                Map reasons = [minGQ : 0, minDP : 0, dosage:0, minPriority:0]
 
                 VCFIndex vcfIndex = new VCFIndex(vcf_file)
                 annovar.each { variant ->
@@ -332,6 +341,11 @@ new ExcelBuilder().build {
                     return false
                   }
 
+                  if(variant.Priority_Index < minPriority) {
+                    reasons.minPriority++
+                    return false
+                  }
+
                   // There are places where there are overlapping genes
                   // To enable easy filtering in the spreadsheet, we actually 
                   // write out the same row for each gene
@@ -342,12 +356,15 @@ new ExcelBuilder().build {
                       //    return
 
                       def row = row {}
-                      def genesCell = row.addCell(gene)
+                      def genesCell = row.addCell(variant.Gene)
                       if(opts.l && v.id == '.') {
                             genesCell.link("http://www.genecards.org/cgi-bin/carddisp.pl?gene=${gene}&search=${gene}")
                             if(phenotype_genes.contains(gene))
                                 genesCell.red()
                       }
+
+                      def geneCat = geneCategories[variant.Gene]
+                      row.addCell(geneCat == null ? 0 : geneCat)
 
                       // if(v.id == '.')
                       //    genesCell.link("http://asia.ensembl.org/Homo_sapiens/Gene/Phenotype?g=${URLEncoder.encode(genes[0])};r=$urlChr:$urlPos")
@@ -380,9 +397,8 @@ new ExcelBuilder().build {
                       // if(v.id == '.')
                       //    posCell.link("http://asia.ensembl.org/Homo_sapiens/Location/View?g=${URLEncoder.encode(genes[0])};r=$urlChr:$urlPos")
 
-                      //row.add(v.id, rank=="HIGH"?2:1, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
-                      row.add(v.id, variant.Priority_Index, effect, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
-                      // row.add(v.id, rank=="HIGH"?2:1, effect, v.qual, v.info.DP)
+                      def annovarFunc = (variant.Func == "exonic" ? variant.ExonicFunc : variant.Func);
+                      row.add(v.id, variant.Priority_Index, effect, annovarFunc, gqs.grep { it > 0 }.min(), depths.grep { it > 0 }.min())
 
                       // If there is more than one sample then it's useful to have the count of 
                       // how many total samples the variant was observed in
