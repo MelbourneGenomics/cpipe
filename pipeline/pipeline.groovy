@@ -40,9 +40,12 @@ requires EXOME_TARGET : """
         region here.
     """
 
-// All the core pipeline stages in the pipeline
-load 'pipeline_stages_config.groovy'
-// load 'haloplex.groovy'
+// all the core pipeline stages in the pipeline
+load 'pipeline_stage_initialize.groovy'
+load 'pipeline_stage_alignment.groovy'
+load 'pipeline_stage_variant_calling.groovy'
+load 'pipeline_stage_annotation.groovy'
+load 'pipeline_stage_reports.groovy'
 
 sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
 
@@ -67,76 +70,57 @@ ANALYSIS_PROFILES = sample_info*.value*.target as Set
 samples = sample_info.keySet()
 
 run {
-    // Check the basic sample information first
-    check_sample_info +  // check that fastq files are present
-    check_tools +
-    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
+    initialize_batch_run +
 
-    // Create a single BED that contains all the regions we want to call
-    // variants in
-    create_combined_target + 
-    create_synonymous_target + // regions where synonymous snvs are not filtered
-    build_capture_stats + // how well covered genes are by the capture
-
-    generate_pipeline_id + // make a new pipeline run ID file if required
-
-    // For each analysis profile we run the main pipeline in parallel
-    ANALYSIS_PROFILES * [
-
-        set_target_info + 
-
-        init_analysis_profile +
-
-        create_splice_site_bed +
+    // for each analysis profile we run the main pipeline in parallel
+    ANALYSIS_PROFILES * 
+    [
+        initialize_profiles +
         
-        // The first phase is to perform alignment and variant calling for each sample
-        samples * [
-               set_sample_info +
-                   "%.gz" * [ fastqc ] + check_fastqc +
-                   ~"(.*)_R[0-9][_.].*fastq.gz" * [ trim_fastq + align_bwa + index_bam + cleanup_trim_fastq ] +
-                   merge_bams +
-                   dedup + 
-                   cleanup_initial_bams +
-                   realignIntervals + realign + index_bam +
-                   bsqr_recalibration + index_bam +
-				   cleanup_intermediate_bams +
-                       [
-                         call_variants_gatk + call_pgx + merge_pgx +
-                         filter_variants + merge_variants +
-                         annotate_vep + index_vcf +
-                         annovar_table +
-                         [ 
-                             add_to_database, 
-                             augment_condel + annotate_significance
-                         ]  +
-                         [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + [ summary_report, exon_qc_report, gap_report ],
-                         gatk_depth_of_coverage,
-                         insert_size_metrics
-                       ]
-                   + check_coverage
-                   + check_karyotype
-        ] + qc_excel_report 
-   ] + 
+        samples * // for each sample...
+        [
+            // phase 1. data pre-processing for each sample: alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
+            align_sample + 
+            [ 
+                // phase 2. variant calling
+                variant_discovery + 
 
-   // The 3rd phase is to produce the output spreadsheet, 1 per analysis profile
-   ANALYSIS_PROFILES * [ set_target_info +  [ vcf_to_excel, family_vcf ] ] +
+                // phase 3. annotation
+                variant_annotation + 
+
+                // phase 4. sample specific reports
+                sample_reports, sample_reports_extra
+            ] +
+            sample_checks
+        ] + 
+        qc_excel_report
+   ] +
+
+   // produce the output spreadsheet, 1 per analysis profile
+   ANALYSIS_PROFILES * 
+   [ 
+       set_target_info +  
+       [ 
+           vcf_to_excel, 
+           family_vcf 
+       ]
+   ] +
 
    // Produce a mini bam for each variant to help investigate individual variants
-   samples * [ variant_bams, filtered_on_exons + index_bam ] +
+   samples * 
+   [ 
+       variant_bams, 
+       filtered_on_exons + 
+       index_bam 
+   ] +
 
    // And then finally write the provenance report (1 per sample)
-   samples * [ provenance_report /* , annovar_to_lovd */ ] +
+   samples * 
+   [ 
+       provenance_report
+   ] +
    
-   // And report on similarity between samples
-   sample_similarity_report +
-
-   // check overall quality of results
-   validate_batch +
-
-   // write all genelist versions to results
-   write_run_info +
-
-   // update metadata and pipeline ID
-   create_sample_metadata
+   // clean up
+   finish_batch_run
 }
 
