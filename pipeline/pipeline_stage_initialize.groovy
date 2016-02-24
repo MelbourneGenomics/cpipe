@@ -18,39 +18,9 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
-
-initialize_batch_run = {
-    // Check the basic sample information first
-    check_sample_info +  // check that fastq files are present
-    check_tools +
-    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
-
-    // Create a single BED that contains all the regions we want to call variants in
-    create_combined_target + 
-    create_synonymous_target + // regions where synonymous snvs are not filtered
-    build_capture_stats + // how well covered genes are by the capture
-
-    generate_pipeline_id + // make a new pipeline run ID file if required
-}
-
-finish_batch_run = {
-   // report on similarity between samples
-   sample_similarity_report +
-
-   // check overall quality of results
-   validate_batch +
-
-   // write all genelist versions to results
-   write_run_info +
-
-   // update metadata and pipeline ID
-   create_sample_metadata
-}
-
-initialize_profiles = {
-    set_target_info + 
-    create_splice_site_bed
-}
+///////////////////////////////////////////////////////////////////
+// stages
+///////////////////////////////////////////////////////////////////
 
 // remove spaces from gene lists and point to a new sample metadata file
 // note that this isn't run through bpipe
@@ -379,5 +349,42 @@ create_sample_metadata = {
           python $SCRIPTS/update_pipeline_run_id.py --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
       """
     }
+}
+
+///////////////////////////////////////////////////////////////////
+// segments
+///////////////////////////////////////////////////////////////////
+
+initialize_batch_run = segment {
+    // Check the basic sample information first
+    check_sample_info +  // check that fastq files are present
+    check_tools +
+    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
+
+    // Create a single BED that contains all the regions we want to call variants in
+    create_combined_target + 
+    create_synonymous_target + // regions where synonymous snvs are not filtered
+    build_capture_stats + // how well covered genes are by the capture
+
+    generate_pipeline_id // make a new pipeline run ID file if required
+}
+
+finish_batch_run = segment {
+   // report on similarity between samples
+   sample_similarity_report +
+
+   // check overall quality of results
+   validate_batch +
+
+   // write all genelist versions to results
+   write_run_info +
+
+   // update metadata and pipeline ID
+   create_sample_metadata
+}
+
+initialize_profiles = segment {
+    set_target_info + 
+    create_splice_site_bed
 }
 

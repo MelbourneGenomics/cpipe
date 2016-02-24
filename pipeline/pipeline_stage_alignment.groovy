@@ -18,29 +18,9 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
-
-align_sample = {
-    set_sample_info +
-    "%.gz" * [ fastqc ] + check_fastqc +
-       ~"(.*)_R[0-9][_.].*fastq.gz" * 
-       [ 
-           trim_fastq + 
-           align_bwa + 
-           index_bam + 
-           cleanup_trim_fastq 
-       ] +
-       merge_bams +
-       dedup + 
-       cleanup_initial_bams +
-       realignIntervals + 
-       realign + 
-       index_bam +
-       bsqr_recalibration + 
-       index_bam +
-       cleanup_intermediate_bams +
-       // continue to next stage if not part of a trio
-}
-
+///////////////////////////////////////////////////////////////////
+// stages
+///////////////////////////////////////////////////////////////////
 set_sample_info = {
 
     doc "Validate and set information about the sample to be processed"
@@ -308,18 +288,6 @@ realign = {
     ""","local_realign"
 }
 
-
-if(GATK_LEGACY) {
-    bsqr_recalibration = segment {
-        legacy_recal_count + legacy_recal
-    }
-}
-else {
-    bsqr_recalibration = segment {
-        recal_count + recal
-    }
-}
-
 recal_count = {
     doc "Recalibrate base qualities in a BAM file so that quality metrics match actual observed error rates"
     output.dir="align"
@@ -399,5 +367,40 @@ legacy_recal = {
                 ""","recalibrate_bam"
         }
     }
+}
+
+if(GATK_LEGACY) {
+    bsqr_recalibration = segment {
+        legacy_recal_count + legacy_recal
+    }
+}
+else {
+    bsqr_recalibration = segment {
+        recal_count + recal
+    }
+}
+
+///////////////////////////////////////////////////////////////////
+// segments
+///////////////////////////////////////////////////////////////////
+align_sample = segment {
+    set_sample_info +
+    "%.gz" * [ fastqc ] + check_fastqc +
+       ~"(.*)_R[0-9][_.].*fastq.gz" * 
+       [ 
+           trim_fastq + 
+           align_bwa + 
+           index_bam + 
+           cleanup_trim_fastq 
+       ] +
+       merge_bams +
+       dedup + 
+       cleanup_initial_bams +
+       realignIntervals + 
+       realign + 
+       index_bam +
+       bsqr_recalibration + 
+       index_bam +
+       cleanup_intermediate_bams
 }
 

@@ -18,33 +18,17 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
-sample_reports = segment {
-   [ 
-       calc_coverage_stats + 
-       check_ontarget_perc, 
-       calculate_qc_statistics 
-   ] + 
-   [ 
-       summary_report, 
-       exon_qc_report, 
-       gap_report 
-   ],
-   gatk_depth_of_coverage,
-   insert_size_metrics
-}
-
-sample_checks = segment {
-    check_coverage +
-    check_karyotype
-}
-
+///////////////////////////////////////////////////////////////////
+// stages
+///////////////////////////////////////////////////////////////////
 calc_coverage_stats = {
     doc "Calculate coverage across a target region using Bedtools"
     output.dir="qc"
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
-    transform("bam") to([file(target_bed_file).name+".cov.txt", file(target_bed_file).name+".cov.gz", "exome.txt", "ontarget.txt"]) {
+    // transform("bam") to([sample + ".cov.txt", sample + ".cov.gz", sample + ".exome.txt", sample + ".ontarget.txt"]) {
+    produce("${sample}.cov.txt", "${sample}.cov.gz", "${sample}.exome.txt", "${sample}.ontarget.txt") {
         // only calculate coverage for bases overlapping the capture
         def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
 
@@ -69,10 +53,11 @@ calc_coverage_stats = {
 }
 
 check_ontarget_perc = {
-    var MIN_ONTARGET_PERCENTAGE : 50
+    var MIN_ONTARGET_PERCENTAGE : 50,
+        input_ontarget_file: "qc/${sample}.ontarget.txt" // something about segments messes up $input
     check {
         exec """
-            RAW_READ_COUNT=`cat $input.ontarget.txt`
+            RAW_READ_COUNT=`cat $input_ontarget_file`
 
             ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
@@ -87,7 +72,8 @@ check_ontarget_perc = {
 calculate_qc_statistics = {
     doc "Calculate additional qc statistics"
     output.dir="qc"
-    transform("bam") to("fragments.tsv") {
+    // transform("bam") to(sample + ".fragments.tsv") {
+    produce("${sample}.fragments.tsv") {
         exec """
             $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
         """
@@ -146,11 +132,12 @@ gap_report = {
     output.dir="results"
     
     var LOW_COVERAGE_THRESHOLD : 15,
-        LOW_COVERAGE_WIDTH : 1
+        LOW_COVERAGE_WIDTH : 1,
+        input_coverage_file: "qc/${sample}.cov.txt" // something about segments messes up $input
 
     produce("${run_id}_${sample}.gap.csv") {
         exec """
-            python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input.cov.txt --db $BASE/designs/genelists/refgene.txt > $output.csv
+            python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input_coverage_file --db $BASE/designs/genelists/refgene.txt > $output.csv
         """
     }
 }
@@ -160,9 +147,14 @@ summary_report = {
 
     output.dir="results"
 
+    var input_coverage_file: "qc/${sample}.cov.txt", // something about segments messes up $input
+        input_exome_file: "qc/${sample}.exome.txt", 
+        input_ontarget_file: "qc/${sample}.ontarget.txt",
+        input_fragments_file: "qc/${sample}.fragments.tsv"
+
     produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
         exec """
-            python $SCRIPTS/qc_report.py --report_cov $input.cov.txt --exome_cov $input.exome.txt --ontarget $input.ontarget.txt ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input.fragments.tsv --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
+            python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
             python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
         """
@@ -378,5 +370,27 @@ vcf_to_excel = {
                 ${inputs.bam.withFlag("-bam")}
         """, "vcf_to_excel"
     }
+}
+
+///////////////////////////////////////////////////////////////////
+// segments
+///////////////////////////////////////////////////////////////////
+sample_reports = segment {
+//    parallel doesn't seem to work properly here
+//    [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + 
+//    [ summary_report, exon_qc_report, gap_report ]
+    calc_coverage_stats + check_ontarget_perc + calculate_qc_statistics + summary_report + exon_qc_report + gap_report
+}
+
+sample_reports_extra = segment {
+    [
+        gatk_depth_of_coverage, 
+        insert_size_metrics 
+    ]
+}
+
+sample_checks = segment {
+    check_coverage +
+    check_karyotype
 }
 

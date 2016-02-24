@@ -44,6 +44,7 @@ requires EXOME_TARGET : """
 load 'pipeline_stage_initialize.groovy'
 load 'pipeline_stage_alignment.groovy'
 load 'pipeline_stage_variant_calling.groovy'
+load 'pipeline_stage_annotation.groovy'
 load 'pipeline_stage_reports.groovy'
 
 sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
@@ -88,7 +89,7 @@ run {
                 variant_annotation + 
 
                 // phase 4. sample specific reports
-                sample_reports
+                sample_reports, sample_reports_extra
             ] +
             sample_checks
         ] + 

@@ -18,15 +18,9 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
-
-variant_discovery = {
-   call_variants_gatk + 
-   call_pgx + 
-   merge_pgx +
-   filter_variants + 
-   merge_variants
-}
-
+//////////////////////////////////////////////////////////////////////
+// stages
+//////////////////////////////////////////////////////////////////////
 call_variants_ug = {
     doc "Call SNPs/SNVs using GATK Unified Genotyper"
     output.dir="variants"
@@ -187,5 +181,17 @@ merge_pgx = {
             --variant $input.pgx.vcf
             --out $output.vcf
          """
+}
+
+//////////////////////////////////////////////////////////////////////
+// segments
+//////////////////////////////////////////////////////////////////////
+
+variant_discovery = segment {
+   call_variants_gatk + 
+   call_pgx + 
+   merge_pgx +
+   filter_variants + 
+   merge_variants
 }
 

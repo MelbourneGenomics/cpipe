@@ -19,25 +19,9 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 
-variant_annotation = segment {
-   annotate_vep + 
-   index_vcf +
-   annovar_table +
-   [ 
-       add_to_database, 
-       augment_condel + 
-       annotate_significance
-   ]
-}
-
-family_vcf = segment { 
-    merge_target_vcfs + 
-    annotate_snpeff + 
-    index_vcf.using(sort_vcf:false) + 
-    vcf_to_family_excel 
-}
-
-
+//////////////////////////////////////////////////////////////////////
+// stages
+//////////////////////////////////////////////////////////////////////
 @filter("vep")
 annotate_vep = {
     doc "Annotate variants using VEP to add Ensemble annotations"
@@ -264,5 +248,26 @@ vcf_to_family_excel = {
             """, "vcf_to_family_excel"
         }
     }
+}
+
+//////////////////////////////////////////////////////////////////////
+// segments
+//////////////////////////////////////////////////////////////////////
+variant_annotation = segment {
+   annotate_vep + 
+   index_vcf +
+   annovar_table +
+   [ 
+       add_to_database, 
+       augment_condel + 
+       annotate_significance
+   ]
+}
+
+family_vcf = segment { 
+    merge_target_vcfs + 
+    annotate_snpeff + 
+    index_vcf.using(sort_vcf:false) + 
+    vcf_to_family_excel 
 }
 
