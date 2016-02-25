@@ -126,3 +126,7 @@ class QCReportTest(unittest.TestCase):
         log = StringIO.StringIO()
         qc_report.build_categories(categories, prioritized, log)
 
+    def test_grouping(self):
+        assert qc_report.group_number(123) == '123'
+        assert qc_report.group_number(1234) == '1,234'
+        assert qc_report.group_number(1234567) == '1,234,567'
