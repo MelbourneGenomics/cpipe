@@ -105,14 +105,14 @@ PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
 // Note also that many databases also need to be downloaded,
 // using annovar's downdb function. See scripts/download_annovar_db.sh for
 // a helper script.
-ANNOVAR="$TOOLS/annovar/2013aug23"
+ANNOVAR="$TOOLS/annovar/2015-03-22"
 ANNOVAR_DB="$TOOLS/annovar/humandb"
 
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
-GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+GATK="$TOOLS/gatk/3.3-0"
 GATK_LEGACY=false
 
 // Utilities for making Excel files 
