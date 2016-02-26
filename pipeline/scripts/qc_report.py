@@ -45,7 +45,6 @@
 
 import collections
 import datetime
-import locale
 import re
 import sys
 
@@ -301,6 +300,17 @@ def find_first_of(meta, keys, default='N/A'):
             return meta[key]
     return default
 
+def group_number(number):
+    '''
+        add separators to numbers in a 2.6 compatible way without relying on locale
+    '''
+    s = '%d' % number
+    groups = []
+    while s and s[-1].isdigit():
+        groups.append(s[-3:])
+        s = s[:-3]
+    return s + ','.join(reversed(groups))
+
 def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out):
     '''
         generate a report from the provided summary
@@ -346,10 +356,9 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     total_reads = unmapped_reads + mapped_reads + int(metrics['unpaired_reads_examined'])
 
     # this is for python2.6 compatibility with 000 separators
-    locale.setlocale(locale.LC_ALL, 'en_US')
-    out.write('**Total Reads** | {0}\n'.format(locale.format("%d", total_reads, grouping=True)))
-    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", unmapped_reads, grouping=True), 100. * unmapped_reads / total_reads))
-    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(locale.format("%d", mapped_reads, grouping=True), 100. * mapped_reads / total_reads))
+    out.write('**Total Reads** | {0}\n'.format(group_number(total_reads)))
+    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(unmapped_reads), 100. * unmapped_reads / total_reads))
+    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(mapped_reads), 100. * mapped_reads / total_reads))
 
     out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
 

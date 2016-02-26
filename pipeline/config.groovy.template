@@ -88,7 +88,7 @@ OUT_OF_COHORT_VARIANT_COUNT_FILTER=10
 PLATFORM="illumina"
 
 // The coverage level below which a sample should be failed
-MEDIAN_COVERAGE_THRESHOLD=0
+MEDIAN_COVERAGE_THRESHOLD=50
 
 // Base location of all the tools that we use
 TOOLS="$BASE/tools"
