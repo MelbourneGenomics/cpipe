@@ -38,7 +38,7 @@ check_sample_info = {
     doc "Validate basic sample information is correct"
 
     def missingSummary = []
-    for(sample in samples) {
+    for(sample in all_samples) {
 
         // Check that FASTQ files begin with the sample name followed by underscore
         def files = sample_info[sample].files.fastq

@@ -383,7 +383,7 @@ else {
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
-align_sample = segment {
+analysis_ready_reads = segment {
     set_sample_info +
     "%.gz" * [ fastqc ] + check_fastqc +
        ~"(.*)_R[0-9][_.].*fastq.gz" * 

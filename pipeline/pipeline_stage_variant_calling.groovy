@@ -188,7 +188,7 @@ merge_pgx = {
 //////////////////////////////////////////////////////////////////////
 
 variant_discovery = segment {
-   call_variants_gatk + 
+   call_variants_trio + 
    call_pgx + 
    merge_pgx +
    filter_variants + 

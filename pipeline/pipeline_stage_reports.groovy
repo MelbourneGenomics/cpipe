@@ -375,22 +375,31 @@ vcf_to_excel = {
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
-sample_reports = segment {
-//    parallel doesn't seem to work properly here
+analysis_ready_reports = segment {
+//    parallel doesn't work properly here
 //    [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + 
 //    [ summary_report, exon_qc_report, gap_report ]
-    calc_coverage_stats + check_ontarget_perc + calculate_qc_statistics + summary_report + exon_qc_report + gap_report
+    calc_coverage_stats + 
+    check_ontarget_perc + 
+    calculate_qc_statistics + 
+    summary_report + 
+    exon_qc_report + 
+    gap_report +
+    gatk_depth_of_coverage +
+    insert_size_metrics +
+    filtered_on_exons + index_bam 
 }
 
-sample_reports_extra = segment {
-    [
-        gatk_depth_of_coverage, 
-        insert_size_metrics 
-    ]
-}
-
-sample_checks = segment {
+analysis_ready_checks = segment {
     check_coverage +
     check_karyotype
 }
 
+post_analysis_phase_1 = segment {
+    vcf_to_excel +
+    family_vcf 
+}
+
+post_analysis_phase_2 = segment {
+    variant_bams
+}
