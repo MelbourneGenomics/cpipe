@@ -280,6 +280,13 @@ fi
 
 msg "Configuring Condel Plugin ..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
+
+if [ ! -e $CONDEL/Condel.pm ]; then
+  ln -s "$CONDEL/Condel.pm" "$TOOLS/vep_plugin"
+else
+  msg "condel symlink exists"
+fi
+
 sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
 msg "Check that reference FASTA exists"
