@@ -6,5 +6,5 @@ For VEP to work, you need to install its data, by running something like:
 
 perl INSTALL.pl -c ../vep_cache 
 
-from within the vep folder (named by version, currently 74)
+from within the vep folder (named by version, currently 83)
 
