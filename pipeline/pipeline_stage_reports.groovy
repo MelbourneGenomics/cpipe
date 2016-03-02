@@ -61,7 +61,7 @@ check_ontarget_perc = {
 
             ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
-            [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
+            [ $RAW_READ_COUNT -eq 0 -o $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
              """
     } otherwise {
@@ -224,6 +224,9 @@ check_coverage = {
 check_karyotype = {
 
     doc "Compare the inferred sex of the sample to the inferred karyotype from the sequencing data"
+    exec """
+       echo "check_karyotype: enter"
+    """
 
     def karyotype_file = "results/" + run_id + '_' + sample + '.summary.karyotype.tsv'
     check {
@@ -238,11 +241,17 @@ check_karyotype = {
                                                            file: karyotype_file,
                                                            subject:"Sample $sample has a different sex than inferred from sequencing data"
      }
+    exec """
+       echo "check_karyotype: exit"
+    """
 }
 
 qc_excel_report = {
 
     doc "Create an excel file containing a summary of QC data for all the samples for a given target region"
+    exec """
+       echo "qc_excel_report: enter"
+    """
 
     var LOW_COVERAGE_THRESHOLD : 15,
         LOW_COVERAGE_WIDTH : 1
@@ -264,6 +273,9 @@ qc_excel_report = {
                     $inputs.gz
             ""","qc_excel_report"
     }
+    exec """
+        echo "qc_excel_report: exit"
+    """
 }
 
 provenance_report = {
@@ -396,8 +408,8 @@ analysis_ready_checks = segment {
 }
 
 post_analysis_phase_1 = segment {
-    vcf_to_excel +
-    family_vcf 
+    set_target_info +
+    [ vcf_to_excel, family_vcf ]
 }
 
 post_analysis_phase_2 = segment {

@@ -25,6 +25,9 @@
 @filter("vep")
 annotate_vep = {
     doc "Annotate variants using VEP to add Ensemble annotations"
+    exec """
+        echo "annotate_vep: enter"
+    """
     output.dir="variants"
 
     // Note: if the input VCF file is empty, VEP will not create an output.
@@ -46,6 +49,9 @@ annotate_vep = {
             --offline
             --verbose
     """, "vep"
+    exec """
+        echo "annotate_vep: exit"
+    """
 }
 
 index_vcf = {

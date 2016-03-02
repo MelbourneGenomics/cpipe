@@ -22,20 +22,13 @@
 // stages
 ///////////////////////////////////////////////////////////////////
 
-// remove spaces from gene lists and point to a new sample metadata file
-// note that this isn't run through bpipe
-correct_sample_metadata_file = {
-    def target = new File( 'results' )
-    if( !target.exists() ) {
-        target.mkdirs()
-    }
-    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
-    return "results/samples.corrected"
-}
-
 check_sample_info = {
 
     doc "Validate basic sample information is correct"
+
+    exec """
+        echo "check_sample_info: enter"
+    """
 
     def missingSummary = []
     for(sample in all_samples) {
@@ -82,6 +75,10 @@ check_sample_info = {
     if(missingSummary) {
         fail missingSummary.join("\n" + ("-" * 120) + "\n")
     }
+
+    exec """
+        echo "check_sample_info: exit"
+    """
 }
 
 check_tools = {
@@ -142,8 +139,11 @@ create_combined_target = {
                 $BEDTOOLS/bin/bedtools merge > $output.bed
         """
 
-        branch.COMBINED_TARGET = output.bed
     }
+    branch.COMBINED_TARGET = output.bed
+    exec """
+        echo "create_combined_target: combined target is $COMBINED_TARGET"
+    """
 }
 
 create_synonymous_target = {
@@ -197,6 +197,10 @@ set_target_info = {
     doc "Validate and set information about the target region to be processed"
 
     var HG19_CHROM_INFO : false
+
+    exec """
+        echo "set_target_info: combined target is $COMBINED_TARGET"
+    """
 
     branch.splice_region_window=false
     branch.splice_region_bed_flag=""
@@ -356,6 +360,7 @@ create_sample_metadata = {
 ///////////////////////////////////////////////////////////////////
 
 initialize_batch_run = segment {
+    // ANALYSIS_PROFILES = sample_info*.value*.target as Set
     // Check the basic sample information first
     check_sample_info +  // check that fastq files are present
     check_tools +

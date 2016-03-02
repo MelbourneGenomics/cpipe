@@ -18,10 +18,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
-somatic_analysis_pre = segment {
+somatic_analysis_phase_1 = segment {
     // does nothing
+    dummy
 }
 
-somatic_analysis_post = segment {
+somatic_analysis_phase_2 = segment {
     // does nothing
+    dummy
 }

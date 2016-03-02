@@ -169,19 +169,19 @@ align_bwa = {
 }
 
 index_bam = {
-
-    doc "Create an index for a BAM file"
-
-    // A bit of a hack to ensure the index appears in the
-    // same directory as the input bam, no matter where it is
-    // nb: fixed in new version of Bpipe
-    output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
-    transform("bam") to ("bam.bai") {
-        exec "$SAMTOOLS/samtools index $input.bam"
-    }
-    forward input
+ 
+     doc "Create an index for a BAM file"
+ 
+     // A bit of a hack to ensure the index appears in the
+     // same directory as the input bam, no matter where it is
+     // nb: fixed in new version of Bpipe
+     output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
+     transform("bam") to ("bam.bai") {
+         exec "$SAMTOOLS/samtools index $input.bam"
+     }
+     forward input
 }
-
+ 
 merge_bams = {
     doc """
         Merge the BAM files from multiple lanes together.
@@ -389,18 +389,15 @@ analysis_ready_reads = segment {
        ~"(.*)_R[0-9][_.].*fastq.gz" * 
        [ 
            trim_fastq + 
-           align_bwa + 
-           index_bam + 
+           align_bwa + index_bam + 
            cleanup_trim_fastq 
        ] +
        merge_bams +
        dedup + 
-       cleanup_initial_bams +
+       // cleanup_initial_bams +
        realignIntervals + 
-       realign + 
-       index_bam +
-       bsqr_recalibration + 
-       index_bam +
-       cleanup_intermediate_bams
+       realign + index_bam +
+       bsqr_recalibration + index_bam // +
+       // cleanup_intermediate_bams
 }
 

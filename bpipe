@@ -4,5 +4,5 @@
 # of the distribution
 unset GROOVY_HOME
 set -f
-CMD=`echo "$0" | sed 's/bpipe/tools\/bpipe\/0.9.8.8\/bin\/bpipe/'`
+CMD=`echo "$0" | sed 's/bpipe/tools\/bpipe\/0.9.9\/bin\/bpipe/'`
 $CMD $*

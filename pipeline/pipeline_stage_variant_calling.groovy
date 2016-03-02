@@ -67,7 +67,6 @@ call_variants_hc = {
                    -I $input.bam 
                    --dbsnp $DBSNP 
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
-                   -dcov 1600 
                    -l INFO 
                    -L $COMBINED_TARGET $splice_region_bed_flag
                    --interval_padding $INTERVAL_PADDING_CALL
@@ -85,11 +84,19 @@ call_pgx = {
     doc "Call Pharmacogenomic variants using GATK Unified Genotyper"
     output.dir="variants"
 
+    exec """
+        echo "call_pgx: enter"
+    """
+
     var call_conf:5.0, 
         emit_conf:5.0
 
-    if(!file("../design/${target_name}.pgx.vcf").exists())
+    if(!file("../design/${target_name}.pgx.vcf").exists()) {
+        exec """
+            echo "call_pgx: returning"
+        """
         return
+    }
 
     transform("bam","bam") to("metrics","pgx.vcf") {
         exec """
@@ -110,11 +117,18 @@ call_pgx = {
                    -o $output.vcf
             ""","gatk_call_variants"
     }
+    exec """
+        echo "call_pgx: exit"
+    """
 }
 
 filter_variants = {
     doc "Select only variants in the genomic regions defined for the $target_name target"
     output.dir="variants"
+
+    exec """
+        echo "filter_variants: enter"
+    """
 
     def pgx_flag = ""
     if(file("../design/${target_name}.pgx.vcf").exists()) {
@@ -144,6 +158,9 @@ filter_variants = {
              --selectTypeToInclude INDEL
              -o $output.indel
     """
+    exec """
+        echo "filter_variants: exit"
+    """
 }
 
 merge_variants = {
@@ -167,8 +184,18 @@ merge_pgx = {
     doc "Merge multiple VCF files into one file"
     output.dir="variants"
 
+    exec """
+        echo "merge_pgx: enter"
+    """
+
     if(!file("../design/${target_name}.pgx.vcf").exists()) {
+        exec """
+            echo "merge_pgx: forwarding..."
+        """
         forward input.recal.vcf.toString() // workaround for Bpipe bug
+        exec """
+            echo "merge_pgx: done"
+        """
         return
     }
 
@@ -181,6 +208,10 @@ merge_pgx = {
             --variant $input.pgx.vcf
             --out $output.vcf
          """
+
+    exec """
+        echo "merge_pgx: exit"
+    """
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -188,10 +219,10 @@ merge_pgx = {
 //////////////////////////////////////////////////////////////////////
 
 variant_discovery = segment {
-   call_variants_trio + 
-   call_pgx + 
-   merge_pgx +
-   filter_variants + 
-   merge_variants
+    call_variants_gatk + 
+    call_pgx + 
+    merge_pgx +
+    filter_variants + 
+    merge_variants
 }
 

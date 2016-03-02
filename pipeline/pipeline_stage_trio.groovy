@@ -61,12 +61,14 @@ call_variants_child_trio = {
 //////////////////////////////////////////////////////////////////////
 
 trio_analysis_phase_1 = segment {
+    dummy
 }
 
 trio_analysis_phase_2 = segment {
-    if (sample.is_trio_child()) {
-        call_variants_child_trio +
-        joint_call + 
-        variant_annotation 
-    }
+    // TODO if (sample.is_trio_child()) {
+    //    call_variants_child_trio +
+    //    joint_call + 
+    //    variant_annotation 
+    // TODO }
+    dummy
 }
