@@ -272,7 +272,7 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP; 
-        perl INSTALL.pl -c ../vep_cache -a acf -s homo_sapiens_vep || err "Failed to run VEP installer"
+        perl INSTALL.pl --CACHEDIR ../vep_cache --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
@@ -280,6 +280,13 @@ fi
 
 msg "Configuring Condel Plugin ..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
+
+if [ ! -e $CONDEL/Condel.pm ]; then
+  ln -s "$CONDEL/Condel.pm" "$TOOLS/vep_plugins"
+else
+  msg "condel symlink already configured"
+fi
+
 sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
 msg "Check that reference FASTA exists"

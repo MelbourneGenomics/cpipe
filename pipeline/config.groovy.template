@@ -135,10 +135,10 @@ GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
 // (you can create a symlink to an existing directory with 
 // that name if desired).
 // See tools/vep/README for more information
-VEP_VERSION="74"
+VEP_VERSION="83"
 VEP="$TOOLS/vep/$VEP_VERSION"
 
-IGVTOOLS="$TOOLS/IGVTools/2.3.6"
+IGVTOOLS="$TOOLS/IGVTools/2.3.68"
 
 // IGV location
 IGV="$TOOLS/tools/igv/2.3.15"
@@ -147,7 +147,7 @@ IGV="$TOOLS/tools/igv/2.3.15"
 BWA="$TOOLS/bwa/0.7.5a/bwa"
 BWA_THREADS="5"
 
-CONDEL="$TOOLS/condel/24-1-2013"
+CONDEL="$TOOLS/vep_plugins/condel/2.4"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
