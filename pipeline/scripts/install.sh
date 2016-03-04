@@ -253,7 +253,7 @@ then
 fi
 
 msg "Check VEP database downloaded for version $VEP_VERSION..."
-if [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] && [ -e $VEP/Bio ]; then
+if [ -e $VEP/../vep_cache/homo_sapiens/${VEP_VERSION}*/1 ] && [ -e $VEP/Bio ]; then
     msg "VEP installed..."
 else
     echo "
@@ -281,7 +281,7 @@ fi
 msg "Configuring Condel Plugin ..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
 
-if [ ! -e $CONDEL/Condel.pm ]; then
+if [ ! -e $TOOLS/vep_plugins/Condel.pm ]; then
   ln -s "$CONDEL/Condel.pm" "$TOOLS/vep_plugins"
 else
   msg "condel symlink already configured"
