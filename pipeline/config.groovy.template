@@ -99,6 +99,8 @@ SCRIPTS="$BASE/pipeline/scripts"
 // Location of Picard tools here
 PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
 
+HTSLIB="$BASE/tools/htslib/1.3"
+
 // Set location of Annovar distribution
 // Due to license restrictions on Annovar, you must download
 // it yourself and place it in this location
@@ -148,6 +150,7 @@ BWA="$TOOLS/bwa/0.7.5a/bwa"
 BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/condel/2.4"
+DBNSFP="$TOOLS/vep_plugins/dbNSFP/2016-01-13"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
