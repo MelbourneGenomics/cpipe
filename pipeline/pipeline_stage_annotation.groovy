@@ -25,6 +25,9 @@
 @filter("vep")
 annotate_vep = {
     doc "Annotate variants using VEP to add Ensemble annotations"
+    exec """
+        echo "annotate_vep: enter"
+    """
     output.dir="variants"
 
     // Note: if the input VCF file is empty, VEP will not create an output.
@@ -34,7 +37,6 @@ annotate_vep = {
     exec """
         grep '^#' $input.vcf > $output.vcf 
 
-        PERL5LIB="$CONDEL:\$PERL5LIB"
         perl $VEP/variant_effect_predictor.pl --cache --dir $VEP/../vep_cache 
             -i $input.vcf 
             --vcf -o $output.vcf 
@@ -42,10 +44,14 @@ annotate_vep = {
             --canonical --per_gene --protein 
             --sift=b --polyphen=b
             --symbol hgnc --force_overwrite --hgvs  --maf_1kg --maf_esp --pubmed
+            --dir_plugins $TOOLS/vep_plugins
             --plugin Condel,$CONDEL/config,s
             --offline
             --verbose
     """, "vep"
+    exec """
+        echo "annotate_vep: exit"
+    """
 }
 
 index_vcf = {

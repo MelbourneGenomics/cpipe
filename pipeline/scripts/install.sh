@@ -14,10 +14,11 @@
 
 # Helper functions
 function err() {
+    prefix=`date "+%F %T"`
     echo
     echo "========================= ERROR =================================="
     echo
-    echo "$1" | fmt -w 100
+    echo "$prefix $1" | fmt -w 100
     echo
     echo "=================================================================="
     echo
@@ -25,18 +26,20 @@ function err() {
 }
 
 function warn() {
+    prefix=`date "+%F %T"`
     echo
     echo "================================================================"
-    echo "WARNING: $1" | fmt -w 100
+    echo "$prefix WARNING: $1" | fmt -w 100
     echo "================================================================"
     echo
 }
 
 
 function msg() {
+    prefix=`date "+%F %T"`
     echo
     echo "================================================================"
-    echo "$1"
+    echo "$prefix $1"
     echo "================================================================"
     echo
 }
@@ -158,6 +161,8 @@ compile "$BWA"
 
 compile "$SAMTOOLS/samtools"
 
+compile "$HTSLIB/tabix"
+
 compile "$BEDTOOLS/bin/bedtools"
 
 msg "Check GATK is downloaded and available"
@@ -252,8 +257,9 @@ then
     fi
 fi
 
+########## vep ##########
 msg "Check VEP database downloaded for version $VEP_VERSION..."
-if [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] && [ -e $VEP/Bio ]; then
+if [ -e $VEP/../vep_cache/homo_sapiens/${VEP_VERSION}*/1 ] && [ -e $VEP/Bio ]; then
     msg "VEP installed..."
 else
     echo "
@@ -272,16 +278,51 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP; 
-        perl INSTALL.pl -c ../vep_cache -a acf -s homo_sapiens_vep || err "Failed to run VEP installer"
+        perl INSTALL.pl --CACHEDIR ../vep_cache --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        perl convert_cache.pl -species homo_sapiens -version ${VEP_VERSION}_GRCh37 --dir ../vep_cache || err "Failed to run VEP tabix"
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
 fi
 
+########## condel plugin ##########
 msg "Configuring Condel Plugin ..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
+
+if [ ! -e $TOOLS/vep_plugins/Condel.pm ]; then
+  ln -s "$CONDEL/Condel.pm" "$TOOLS/vep_plugins"
+else
+  msg "condel symlink already configured"
+fi
+
 sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
+########## dbnsfp plugin ##########
+msg "Configuring dbNSFP plugin"
+
+if [ ! -e $TOOLS/vep_plugins/dbNSFP.pm ]; then
+  ln -s "$DBNSFP/dbNSFP.pm" "$TOOLS/vep_plugins"
+else
+  msg "condel symlink already configured"
+fi
+
+# download dbnsfp dataset
+if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
+  pushd "$TOOLS/vep_plugins/dbNSFP"
+  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+  msg "downloading dbnsfp..."
+  wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+  msg "processing dbnsfp..."
+  unzip dbNSFPv3.0b2a.zip
+  cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
+  "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
+  msg "processing dbnsfp: done"
+  popd
+else
+  msg "dbnsfp dataset already downloaded"
+fi
+
+##########
 msg "Check that reference FASTA exists"
 [ -e "$REF" ] ||  {
   echo "

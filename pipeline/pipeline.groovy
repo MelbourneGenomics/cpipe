@@ -40,14 +40,18 @@ requires EXOME_TARGET : """
         region here.
     """
 
-// all the core pipeline stages in the pipeline
-load 'pipeline_stage_initialize.groovy'
-load 'pipeline_stage_alignment.groovy'
-load 'pipeline_stage_variant_calling.groovy'
-load 'pipeline_stage_annotation.groovy'
-load 'pipeline_stage_reports.groovy'
+// remove spaces from gene lists and point to a new sample metadata file
+// note that this isn't run through bpipe
+correct_sample_metadata_file = {
+    def target = new File( 'results' )
+    if( !target.exists() ) {
+        target.mkdirs()
+    }
+    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
+    return "results/samples.corrected"
+}
 
-sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
+sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update sample_metadata_file
 
 try {
   sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
@@ -67,7 +71,18 @@ batch = new File("..").canonicalFile.name
 // Extract the analysis profiles from the sample information
 ANALYSIS_PROFILES = sample_info*.value*.target as Set
 
-samples = sample_info.keySet()
+all_samples = sample_info.keySet()
+
+// all the core pipeline stages in the pipeline
+load 'pipeline_stage_initialize.groovy'
+load 'pipeline_stage_alignment.groovy'
+load 'pipeline_stage_variant_calling.groovy'
+load 'pipeline_stage_annotation.groovy'
+load 'pipeline_stage_reports.groovy'
+
+load 'pipeline_stage_germline.groovy'
+load 'pipeline_stage_somatic.groovy'
+load 'pipeline_stage_trio.groovy'
 
 run {
     initialize_batch_run +
@@ -75,51 +90,57 @@ run {
     // for each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * 
     [
+
         initialize_profiles +
         
-        samples * // for each sample...
+        all_samples * // for each sample...
         [
-            // phase 1. data pre-processing for each sample: alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
-            align_sample + 
+            // module 1. data pre-processing for each sample: 
+            // alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
+            // loosely based on gatk workflow
+            analysis_ready_reads + 
+
+            // each sample is passed onto each type of enabled analysis and processed if relevant
             [ 
-                // phase 2. variant calling
-                variant_discovery + 
-
-                // phase 3. annotation
-                variant_annotation + 
-
-                // phase 4. sample specific reports
-                sample_reports, sample_reports_extra
+                trio_analysis_phase_1,
+                somatic_analysis_phase_1,
+                germline_analysis_phase_1
             ] +
-            sample_checks
-        ] + 
-        qc_excel_report
+
+            // generate reports and do checks based on bam
+            analysis_ready_reports +
+            analysis_ready_checks
+        ] +
+
+        // each type of analysis can do a second phase after all phase 1 stages have finished
+        all_samples *
+        [
+            trio_analysis_phase_2,
+            somatic_analysis_phase_2,
+            germline_analysis_phase_2
+        ]
+
+        // qc_excel_report deprecated, see analysis_ready_reports
    ] +
 
    // produce the output spreadsheet, 1 per analysis profile
    ANALYSIS_PROFILES * 
    [ 
-       set_target_info +  
-       [ 
-           vcf_to_excel, 
-           family_vcf 
-       ]
+       post_analysis_phase_1
    ] +
 
    // Produce a mini bam for each variant to help investigate individual variants
-   samples * 
+   all_samples * 
    [ 
-       variant_bams, 
-       filtered_on_exons + 
-       index_bam 
+       post_analysis_phase_2
    ] +
 
    // And then finally write the provenance report (1 per sample)
-   samples * 
+   all_samples *
    [ 
        provenance_report
    ] +
-   
+
    // clean up
    finish_batch_run
 }

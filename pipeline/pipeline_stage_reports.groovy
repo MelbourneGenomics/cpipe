@@ -61,7 +61,7 @@ check_ontarget_perc = {
 
             ONTARGET_PERC=`grep -A 1 LIBRARY $input.metrics | tail -1 | awk '{ print int(((\$3 * 2) / "'"$RAW_READ_COUNT"'"))*100 }'`
 
-            [ $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
+            [ $RAW_READ_COUNT -eq 0 -o $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
              """
     } otherwise {
@@ -224,6 +224,9 @@ check_coverage = {
 check_karyotype = {
 
     doc "Compare the inferred sex of the sample to the inferred karyotype from the sequencing data"
+    exec """
+       echo "check_karyotype: enter"
+    """
 
     def karyotype_file = "results/" + run_id + '_' + sample + '.summary.karyotype.tsv'
     check {
@@ -238,11 +241,17 @@ check_karyotype = {
                                                            file: karyotype_file,
                                                            subject:"Sample $sample has a different sex than inferred from sequencing data"
      }
+    exec """
+       echo "check_karyotype: exit"
+    """
 }
 
 qc_excel_report = {
 
     doc "Create an excel file containing a summary of QC data for all the samples for a given target region"
+    exec """
+       echo "qc_excel_report: enter"
+    """
 
     var LOW_COVERAGE_THRESHOLD : 15,
         LOW_COVERAGE_WIDTH : 1
@@ -264,6 +273,9 @@ qc_excel_report = {
                     $inputs.gz
             ""","qc_excel_report"
     }
+    exec """
+        echo "qc_excel_report: exit"
+    """
 }
 
 provenance_report = {
@@ -375,22 +387,31 @@ vcf_to_excel = {
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
-sample_reports = segment {
-//    parallel doesn't seem to work properly here
+analysis_ready_reports = segment {
+//    parallel doesn't work properly here
 //    [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + 
 //    [ summary_report, exon_qc_report, gap_report ]
-    calc_coverage_stats + check_ontarget_perc + calculate_qc_statistics + summary_report + exon_qc_report + gap_report
+    calc_coverage_stats + 
+    check_ontarget_perc + 
+    calculate_qc_statistics + 
+    summary_report + 
+    exon_qc_report + 
+    gap_report +
+    gatk_depth_of_coverage +
+    insert_size_metrics +
+    filtered_on_exons + index_bam 
 }
 
-sample_reports_extra = segment {
-    [
-        gatk_depth_of_coverage, 
-        insert_size_metrics 
-    ]
-}
-
-sample_checks = segment {
+analysis_ready_checks = segment {
     check_coverage +
     check_karyotype
 }
 
+post_analysis_phase_1 = segment {
+    set_target_info +
+    [ vcf_to_excel, family_vcf ]
+}
+
+post_analysis_phase_2 = segment {
+    variant_bams
+}
