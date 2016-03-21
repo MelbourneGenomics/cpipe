@@ -76,6 +76,154 @@ call_variants_hc = {
     }
 }
 
+call_variants_individual_gvcf = {
+    doc "Call variants and output to GVCF"
+    output.dir="variants"
+
+    // haplotype calling when not part of a trio
+    //java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A HomopolymerRun -A LikelihoodRankSumTest -A LowMQ -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.g.vcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
+
+    transform("bam") to ("g.vcf", "hc.bam") {
+        exec """
+            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                -R $REF 
+                --emitRefConfidence GVCF 
+                --num_cpu_threads_per_data_thread 1 
+                -G Standard 
+                -A AlleleBalance 
+                -A AlleleBalanceBySample 
+                -A DepthPerAlleleBySample 
+                -A GCContent 
+                -A GenotypeSummaries 
+                -A HardyWeinberg 
+                -A HomopolymerRun 
+                -A LikelihoodRankSumTest 
+                -A LowMQ 
+                -A MappingQualityZero 
+                -A SampleList 
+                -A SpanningDeletions 
+                -A StrandBiasBySample 
+                -A TandemRepeatAnnotator 
+                -A VariantType 
+                -A TransmissionDisequilibriumTest 
+                -I $input.bam
+                -L $COMBINED_TARGET 
+                -o $output.g.vcf 
+                --bamOutput $output.hc.bam 
+                --logging_level INFO
+                --dbsnp $DBSNP
+        """, "gatk_call_variants"
+    }
+}
+
+call_variants_trio_gvcf = {
+    doc "Call variants with a PED file and output to GVCF"
+    output.dir="variants"
+
+    // first stage of trio analysis
+
+    // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A HomopolymerRun -A LikelihoodRankSumTest -A LowMQ -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.gvcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
+    transform("bam", "ped") to ("g.vcf", "hc.bam") {
+        exec """
+            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                -R $REF 
+                --emitRefConfidence GVCF 
+                --num_cpu_threads_per_data_thread 1 
+                -G Standard 
+                -A AlleleBalance 
+                -A AlleleBalanceBySample 
+                -A DepthPerAlleleBySample 
+                -A GCContent 
+                -A GenotypeSummaries 
+                -A HardyWeinberg 
+                -A HomopolymerRun 
+                -A LikelihoodRankSumTest 
+                -A LowMQ 
+                -A MappingQualityZero 
+                -A SampleList 
+                -A SpanningDeletions 
+                -A StrandBiasBySample 
+                -A TandemRepeatAnnotator 
+                -A VariantType 
+                -A TransmissionDisequilibriumTest 
+                -I $input.bam
+                -L $COMBINED_TARGET 
+                -o $output.g.vcf 
+                --bamOutput $output.hc.bam 
+                --logging_level INFO
+                -ped $input.ped 
+                --dbsnp $DBSNP
+        """, "gatk_call_variants"
+    }
+}
+
+genotype_likelihoods_individual = {
+    doc "Convert an individual GVCF to a vcf"
+    // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A LikelihoodRankSumTest -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest
+    transform("vcf") to ("vcf") {
+        exec """
+          java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs 
+            -R $REF 
+            --disable_auto_index_creation_and_locking_when_reading_rods 
+            --num_threads 1 
+            --variant $input.vcf
+            --out $output.vcf
+            --logging_level INFO 
+            --dbsnp $DBSNP
+            -G Standard 
+            -A AlleleBalance 
+            -A AlleleBalanceBySample 
+            -A DepthPerAlleleBySample 
+            -A GCContent 
+            -A GenotypeSummaries 
+            -A HardyWeinberg 
+            -A LikelihoodRankSumTest 
+            -A MappingQualityZero 
+            -A SampleList 
+            -A SpanningDeletions 
+            -A StrandBiasBySample 
+            -A TandemRepeatAnnotator 
+            -A VariantType 
+            -A TransmissionDisequilibriumTest
+        """
+    }
+}
+
+genotype_likelihoods_trio = {
+    doc "Convert the GVCF to a vcf using trio inputs"
+    // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A LikelihoodRankSumTest -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest
+    transform("vcf") to ("vcf") {
+      exec """
+        java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs 
+            -R $REF 
+            --disable_auto_index_creation_and_locking_when_reading_rods 
+            --num_threads 1 
+            --variant 00NA12877.hap.raw.g.vcf 
+            --variant 00NA12878.hap.raw.g.vcf 
+            --variant 00NA12879.hap.raw.g.vcf 
+            --out $output.vcf
+            -ped $input.ped 
+            --logging_level INFO 
+            --dbsnp $DBSNP
+            -G Standard 
+            -A AlleleBalance 
+            -A AlleleBalanceBySample 
+            -A DepthPerAlleleBySample 
+            -A GCContent 
+            -A GenotypeSummaries 
+            -A HardyWeinberg 
+            -A LikelihoodRankSumTest 
+            -A MappingQualityZero 
+            -A SampleList 
+            -A SpanningDeletions 
+            -A StrandBiasBySample 
+            -A TandemRepeatAnnotator 
+            -A VariantType 
+            -A TransmissionDisequilibriumTest
+      """
+    }
+}
+
 // For the legacy GATK, we must fall back to UnifiedGenotyper
 // for calling variants
 call_variants_gatk = GATK_LEGACY ? call_variants_ug : call_variants_hc
@@ -163,6 +311,22 @@ filter_variants = {
     """
 }
 
+merge_variants_gvcf = {
+    doc "Merge SNVs and INDELs"
+    output.dir="variants"
+
+    msg "Merging SNVs and INDELs"
+    exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T CombineGVCFs
+            -R $REF
+            --variant:indel $input.indel
+            --variant:snv $input.snv
+            --out $output.vcf
+         """
+}
+
+
 merge_variants = {
     doc "Merge SNVs and INDELs"
     output.dir="variants"
@@ -185,14 +349,14 @@ merge_pgx = {
     output.dir="variants"
 
     exec """
-        echo "merge_pgx: enter"
+        echo "merge_pgx: enter ${target_name}"
     """
 
     if(!file("../design/${target_name}.pgx.vcf").exists()) {
         exec """
             echo "merge_pgx: forwarding..."
         """
-        forward input.recal.vcf.toString() // workaround for Bpipe bug
+        forward input.recal.g.vcf.toString() // workaround for Bpipe bug
         exec """
             echo "merge_pgx: done"
         """
@@ -204,7 +368,7 @@ merge_pgx = {
             $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineVariants
             -R $REF
-            --variant $input.recal.vcf
+            --variant $input.recal.g.vcf
             --variant $input.pgx.vcf
             --out $output.vcf
          """
@@ -219,10 +383,10 @@ merge_pgx = {
 //////////////////////////////////////////////////////////////////////
 
 variant_discovery = segment {
-    call_variants_gatk + 
+    call_variants_individual_gvcf + 
     call_pgx + 
     merge_pgx +
-    filter_variants + 
-    merge_variants
+    filter_variants +
+    merge_variants_gvcf
 }
 

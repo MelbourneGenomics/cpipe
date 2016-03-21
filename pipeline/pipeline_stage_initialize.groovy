@@ -127,7 +127,7 @@ create_combined_target = {
     //
     // This way we avoid calling variants over the entire genome, but still
     // include everything of interest
-    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(" ")
 
     output.dir = "../design"
 
@@ -312,7 +312,7 @@ sample_similarity_report = {
 
 validate_batch = {
     doc "Validates batch results"
-    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(",")
+    String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(" ")
     produce("results/missing_from_exons.genes.txt", "results/${run_id}_batch_validation.md", "results/${run_id}_batch_validation.html") {
       exec """
           cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/exons.bed > results/missing_from_exons.genes.txt
@@ -355,6 +355,21 @@ create_sample_metadata = {
     }
 }
 
+generate_ped_files = {
+    doc "Generate necessary PED files from the details in the sample metadata file"
+    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    output.dir="results"
+
+    produce("${run_id}_families.log") {
+        exec """
+            mkdir -p results
+
+            python $SCRIPTS/generate_peds.py --prefix "results/${run_id}_family_" < $sample_metadata_file 2>&1 | tee "results/${run_id}_families.log"
+        """
+    }
+}
+
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
@@ -371,7 +386,9 @@ initialize_batch_run = segment {
     create_synonymous_target + // regions where synonymous snvs are not filtered
     build_capture_stats + // how well covered genes are by the capture
 
-    generate_pipeline_id // make a new pipeline run ID file if required
+    generate_pipeline_id + // make a new pipeline run ID file if required
+
+    generate_ped_files // generate ped files required for trio analysis
 }
 
 finish_batch_run = segment {
@@ -388,6 +405,7 @@ finish_batch_run = segment {
    create_sample_metadata
 }
 
+// configure target regions and other settings for each profile
 initialize_profiles = segment {
     set_target_info + 
     create_splice_site_bed

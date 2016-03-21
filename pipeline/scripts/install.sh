@@ -161,6 +161,8 @@ compile "$BWA"
 
 compile "$SAMTOOLS/samtools"
 
+compile "$BCFTOOLS/bcftools"
+
 compile "$HTSLIB/tabix"
 
 compile "$BEDTOOLS/bin/bedtools"
@@ -186,76 +188,6 @@ msg "Check GATK is downloaded and available"
         msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
     fi
 }
-
-msg "Check Annovar is downloaded and available"
-[ -e $ANNOVAR/annotate_variation.pl ] || {
-
-  pushd $BASE/tools/annovar > /dev/null
-
-  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | head -1`
-
-  if [ ! -e "$ANNOVAR_DOWNLOAD" ];
-  then
-        echo "
-  Due to license restrictions, Annovar cannot be included
-  with Cpipe. If you wish to use Annovar, please download it
-  separately and place the downloaded file (tar.gz) in the 
-  following location: $BASE/tools/annovar
-
-  Once you have done this, press enter to continue.
-      "
-      read  -p "Press enter when you have placed the Annovar tar.gz file in $BASE/tools/annovar ..."
-  fi
-
-  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | tail -1`
-  if [ -e "$ANNOVAR_DOWNLOAD" ];
-  then
-      tar -xzf $ANNOVAR_DOWNLOAD
-      ANNOVAR_PL=`find . -iname annotate_variation.pl | xargs ls -t | head -1` 
-      ANNOVAR_VERSION=`perl $ANNOVAR_PL | grep Version | grep -o '[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}'`
-      ANNOVAR_DIR=`dirname $ANNOVAR_PL`
-      mv $ANNOVAR_DIR $ANNOVAR_VERSION
-
-      set_config_variable ANNOVAR "$BASE/tools/annovar/$ANNOVAR_VERSION"
-  else
-      err "Could not find tar.gz file in $BASE/tools/annovar"
-  fi
-  popd > /dev/null
-}
-
-msg "Check Annovar database exists"
-MISSING_ANNOVAR=""
-ANNOVAR_DB_FILES="hg19_snp138.txt hg19_esp6500siv2_all.txt hg19_refGene.txt hg19_ALL.sites.2014_10.txt hg19_phastConsElements46way.txt hg19_ljb26_all.txt"
-for i in $ANNOVAR_DB_FILES ;  
-do
-    [ -e $ANNOVAR_DB/$i ] || {
-        MISSING_ANNOVAR="$i $MISSING_ANNOVAR"
-    }
-done
-
-if [ ! -z "$MISSING_ANNOVAR" ];
-then
-    echo "
-    One or more Annovar database files is not present. Do you want to 
-    download Annovar files now using the built in download script?
-    NOTE: downloading may take some time and cause large files to be
-    downloaded. Please try to avoid having this process be interrupted.
-
-    Missing files:
-
-    $MISSING_ANNOVAR
-    "
-
-    prompt "Download Annovar files? (y/n)" "y"
-
-    if [ "$REPLY" == "y" ];
-    then
-        $BASE/pipeline/scripts/download_annovar_db.sh $ANNOVAR $BASE/tools/annovar/humandb \
-            || err "Failed to download Annovar databases"
-    else
-        msg "WARNING: Cpipe will not operate correctly if Annovar database file are not present."
-    fi
-fi
 
 ########## vep ##########
 msg "Check VEP database downloaded for version $VEP_VERSION..."

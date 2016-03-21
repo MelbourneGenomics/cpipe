@@ -26,8 +26,8 @@ import argparse
 import csv
 import sys
 
-def view( fh, num, out ):
-  csvfh = csv.reader( fh, delimiter=',', quotechar='"' )
+def view(fh, num, delimiter, out ):
+  csvfh = csv.reader( fh, delimiter=delimiter, quotechar='"' )
   header = None
   for idx, line in enumerate( csvfh ):
     if not header:
@@ -41,5 +41,6 @@ def view( fh, num, out ):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='View CSV file')
   parser.add_argument('--line', required=True, help='line to view')
+  parser.add_argument('--delimiter', required=False, default=',', help='column delimiter')
   args = parser.parse_args()
-  view( sys.stdin, int( args.line ), sys.stdout )
+  view(sys.stdin, int(args.line), args.delimiter, sys.stdout)

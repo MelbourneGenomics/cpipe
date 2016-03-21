@@ -109,12 +109,12 @@ insert_size_metrics = {
 
     output.dir="qc"
     exec """
-        $JAVA -Xmx4g -jar $PICARD_HOME/lib/CollectInsertSizeMetrics.jar INPUT=$input.bam O=$output.txt H=$output.pdf
+        $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.bam O=$output.txt H=$output.pdf
     """
 
     check {
         exec """
-              INSERT_SIZE=`grep -A 1 MEDIAN_INSERT_SIZE $output.txt | cut -f 1 | tail -1`
+              INSERT_SIZE=`grep -A 1 MEDIAN_INSERT_SIZE $output.txt | cut -f 1 | tail -1 | sed 's/\\.[0-9]*//'`
 
               echo "Median insert size = $INSERT_SIZE"
 
@@ -318,69 +318,14 @@ variant_bams = {
 
     output.dir = "results/variant_bams"
 
-    from(branch.name+'*annovarx.csv', branch.name+'.*.recal.bam') {   
+    from(run_id + "_" + branch.name + '*.lovd.tsv', branch.name + '.*.recal.bam') {   
         // Slight hack here. Produce a log file that bpipe can track to confirm that the bams were produced.
         // Bpipe is not actually tracking the variant bams themselves. 
         produce(branch.name + ".variant_bams_log.txt") {
             exec """
-                python $SCRIPTS/variant_bams.py --bam $input.bam --csv $input.csv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
+                python $SCRIPTS/variant_bams.py --bam $input.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
             """
         }
-    }
-}
-
-vcf_to_excel = {
-
-    doc "Convert a VCF output file to Excel format, merging information from Annovar"
-
-    requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)",
-             ANNOTATION_VARIANT_DB : "File name of SQLite variant database for storing variants"
-
-    var exclude_variant_types : "synonymous SNV",
-        out_of_cohort_filter_threshold : OUT_OF_COHORT_VARIANT_COUNT_FILTER
-
-    // disable this check - attempt to generate results regardless of qc check
-    // check {
-    //     exec "ls results/${target_name}.qc.xlsx > /dev/null 2>&1"
-    // } otherwise { 
-    //     succeed "No samples succeeded for target $target_name" 
-    // }
-
-    def pgx_flag = ""
-    if(file("../design/${target_name}.pgx.vcf").exists()) {
-        pgx_flag = "-pgx ../design/${target_name}.pgx.vcf"
-    }
-
-    // Default behavior: exclude all synonymous variants from output
-    def EXCLUDE_VARIANT_TYPES=exclude_variant_types.toString().split(",")*.trim().join(",")
-
-    println "Excluding variant types: $EXCLUDE_VARIANT_TYPES"
-    println "Filtering out variants observed more than $out_of_cohort_filter_threshold times"
-
-    output.dir="results"
-
-    def all_outputs = [target_name + ".xlsx"] + target_samples.collect { run_id + '_' + it + ".annovarx.csv" }
-    from("*.hg19_multianno.*.csv", "*.vcf") produce(all_outputs) {
-        exec """
-            echo "Creating $outputs.csv"
-
-            JAVA_OPTS="-Xmx12g -Djava.awt.headless=true" $GROOVY 
-                -cp $SCRIPTS:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/vcf_to_excel.annovar.groovy 
-                -s '${target_samples.join(",")}'
-                ${inputs.csv.withFlag("-a")}
-                ${inputs.vcf.withFlag("-vcf")}
-                -x "$EXCLUDE_VARIANT_TYPES"
-                -db $ANNOTATION_VARIANT_DB
-                -o $output.xlsx
-                -oocf $out_of_cohort_filter_threshold
-                -si $sample_metadata_file
-                -gc $target_gene_file ${pgx_flag}
-                -annox $output.dir
-                -log ${target_name}_filtering.log
-                -prefix $run_id
-                -incidentalome $BASE/designs/genelists/incidentalome.genes.txt
-                ${inputs.bam.withFlag("-bam")}
-        """, "vcf_to_excel"
     }
 }
 
@@ -407,11 +352,6 @@ analysis_ready_checks = segment {
     check_karyotype
 }
 
-post_analysis_phase_1 = segment {
-    set_target_info +
-    [ vcf_to_excel, family_vcf ]
-}
-
-post_analysis_phase_2 = segment {
+post_analysis = segment {
     variant_bams
 }
