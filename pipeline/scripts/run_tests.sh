@@ -60,6 +60,17 @@ function msg() {
         echo
 }
 
+function lovd_has() {
+  [ -z "$LOVD_TSV" ] && err "LOVD_TSV variable not defined - did the pipeline finish successfully"
+  CHR=$1
+  POS=$2
+  TYPE="$3"
+  cat $LOVD_TSV | grep "$CHR" | grep "$POS" | grep -q "$TYPE" \
+    || err "Output file $LOVD_TSV did not have expected variant of type '$TYPE' at  $CHR:$POS"
+
+  echo "PASS" 
+}
+
 function annovar_has() {
   # TODO: make this more robust with a real CSV parser, etc
   [ -z "$ANNOVAR_CSV" ] && err "ANNOVAR_CSV variable not defined"
