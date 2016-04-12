@@ -235,7 +235,12 @@ set_target_info = {
 
     produce(transcripts_file) {
         exec """
-            cp $BASE/designs/$target_name/${target_name}.transcripts.txt $transcripts_file;
+            if [ -e $BASE/designs/$target_name/${target_name}.transcripts.txt ];
+            then
+                cp $BASE/designs/$target_name/${target_name}.transcripts.txt $transcripts_file;
+            else
+                touch $transcripts_file;
+            fi
         """
     }
 
