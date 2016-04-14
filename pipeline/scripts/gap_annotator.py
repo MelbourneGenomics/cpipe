@@ -23,7 +23,7 @@
 # Purpose:
 #   Generate annotated gap CSV
 # Usage:
-#   See main()for arguments
+#   See main() for arguments
 #
 ###########################################################################
 '''

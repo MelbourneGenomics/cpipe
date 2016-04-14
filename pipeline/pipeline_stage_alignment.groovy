@@ -59,7 +59,7 @@ fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
     transform('.fastq.gz')  to('_fastqc.zip') {
-        exec "$FASTQC/fastqc -o ${output.dir} $inputs.gz"
+        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz"
     }
 }
 
@@ -163,7 +163,7 @@ align_bwa = {
                 $BWA mem -M -t $BWA_THREADS -k $seed_length 
                          -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
                          $REF $input1.gz $input2.gz | 
-                         $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort - $output.prefix
+                         $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -
         ""","bwamem"
     }
 }
@@ -207,7 +207,7 @@ merge_bams = {
         //else {
             msg "Merging $inputs.bam size=${inputs.bam.size()}"
             exec """
-                $JAVA -Xmx2g -jar $PICARD_HOME/lib/MergeSamFiles.jar
+                $JAVA -Xmx2g -jar $PICARD_HOME/picard.jar MergeSamFiles
                     ${inputs.bam.withFlag("INPUT=")}
                     VALIDATION_STRINGENCY=LENIENT
                     ASSUME_SORTED=true
@@ -228,7 +228,7 @@ dedup = {
     exec """
         mkdir -p "$safe_tmp_dir"
 
-        $JAVA -Xmx4g -Djava.io.tmpdir=$safe_tmp_dir -jar $PICARD_HOME/lib/MarkDuplicates.jar
+        $JAVA -Xmx4g -Djava.io.tmpdir=$safe_tmp_dir -jar $PICARD_HOME/picard.jar MarkDuplicates
              INPUT=$input.bam 
              REMOVE_DUPLICATES=true 
              VALIDATION_STRINGENCY=LENIENT 
@@ -383,6 +383,7 @@ else {
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
+// all samples do this
 analysis_ready_reads = segment {
     set_sample_info +
     "%.gz" * [ fastqc ] + check_fastqc +

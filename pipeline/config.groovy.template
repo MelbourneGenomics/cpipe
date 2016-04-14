@@ -97,7 +97,7 @@ TOOLS="$BASE/tools"
 SCRIPTS="$BASE/pipeline/scripts"
 
 // Location of Picard tools here
-PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
+PICARD_HOME="$BASE/tools/picard/picard-tools-2.2.1"
 
 HTSLIB="$BASE/tools/htslib/1.3"
 
@@ -121,13 +121,14 @@ GATK_LEGACY=false
 EXCEL="$TOOLS/excel/1.0"
 
 // Location of Bedtools distribution
-BEDTOOLS="$TOOLS/bedtools/2.18.2"
+BEDTOOLS="$TOOLS/bedtools/2.25.0"
 
 // Location of Samtools
-SAMTOOLS="$TOOLS/samtools/0.1.19"
+BCFTOOLS="$TOOLS/bcftools/1.3"
+SAMTOOLS="$TOOLS/samtools/1.3"
 
 // FastQC tool
-FASTQC="$TOOLS/fastqc/0.10.1"
+FASTQC="$TOOLS/fastqc/0.11.5"
 
 // Utilties for processing NGS data in Java/Groovy
 GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
@@ -140,13 +141,13 @@ GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
 VEP_VERSION="83"
 VEP="$TOOLS/vep/$VEP_VERSION"
 
-IGVTOOLS="$TOOLS/IGVTools/2.3.68"
+IGVTOOLS="$TOOLS/IGVTools/2.3.72"
 
 // IGV location
-IGV="$TOOLS/tools/igv/2.3.15"
+IGV="$TOOLS/tools/igv/2.3.72"
 
 // Location and version of BWA
-BWA="$TOOLS/bwa/0.7.5a/bwa"
+BWA="$TOOLS/bwa/0.7.13/bwa"
 BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/condel/2.4"

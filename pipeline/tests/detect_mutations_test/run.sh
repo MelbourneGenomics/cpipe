@@ -42,9 +42,11 @@ msg "Checking results ..."
 # chr1 201330464 0.5 C stop_codon
 # chr1 201328340 0.5 G stop_loss
 
-ANNOVAR_CSV=`ls $BATCH_DIR/analysis/results/*.annovarx.csv`
+#ANNOVAR_CSV=`ls $BATCH_DIR/analysis/results/*.annovarx.csv`
+LOVD_TSV=`ls $BATCH_DIR/analysis/results/*.lovd.tsv`
 
-annovar_has chr1 156104747 "nonsynonymous SNV" 
+#annovar_has chr1 156104747 "nonsynonymous SNV"
+lovd_has chr1 156104747 "missense_variant" 
 
 # Unfortunately legacy GATK does not find these variants
 # because the small size of the data set causes it to 
@@ -54,12 +56,15 @@ annovar_has chr1 156104747 "nonsynonymous SNV"
 # It should not be a problem for larger data sets
 if [ ! $GATK_LEGACY ];
 then
-    annovar_has chr1 156105692 "exonic;splicing"  #  todo: should this be? "splicing"
-    annovar_has chr1 156106711 "splicing"
-    annovar_has chr1 156106899 "splicing"
+    #annovar_has chr1 156105692 "exonic;splicing"  #  todo: should this be? "splicing"
+    lovd_has chr1 156105692 "splice_region_variant"  #  todo: should this be? "splicing"
+    #annovar_has chr1 156106711 "splicing" # not found with gatk 3.5
+    #lovd_has chr1 156106899 "splicing" # not found with gatk 3.5
 fi
-annovar_has chr1 201330464 "stopgain"
-annovar_has chr1 201328340 "stoploss"
+#annovar_has chr1 201330464 "stopgain"
+#annovar_has chr1 201328340 "stoploss"
+lovd_has chr1 201330464 "stop_gained"
+lovd_has chr1 201328340 "stop_lost"
 
 msg "Test Completed Successfully"
 

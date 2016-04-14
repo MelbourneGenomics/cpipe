@@ -43,7 +43,7 @@ requires EXOME_TARGET : """
 // remove spaces from gene lists and point to a new sample metadata file
 // note that this isn't run through bpipe
 correct_sample_metadata_file = {
-    def target = new File( 'results' )
+    def target = new File('results')
     if( !target.exists() ) {
         target.mkdirs()
     }
@@ -74,37 +74,40 @@ ANALYSIS_PROFILES = sample_info*.value*.target as Set
 all_samples = sample_info.keySet()
 
 // all the core pipeline stages in the pipeline
-load 'pipeline_stage_initialize.groovy'
-load 'pipeline_stage_alignment.groovy'
-load 'pipeline_stage_variant_calling.groovy'
-load 'pipeline_stage_annotation.groovy'
+load 'pipeline_stage_initialize.groovy' // preparation of a batch
+load 'pipeline_stage_alignment.groovy' // generate a bam
+load 'pipeline_stage_variant_calling.groovy' // find variants
+load 'pipeline_stage_variant_analysis.groovy' // filter, normalize, annotate, post process
 load 'pipeline_stage_reports.groovy'
 
+// specific to type of analysis
 load 'pipeline_stage_germline.groovy'
 load 'pipeline_stage_somatic.groovy'
 load 'pipeline_stage_trio.groovy'
 
 run {
-    initialize_batch_run +
+    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID
 
     // for each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * 
     [
-
-        initialize_profiles +
+        initialize_profiles + // setup target regions
         
         all_samples * // for each sample...
         [
-            // module 1. data pre-processing for each sample: 
+            // --- module 1. data pre-processing for each sample: ---
+            // the goal of this module is an analysis ready BAM
             // alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
             // loosely based on gatk workflow
-            analysis_ready_reads + 
+            analysis_ready_reads + // pipeline_stages_alignment
 
+            // --- module 2. variant discovery
+            // the goal of this module is a raw VCF
             // each sample is passed onto each type of enabled analysis and processed if relevant
             [ 
-                trio_analysis_phase_1,
-                somatic_analysis_phase_1,
-                germline_analysis_phase_1
+                trio_analysis_phase_1, // (not yet implemented) haplotypecaller -> for samples to be analyzed in a trio
+                somatic_analysis_phase_1, // not yet implemented
+                germline_analysis_phase_1 // haplotypecaller + genotypegvcf -> for standalone samples to be analyzed
             ] +
 
             // generate reports and do checks based on bam
@@ -113,26 +116,34 @@ run {
         ] +
 
         // each type of analysis can do a second phase after all phase 1 stages have finished
+        // i.e. because trio analysis is dependent on germline analysis phase 1
         all_samples *
         [
-            trio_analysis_phase_2,
+            trio_analysis_phase_2, // genotypegvcf
             somatic_analysis_phase_2,
             germline_analysis_phase_2
+        ] +
+
+        // --- module 3. fitering and annotation
+        // given a raw vcf, filter, normalize, annotate, convert to lovd format
+        all_samples *
+        [
+            variant_analysis // extract_gatk_table_parameters
         ]
 
         // qc_excel_report deprecated, see analysis_ready_reports
    ] +
 
    // produce the output spreadsheet, 1 per analysis profile
-   ANALYSIS_PROFILES * 
-   [ 
-       post_analysis_phase_1
-   ] +
+   // ANALYSIS_PROFILES * 
+   // [ 
+       // post_analysis_phase_1 // reports (currently does nothing)
+   // ] +
 
    // Produce a mini bam for each variant to help investigate individual variants
    all_samples * 
    [ 
-       post_analysis_phase_2
+       post_analysis // reports
    ] +
 
    // And then finally write the provenance report (1 per sample)
