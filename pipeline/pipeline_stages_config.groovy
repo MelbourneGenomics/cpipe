@@ -850,7 +850,7 @@ annotate_vep = {
     exec """
         grep '^#' $input.vcf > $output.vcf 
 
-        PERL5LIB="$CONDEL:\$PERL5LIB"
+        PERL5LIB="$PERL5LIB:$CONDEL:$TOOLS/perl5/lib/perl5"
         perl $VEP/variant_effect_predictor.pl --cache --dir $VEP/../vep_cache 
             -i $input.vcf 
             --vcf -o $output.vcf 

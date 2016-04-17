@@ -1,0 +1,7 @@
+ADDITIONAL PERL LIBRARIES
+=========================
+
+This folder is a placeholder where you can install perl dependencies
+that are not present on your system by default. This is sometimes
+necessary to get VEP to work correctly.
+
