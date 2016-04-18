@@ -38,11 +38,11 @@ calc_coverage_stats = {
         
           $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > "$safe_tmp_dir/intersect.bed"
 
-          $BEDTOOLS/bin/coverageBed -d -a "$safe_tmp_dir/intersect.bed" -b $input.bam > $output.txt
+          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b "$safe_tmp_dir/intersect.bed" > $output.txt
 
           gzip < $output.txt > $output2.gz
 
-          $BEDTOOLS/bin/coverageBed -d -a $EXOME_TARGET -b $input.bam > $output3.txt
+          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b $EXOME_TARGET > $output3.txt
         
           $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output4.txt
 

@@ -147,7 +147,7 @@ align_bwa = {
 
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
 
-    var BWA_THREADS: false;
+    // var BWA_THREADS: false;
 
     if(!BWA_THREADS) {
         BWA_THREADS = 1
@@ -157,13 +157,18 @@ align_bwa = {
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
         //    GATK and Picard.
+        def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
         exec """
                 set -o pipefail
+
+                mkdir "$safe_tmp_dir"
 
                 $BWA mem -M -t $BWA_THREADS -k $seed_length 
                          -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
                          $REF $input1.gz $input2.gz | 
-                         $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -
+                         $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -T "$safe_tmp_dir/bamsort"
+
+                rm -r "$safe_tmp_dir"
         ""","bwamem"
     }
 }
