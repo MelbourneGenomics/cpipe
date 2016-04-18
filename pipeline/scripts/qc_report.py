@@ -68,6 +68,7 @@ def calculate_karyotype(exome_cov, log=None):
     '''
     write_log(log, 'calculating karyotype...')
     stats = collections.defaultdict(int)
+    idx = 0
     for idx, line in enumerate(exome_cov):
         fields = line.strip().split('\t') # chr, start, end, offset, coverage
         if len(fields) > 4:
@@ -179,7 +180,8 @@ def calculate_mean_stats(overall_stats, overall_mean, log):
         if coverage >= 50:
             mean_stats[4] += 1
 
-    mean_stats = [100. * x / len(overall_stats) for x in mean_stats]
+    if len(overall_stats) > 0:
+        mean_stats = [100. * x / len(overall_stats) for x in mean_stats]
     write_log(log, 'calculating: done')
 
     return mean_stats
