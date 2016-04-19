@@ -139,6 +139,7 @@ run {
    // [ 
        // post_analysis_phase_1 // reports (currently does nothing)
    // ] +
+   variant_filtering_report +
 
    // Produce a mini bam for each variant to help investigate individual variants
    all_samples * 

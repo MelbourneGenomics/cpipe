@@ -49,7 +49,7 @@ def generate_report(source_dir, log):
         if sample not in data:
             data[sample] = collections.defaultdict(set)
         stage = '.'.join(base.split('.')[1:-1])
-        for line in open(base, 'r'):
+        for line in open(filename, 'r'):
             if line.startswith('#'):
                 continue
             fields = line.split('\t')

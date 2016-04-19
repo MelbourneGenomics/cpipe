@@ -363,6 +363,5 @@ analysis_ready_checks = segment {
 }
 
 post_analysis = segment {
-    variant_filtering_report +
     variant_bams
 }
