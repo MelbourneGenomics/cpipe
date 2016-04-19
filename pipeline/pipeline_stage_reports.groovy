@@ -312,6 +312,16 @@ filtered_on_exons = {
     }
 }
 
+variant_filtering_report = {
+    doc "generate a report of all variants and where they were filtered"
+    output.dir = "variants"
+    produce("variant_filtering_report.tsv") {
+        exec """
+            python $SCRIPTS/variant_filtering.py  --source_dir $output.dir > $output
+        """
+    }
+}
+
 variant_bams = {
 
     doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"
@@ -353,5 +363,6 @@ analysis_ready_checks = segment {
 }
 
 post_analysis = segment {
+    variant_filtering_report +
     variant_bams
 }
