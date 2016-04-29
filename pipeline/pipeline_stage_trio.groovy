@@ -23,51 +23,49 @@
 // stages
 //////////////////////////////////////////////////////////////////////
 
-call_variants_child_trio = {
-    doc "Call SNPs/SNVs using GATK Haplotype Caller for all samples"
+// at this point all samples have .g.vcf
+// want to generate the trio based genotype.raw.vcf
+// assumes this is called for all proband samples
+trio_analysis_phase_2 = {
+    stage_status("trio_analysis_phase_2", "enter", sample)
+    // extract parent sample ids
+    additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
+    // from_list = add
+    from_list = additional_samples.collect { "${it}.combined.g.vcf" }
+    from_list.add("${sample}.combined.g.vcf")
+    stage_status("trio_analysis_phase_2", "trio samples: ${additional_samples}; from list: ${from_list}", sample)
+    println("from list: $from_list")
+
     output.dir="variants"
 
-    // Default values of confidence thresholds
-    // come from the Broad web site. However
-    // these may be higher than suitable in our context
-    var call_conf:5.0, 
-        emit_conf:5.0
-
-    transform("bam") to("vcf") {
+    from(from_list) produce ("${sample}.trio.genotype.raw.vcf") {
+        stage_status("trio_analysis_phase_2", "inputs: ${inputs}", sample)
+        additional_variant_params = inputs.collect { "--variant $it" }.join(' ')
         exec """
-
-            $JAVA -Xmx6g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller
-                   -R $REF 
-                   -I $input.bam 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   --interval_padding $INTERVAL_PADDING_CALL
-                   --dbsnp $DBSNP 
-                   --emitRefConfidence GVCF
-                   -stand_call_conf $call_conf 
-                   -stand_emit_conf $emit_conf
-                   -dcov 1600 
-                   -l INFO 
-                   -A AlleleBalance 
-                   -A Coverage 
-                   -A FisherStrand 
-                   -o $output.vcf
-            ""","gatk_call_variants"
-    }
-}
-
-//////////////////////////////////////////////////////////////////////
-// segments
-//////////////////////////////////////////////////////////////////////
-
-trio_analysis_phase_1 = segment {
-    dummy
-}
-
-trio_analysis_phase_2 = segment {
-    // TODO if (sample.is_trio_child()) {
-    //    call_variants_child_trio +
-    //    joint_call + 
-    //    variant_annotation 
-    // TODO }
-    dummy
+            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
+                -R $REF
+                --disable_auto_index_creation_and_locking_when_reading_rods
+                --num_threads $threads
+                $additional_variant_params
+                --out $output
+                --logging_level INFO
+                --dbsnp $DBSNP
+                -G Standard
+                -A AlleleBalance
+                -A AlleleBalanceBySample
+                -A DepthPerAlleleBySample
+                -A GCContent
+                -A GenotypeSummaries
+                -A HardyWeinberg
+                -A LikelihoodRankSumTest
+                -A MappingQualityZero
+                -A SampleList
+                -A SpanningDeletions
+                -A StrandBiasBySample
+                -A TandemRepeatAnnotator
+                -A VariantType
+                -A TransmissionDisequilibriumTest
+        """, "gatk_genotype"
+    } // produce
+    stage_status("trio_analysis_phase_2", "exit", sample)
 }

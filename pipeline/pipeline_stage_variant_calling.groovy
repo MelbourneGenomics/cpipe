@@ -18,6 +18,8 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
+load "pipeline_helpers.groovy"
+
 //////////////////////////////////////////////////////////////////////
 // stages
 //////////////////////////////////////////////////////////////////////
@@ -78,12 +80,13 @@ call_variants_hc = {
 
 call_variants_individual_gvcf = {
     doc "Call variants and output to GVCF"
+    stage_status("call_variants_individual_gvcf", "enter", sample); 
     output.dir="variants"
 
     // haplotype calling when not part of a trio
     //java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A HomopolymerRun -A LikelihoodRankSumTest -A LowMQ -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.g.vcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
 
-    transform("bam") to ("g.vcf", "hc.bam") {
+    transform("bam") to ("hc.g.vcf", "hc.bam") {
         exec """
             java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                 -R $REF 
@@ -108,22 +111,24 @@ call_variants_individual_gvcf = {
                 -A TransmissionDisequilibriumTest 
                 -I $input.bam
                 -L $COMBINED_TARGET 
-                -o $output.g.vcf 
+                -o $output.hc.g.vcf 
                 --bamOutput $output.hc.bam 
                 --logging_level INFO
                 --dbsnp $DBSNP
         """, "gatk_call_variants"
     }
+    stage_status("call_variants_individual_gvcf", "exit", sample); 
 }
 
 call_variants_trio_gvcf = {
     doc "Call variants with a PED file and output to GVCF"
     output.dir="variants"
 
-    // first stage of trio analysis
+    // first stage of trio analysis => includes the ped file
+    // TODO is this separation required?
 
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A HomopolymerRun -A LikelihoodRankSumTest -A LowMQ -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.gvcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
-    transform("bam", "ped") to ("g.vcf", "hc.bam") {
+    transform("bam", "ped") to ("hc.g.vcf", "hc.bam") {
         exec """
             java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                 -R $REF 
@@ -148,7 +153,7 @@ call_variants_trio_gvcf = {
                 -A TransmissionDisequilibriumTest 
                 -I $input.bam
                 -L $COMBINED_TARGET 
-                -o $output.g.vcf 
+                -o $output.hc.g.vcf 
                 --bamOutput $output.hc.bam 
                 --logging_level INFO
                 -ped $input.ped 
@@ -232,17 +237,13 @@ call_pgx = {
     doc "Call Pharmacogenomic variants using GATK Unified Genotyper"
     output.dir="variants"
 
-    exec """
-        echo "call_pgx: enter"
-    """
+    stage_status("call_pgx", "enter", sample)
 
     var call_conf:5.0, 
         emit_conf:5.0
 
     if(!file("../design/${target_name}.pgx.vcf").exists()) {
-        exec """
-            echo "call_pgx: returning"
-        """
+        stage_status("call_pgx", "exit (returning)", sample)
         return
     }
 
@@ -265,18 +266,14 @@ call_pgx = {
                    -o $output.vcf
             ""","gatk_call_variants"
     }
-    exec """
-        echo "call_pgx: exit"
-    """
+    stage_status("call_pgx", "exit", sample)
 }
 
 filter_variants = {
     doc "Select only variants in the genomic regions defined for the $target_name target"
     output.dir="variants"
 
-    exec """
-        echo "filter_variants: enter"
-    """
+    stage_status("filter_variants", "enter", sample)
 
     def pgx_flag = ""
     if(file("../design/${target_name}.pgx.vcf").exists()) {
@@ -306,24 +303,25 @@ filter_variants = {
              --selectTypeToInclude INDEL
              -o $output.indel
     """
-    exec """
-        echo "filter_variants: exit"
-    """
+    stage_status("filter_variants", "exit", sample)
 }
 
 merge_variants_gvcf = {
     doc "Merge SNVs and INDELs"
     output.dir="variants"
+    stage_status("merge_variants_gvcf", "enter", sample)
 
-    msg "Merging SNVs and INDELs"
-    exec """
+    produce("${sample}.combined.g.vcf") {
+        exec """
             java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineGVCFs
             -R $REF
             --variant:indel $input.indel
             --variant:snv $input.snv
-            --out $output.vcf
-         """
+            --out $output.combined.g.vcf
+        """
+    }
+    stage_status("merge_variants_gvcf", "exit", sample)
 }
 
 
@@ -348,18 +346,12 @@ merge_pgx = {
     doc "Merge multiple VCF files into one file"
     output.dir="variants"
 
-    exec """
-        echo "merge_pgx: enter ${target_name}"
-    """
+    stage_status("merge_pgx", "enter", target_name)
 
     if(!file("../design/${target_name}.pgx.vcf").exists()) {
-        exec """
-            echo "merge_pgx: forwarding..."
-        """
-        forward input.recal.g.vcf.toString() // workaround for Bpipe bug
-        exec """
-            echo "merge_pgx: done"
-        """
+        stage_status("merge_pgx", "forwarding", target_name)
+        forward input.recal.hc.g.vcf.toString() // workaround for Bpipe bug
+        stage_status("merge_pgx", "exit (returning)", target_name)
         return
     }
 
@@ -368,14 +360,12 @@ merge_pgx = {
             $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineVariants
             -R $REF
-            --variant $input.recal.g.vcf
+            --variant $input.recal.hc.g.vcf
             --variant $input.pgx.vcf
             --out $output.vcf
          """
 
-    exec """
-        echo "merge_pgx: exit"
-    """
+    stage_status("merge_pgx", "exit", target_name)
 }
 
 //////////////////////////////////////////////////////////////////////

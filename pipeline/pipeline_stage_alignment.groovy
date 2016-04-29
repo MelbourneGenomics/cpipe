@@ -18,6 +18,8 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
+load "pipeline_helpers.groovy"
+
 ///////////////////////////////////////////////////////////////////
 // stages
 ///////////////////////////////////////////////////////////////////
@@ -131,6 +133,7 @@ cleanup_trim_fastq = {
 align_bwa = {
 
     doc "Align with bwa mem algorithm."
+    stage_status("align_bwa", "enter", sample);
 
     output.dir = "align"
 
@@ -171,20 +174,24 @@ align_bwa = {
                 rm -r "$safe_tmp_dir"
         ""","bwamem"
     }
+    stage_status("align_bwa", "exit", sample);
 }
 
 index_bam = {
+    stage_status("index_bam", "enter", sample);
  
-     doc "Create an index for a BAM file"
+    doc "Create an index for a BAM file"
  
-     // A bit of a hack to ensure the index appears in the
-     // same directory as the input bam, no matter where it is
-     // nb: fixed in new version of Bpipe
-     output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
-     transform("bam") to ("bam.bai") {
-         exec "$SAMTOOLS/samtools index $input.bam"
-     }
-     forward input
+    // A bit of a hack to ensure the index appears in the
+    // same directory as the input bam, no matter where it is
+    // nb: fixed in new version of Bpipe
+    output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
+    transform("bam") to ("bam.bai") {
+        exec "$SAMTOOLS/samtools index $input.bam"
+    }
+    stage_status("index_bam", "forwarding", sample);
+    forward input
+    stage_status("index_bam", "exit", sample);
 }
  
 merge_bams = {
@@ -195,6 +202,7 @@ merge_bams = {
         simple copy is made instead
         """
 
+    stage_status("merge_bams", "enter", sample);
     output.dir="align"
 
     produce(sample + ".merge.bam") {
@@ -221,10 +229,12 @@ merge_bams = {
              """, "merge"
         //}
     }
+    stage_status("merge_bams", "exit", sample);
 }
 
 dedup = {
     doc "Remove PCR duplicates from reads"
+    stage_status("dedup", "enter", sample);
     output.dir="align"
 
     var MAX_DUPLICATION_RATE : 30
@@ -255,6 +265,7 @@ dedup = {
     } otherwise {
         send text {"Rate of PCR duplicates for sample $sample is higher than $MAX_DUPLICATION_RATE"} to channel: cpipe_operator 
     }
+    stage_status("merge_bams", "exit", sample);
 }
 
 cleanup_initial_bams = {
@@ -314,6 +325,7 @@ recal_count = {
 
 recal = {
     doc "Apply recalibration quality adjustments so that quality scores match actual observed error rates"
+    stage_status("recal", "enter", sample);
     output.dir="align"
     exec """
           $JAVA -Xmx4g -jar $GATK/GenomeAnalysisTK.jar 
@@ -325,6 +337,7 @@ recal = {
                -l INFO 
                -o $output.bam
         """, "recalibrate_bam"
+    stage_status("recal", "exit", sample);
 }
 
 legacy_recal_count = {
@@ -381,7 +394,8 @@ if(GATK_LEGACY) {
 }
 else {
     bsqr_recalibration = segment {
-        recal_count + recal
+        recal_count + 
+        recal
     }
 }
 
@@ -392,18 +406,18 @@ else {
 analysis_ready_reads = segment {
     set_sample_info +
     "%.gz" * [ fastqc ] + check_fastqc +
-       ~"(.*)_R[0-9][_.].*fastq.gz" * 
-       [ 
-           trim_fastq + 
-           align_bwa + index_bam + 
-           cleanup_trim_fastq 
-       ] +
-       merge_bams +
-       dedup + 
-       // cleanup_initial_bams +
-       realignIntervals + 
-       realign + index_bam +
-       bsqr_recalibration + index_bam // +
-       // cleanup_intermediate_bams
+     ~"(.*)_R[0-9][_.].*fastq.gz" * 
+     [ 
+         trim_fastq + 
+         align_bwa + index_bam + 
+         cleanup_trim_fastq 
+     ] +
+     merge_bams +
+     dedup + 
+     cleanup_initial_bams +
+     realignIntervals + 
+     realign + index_bam +
+     bsqr_recalibration + index_bam +
+     cleanup_intermediate_bams
 }
 

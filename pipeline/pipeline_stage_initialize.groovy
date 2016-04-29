@@ -18,6 +18,8 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////
 
+load "pipeline_helpers.groovy"
+
 ///////////////////////////////////////////////////////////////////
 // stages
 ///////////////////////////////////////////////////////////////////
@@ -26,9 +28,7 @@ check_sample_info = {
 
     doc "Validate basic sample information is correct"
 
-    exec """
-        echo "check_sample_info: enter"
-    """
+    stage_status("check_sample_info", "enter", "n/a");
 
     def missingSummary = []
     for(sample in all_samples) {
@@ -76,9 +76,7 @@ check_sample_info = {
         fail missingSummary.join("\n" + ("-" * 120) + "\n")
     }
 
-    exec """
-        echo "check_sample_info: exit"
-    """
+    stage_status("check_sample_info", "exit", "n/a");
 }
 
 check_tools = {
@@ -86,6 +84,8 @@ check_tools = {
         Checks for presence of optional tools and sets appropriate pipeline variables
         to enable or disable corresponding pipeline features
         """
+
+    stage_status("check_tools", "enter", "n/a");
 
     var UPDATE_VARIANT_DB : VARIANT_DB,
         ANNOTATION_VARIANT_DB : VARIANT_DB
@@ -101,6 +101,8 @@ check_tools = {
 
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
+
+    stage_status("check_tools", "exit", "n/a");
 }
 
 update_gene_lists = {
@@ -262,12 +264,14 @@ set_target_info = {
         fi
     """
 
+    // if we do this, don't use "using", due to a bug in bpipe https://github.com/ssadedin/bpipe/issues/179
     // Load arbitrary settings related to the target
     println "Loading settings for target region $branch.name from ${file(target_config).absolutePath}"
     load file(target_config).absolutePath
-    if(multi_annovar) {
+
+    if(branch.multi_annovar) {
         println "Enabling multiple Annovar annotation sources for $target_name"
-        branch.annoar = multiple_annovar 
+        branch.annovar = multiple_annovar 
     }
     
     println "Target $target_name is processing samples $target_samples"
