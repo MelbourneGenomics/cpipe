@@ -17,12 +17,14 @@
 // along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
 // 
 /////////////////////////////////////////////////////////////////////////////////
+load "pipeline_helpers.groovy"
 
 ///////////////////////////////////////////////////////////////////
 // stages
 ///////////////////////////////////////////////////////////////////
 calc_coverage_stats = {
     doc "Calculate coverage across a target region using Bedtools"
+    stage_status("calc_coverage_stats", "enter", sample)
     output.dir="qc"
 
     var MIN_ONTARGET_PERCENTAGE : 50
@@ -49,10 +51,12 @@ calc_coverage_stats = {
           rm -r "$safe_tmp_dir"
         """
      }
-
+    stage_status("calc_coverage_stats", "exit", sample)
 }
 
 check_ontarget_perc = {
+    stage_status("check_ontarget_perc", "enter", sample)
+
     var MIN_ONTARGET_PERCENTAGE : 50,
         input_ontarget_file: "qc/${sample}.ontarget.txt" // something about segments messes up $input
     check {
@@ -67,10 +71,12 @@ check_ontarget_perc = {
     } otherwise {
         send text {"On target read percentage for $sample < $MIN_ONTARGET_PERCENTAGE"} to channel: cpipe_operator 
     }
+    stage_status("check_ontarget_perc", "exit", sample)
 }
 
 calculate_qc_statistics = {
     doc "Calculate additional qc statistics"
+    stage_status("calculate_qc_statistics", "enter", sample)
     output.dir="qc"
     // transform("bam") to(sample + ".fragments.tsv") {
     produce("${sample}.fragments.tsv") {
@@ -78,11 +84,14 @@ calculate_qc_statistics = {
             $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
         """
     }
+    stage_status("calculate_qc_statistics", "exit", sample)
 }
 
 gatk_depth_of_coverage = {
 
     doc "Calculate statistics about depth of coverage for an alignment using GATK"
+
+    stage_status("gatk_depth_of_coverage", "enter", sample)
 
     output.dir = "qc"
     transform("bam") to("."+target_name + ".cov.sample_cumulative_coverage_proportions", 
@@ -98,11 +107,14 @@ gatk_depth_of_coverage = {
                -L $target_bed_file.${sample}.bed
         """
     }
+    stage_status("gatk_depth_of_coverage", "exit", sample)
 }
 
 insert_size_metrics = {
 
     doc "Generates statistics about distribution of DNA fragment sizes"
+
+    stage_status("insert_size_metrics", "enter", sample)
 
     var MIN_MEDIAN_INSERT_SIZE : 70,
         MAX_MEDIAN_INSERT_SIZE : 240
@@ -126,9 +138,12 @@ insert_size_metrics = {
             range $MIN_MEDIAN_INSERT_SIZE - $MAX_MEDIAN_INSERT_SIZE
         """} to channel: cpipe_operator, file: output.pdf
     }
+    stage_status("insert_size_metrics", "exit", sample)
 }
 
 gap_report = {
+    stage_status("gap_report", "enter", sample)
+
     output.dir="results"
     
     var LOW_COVERAGE_THRESHOLD : 15,
@@ -140,10 +155,13 @@ gap_report = {
             python $SCRIPTS/gap_annotator.py --min_coverage_ok $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input_coverage_file --db $BASE/designs/genelists/refgene.txt > $output.csv
         """
     }
+    stage_status("gap_report", "exit", sample)
 }
 
 summary_report = {
     requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    stage_status("summary_report", "enter", sample)
 
     output.dir="results"
 
@@ -163,11 +181,14 @@ summary_report = {
 
         send text {"Sequencing Results for Study $sample"} to channel: cpipe_operator, file: output.htm
     }
+    stage_status("summary_report", "exit", sample)
 }
 
 exon_qc_report = {
 
     requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"
+
+    stage_status("exon_qc_report", "enter", sample)
 
     output.dir="results"
 
@@ -188,9 +209,11 @@ exon_qc_report = {
                 -o $output.tsv
         """
     }
+    stage_status("exon_qc_report", "exit", sample)
 }
 
 check_coverage = {
+    stage_status("check_coverage", "enter", sample)
 
     output.dir = "qc"
 
@@ -219,14 +242,13 @@ check_coverage = {
                                                            file:output.csv, 
                                                            subject:"Sample $sample has failed with insufficient median coverage ($medianCov)"
     }
+    stage_status("check_coverage", "exit", sample)
 }
 
 check_karyotype = {
 
     doc "Compare the inferred sex of the sample to the inferred karyotype from the sequencing data"
-    exec """
-       echo "check_karyotype: enter"
-    """
+    stage_status("check_karyotype", "enter", sample)
 
     def karyotype_file = "results/" + run_id + '_' + sample + '.summary.karyotype.tsv'
     check {
@@ -236,22 +258,19 @@ check_karyotype = {
     } otherwise {
         // It may seem odd to call this a success, but what we mean by it is that
         // Bpipe should not fail the whole pipeline, merely this branch of it
-        succeed report('templates/sample_failure.html') to channel: cpipe_operator, 
-                                                           median: medianCov, 
-                                                           file: karyotype_file,
-                                                           subject:"Sample $sample has a different sex than inferred from sequencing data"
-     }
-    exec """
-       echo "check_karyotype: exit"
-    """
+        //succeed report('templates/sample_failure.html') to channel: cpipe_operator, 
+        //                                                   median: medianCov, 
+        //                                                   file: karyotype_file,
+        //                                                   subject:"Sample $sample has a different sex than inferred from sequencing data"
+        stage_status("check_karyotype", "gender comparison failed", sample)
+    }
+    stage_status("check_karyotype", "exit", sample)
 }
 
 qc_excel_report = {
 
     doc "Create an excel file containing a summary of QC data for all the samples for a given target region"
-    exec """
-       echo "qc_excel_report: enter"
-    """
+    stage_status("qc_excel_report", "enter", sample)
 
     var LOW_COVERAGE_THRESHOLD : 15,
         LOW_COVERAGE_WIDTH : 1
@@ -273,9 +292,7 @@ qc_excel_report = {
                     $inputs.gz
             ""","qc_excel_report"
     }
-    exec """
-        echo "qc_excel_report: exit"
-    """
+    stage_status("qc_excel_report", "exit", sample)
 }
 
 provenance_report = {
@@ -288,6 +305,7 @@ provenance_report = {
 
 filtered_on_exons = {
     doc "Create a bam filtered on exons with 100bp padding and excluding the incidentalome"
+    stage_status("filtered_on_exons", "enter", sample)
     // bedtools exons.bed + padding100bp - incidentalome
     // TODO this might be faster if we sorted the bam and used -sorted
     var GENE_BAM_PADDING: 100
@@ -310,6 +328,7 @@ filtered_on_exons = {
             rm "$safe_tmp"
         """
     }
+    stage_status("filtered_on_exons", "exit", sample)
 }
 
 variant_filtering_report = {
@@ -323,8 +342,8 @@ variant_filtering_report = {
 }
 
 variant_bams = {
-
     doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"
+    stage_status("variant_bams", "enter", sample)
 
     output.dir = "results/variant_bams"
 
@@ -337,15 +356,14 @@ variant_bams = {
             """
         }
     }
+    stage_status("variant_bams", "exit", sample)
 }
 
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////
 analysis_ready_reports = segment {
-//    parallel doesn't work properly here
-//    [ calc_coverage_stats + check_ontarget_perc, calculate_qc_statistics ] + 
-//    [ summary_report, exon_qc_report, gap_report ]
+    // parallel doesn't work properly here
     calc_coverage_stats + 
     check_ontarget_perc + 
     calculate_qc_statistics + 

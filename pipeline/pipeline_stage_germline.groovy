@@ -1,4 +1,3 @@
-
 /////////////////////////////////////////////////////////////////////////////////
 //
 // This file is part of Cpipe.
@@ -18,60 +17,46 @@
 // along with Cpipe.  If not, see <http://www.gnu.org/licenses/>.
 //
 /////////////////////////////////////////////////////////////////////////////////
-joint_call_individual = {
-    exec """
-        echo "joint_call_individual: starting $sample"
-    """
+load 'pipeline_helpers.groovy'
 
+germline_analysis_phase_1 = segment {
+    // all samples do this
+    variant_discovery // stage_variant_calling, result is sample.combined.g.vcf
+}
+
+// given the g.vcf of the individual, convert this to a genotype.raw.vcf
+// we do this for probands and individuals, but not samples that are just for trios
+germline_analysis_phase_2 = {
+    stage_status('germline_analysis_phase_2', 'enter', sample);
+    // joint_call_individual
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A LikelihoodRankSumTest -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest
     output.dir="variants"
-    transform("g.vcf") to ("genotype.raw.vcf") {
+    from("${sample}.combined.g.vcf") produce("${sample}.individual.genotype.raw.vcf") {
         exec """
-            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs 
+            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
                 -R $REF
-                --disable_auto_index_creation_and_locking_when_reading_rods 
-                --num_threads 1 
+                --disable_auto_index_creation_and_locking_when_reading_rods
+                --num_threads $threads
                 --variant $input
                 --out $output
                 --logging_level INFO
                 --dbsnp $DBSNP
-                -G Standard 
-                -A AlleleBalance 
-                -A AlleleBalanceBySample 
-                -A DepthPerAlleleBySample 
-                -A GCContent 
-                -A GenotypeSummaries 
-                -A HardyWeinberg 
-                -A LikelihoodRankSumTest 
-                -A MappingQualityZero 
-                -A SampleList 
-                -A SpanningDeletions 
-                -A StrandBiasBySample 
-                -A TandemRepeatAnnotator 
-                -A VariantType 
+                -G Standard
+                -A AlleleBalance
+                -A AlleleBalanceBySample
+                -A DepthPerAlleleBySample
+                -A GCContent
+                -A GenotypeSummaries
+                -A HardyWeinberg
+                -A LikelihoodRankSumTest
+                -A MappingQualityZero
+                -A SampleList
+                -A SpanningDeletions
+                -A StrandBiasBySample
+                -A TandemRepeatAnnotator
+                -A VariantType
                 -A TransmissionDisequilibriumTest
         """, "gatk_genotype"
     }
-
-    exec """
-        echo "joint_call_individual: finished $sample"
-    """
-}
-
-dummy = {
-}
-
-germline_analysis_phase_1 = segment {
-    // all samples do this
-    variant_discovery +
-
-    // do this if an individual not in trio TODO
-    //if (sample.is_not_in_trio()) {
-    joint_call_individual
-    //}
-}
-
-germline_analysis_phase_2 = segment {
-    // does nothing
-    dummy
+    stage_status('germline_analysis_phase_2', 'exit', sample);
 }

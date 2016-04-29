@@ -27,6 +27,7 @@ about title: "Melbourne Genomics Demonstration Project Pipeline"
 
 // Load the default configuration
 load 'config.groovy'
+load 'pipeline_helpers.groovy'
 
 // Local file can set EXOME_TARGET and ANALYSIS_PROFILES
 if(file("../target_regions.txt").exists())  {
@@ -40,17 +41,7 @@ requires EXOME_TARGET : """
         region here.
     """
 
-// remove spaces from gene lists and point to a new sample metadata file
-// note that this isn't run through bpipe
-correct_sample_metadata_file = {
-    def target = new File('results')
-    if( !target.exists() ) {
-        target.mkdirs()
-    }
-    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
-    return "results/samples.corrected"
-}
-
+/////////////////////////////////////////////////////////
 sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update sample_metadata_file
 
 try {
@@ -71,7 +62,18 @@ batch = new File("..").canonicalFile.name
 // Extract the analysis profiles from the sample information
 ANALYSIS_PROFILES = sample_info*.value*.target as Set
 
-all_samples = sample_info.keySet()
+
+// trio members
+(all_samples, proband_samples, trio_samples, individual_samples) = find_sample_types(sample_info)
+println "all samples: ${all_samples}; proband_samples: ${proband_samples}; trio_samples: ${trio_samples}; individual_samples: ${individual_samples}"
+
+// due to bpipe not allowing empty branch lists https://github.com/ssadedin/bpipe/issues/180
+// we have to explicitly mark a list as empty
+// proband is the only one that could feasibly be empty and is used in a branch list
+EMPTY_MARKER = "** this is not a real sample **"
+if (proband_samples.size() == 0) {
+    proband_samples.add(EMPTY_MARKER)
+}
 
 // all the core pipeline stages in the pipeline
 load 'pipeline_stage_initialize.groovy' // preparation of a batch
@@ -85,7 +87,31 @@ load 'pipeline_stage_germline.groovy'
 load 'pipeline_stage_somatic.groovy'
 load 'pipeline_stage_trio.groovy'
 
+set_sample_name = {
+    if (branch.name == EMPTY_MARKER) {
+        stage_status('set_sample_name', 'skipping empty branch', branch.name)
+        succeed "This is a dummy branch. Not an error."
+    }
+    branch.sample = branch.name
+}
+
+set_analysis_type = {
+    println("updating analysis from ${branch.analysis} to ${new_analysis}")
+    branch.analysis = new_analysis
+}
+
+set_analysis_type_individual = {
+    println("updating analysis from ${branch.analysis} to individual")
+    branch.analysis = "individual"
+}
+
+set_analysis_type_trio = {
+    println("updating analysis from ${branch.analysis} to trio")
+    branch.analysis = "trio"
+}
+
 run {
+
     initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID
 
     // for each analysis profile we run the main pipeline in parallel
@@ -99,53 +125,62 @@ run {
             // the goal of this module is an analysis ready BAM
             // alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
             // loosely based on gatk workflow
+            set_sample_name +
             analysis_ready_reads + // pipeline_stages_alignment
 
             // --- module 2. variant discovery
             // the goal of this module is a raw VCF
             // each sample is passed onto each type of enabled analysis and processed if relevant
-            [ 
-                trio_analysis_phase_1, // (not yet implemented) haplotypecaller -> for samples to be analyzed in a trio
-                somatic_analysis_phase_1, // not yet implemented
-                germline_analysis_phase_1 // haplotypecaller + genotypegvcf -> for standalone samples to be analyzed
-            ] +
+            germline_analysis_phase_1 + // haplotypecaller without a ped for all samples (variant_discovery). Result -> all samples have .g.vcf
 
-            // generate reports and do checks based on bam
+            // generate reports and do checks based on bam alignment
             analysis_ready_reports +
-            analysis_ready_checks
+            analysis_ready_checks // reports
         ] +
 
         // each type of analysis can do a second phase after all phase 1 stages have finished
         // i.e. because trio analysis is dependent on germline analysis phase 1
-        all_samples *
+        // result is individual.genotype.raw.vcf and trio.genotype.raw.vcf
         [
-            trio_analysis_phase_2, // genotypegvcf
-            somatic_analysis_phase_2,
-            germline_analysis_phase_2
+            proband_samples *
+            [
+                set_sample_name + trio_analysis_phase_2 // .trio.genotype.raw.vcf
+            ],
+            individual_samples * // individuals and probands
+            [
+                set_sample_name + germline_analysis_phase_2 // .individual.genotype.raw.vcf
+            ]
         ] +
 
         // --- module 3. fitering and annotation
-        // given a raw vcf, filter, normalize, annotate, convert to lovd format
-        all_samples *
-        [
-            variant_analysis // extract_gatk_table_parameters
+        [ 
+            proband_samples *
+            [
+                // set_sample_name + set_analysis_type.using(new_analysis: "trio") + variant_analysis
+                set_sample_name + set_analysis_type_trio + variant_analysis
+            ],
+            individual_samples * // individuals and probands
+            [
+                // set_sample_name + set_analysis_type.using(new_analysis: "individual") + variant_analysis
+                set_sample_name + set_analysis_type_individual + variant_analysis
+            ]
         ]
 
         // qc_excel_report deprecated, see analysis_ready_reports
    ] +
 
-   // produce the output spreadsheet, 1 per analysis profile
-   // ANALYSIS_PROFILES * 
-   // [ 
-       // post_analysis_phase_1 // reports (currently does nothing)
-   // ] +
-   variant_filtering_report +
-
+   // --- module 4. post-processing
    // Produce a mini bam for each variant to help investigate individual variants
-   all_samples * 
-   [ 
-       post_analysis // reports
-   ] +
+   [
+       proband_samples * 
+       [ 
+           set_sample_name + post_analysis // reports
+       ],
+       individual_samples * 
+       [ 
+           set_sample_name + post_analysis // reports
+       ] 
+   ] + // end of ANALYSIS_PROFILES
 
    // And then finally write the provenance report (1 per sample)
    all_samples *
