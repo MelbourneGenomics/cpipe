@@ -102,6 +102,12 @@ commands {
                 procs=4
 	}
 
+        gatk_genotype {
+                walltime="36:00:00"
+                memory="28"
+                procs=4
+        }
+
         coverageBed {
             walltime="24:00:00"
             memory="4"
@@ -110,6 +116,11 @@ commands {
 
         vep {
             walltime="24:00:00"
+            memory="12"
+        }
+
+        genome_refinement {
+            walltime="12:00:00"
             memory="12"
         }
 
@@ -124,6 +135,7 @@ commands {
             walltime="14:00:00"
             jobtype="smp" // to get exclusive node
         }
+
         validate_batch {
             executor="local" // pdftotext requirement
         }

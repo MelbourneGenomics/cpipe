@@ -40,13 +40,13 @@ calc_coverage_stats = {
         
           $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > "$safe_tmp_dir/intersect.bed"
 
-          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b "$safe_tmp_dir/intersect.bed" > $output.txt
+          $BEDTOOLS/bin/coverageBed -d -abam $input.recal.bam -b "$safe_tmp_dir/intersect.bed" > $output.txt
 
           gzip < $output.txt > $output2.gz
 
-          $BEDTOOLS/bin/coverageBed -d -abam $input.bam -b $EXOME_TARGET > $output3.txt
+          $BEDTOOLS/bin/coverageBed -d -abam $input.recal.bam -b $EXOME_TARGET > $output3.txt
         
-          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.bam | wc | awk '{ print \$1 }' > $output4.txt
+          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.recal.bam | wc | awk '{ print \$1 }' > $output4.txt
 
           rm -r "$safe_tmp_dir"
         """
@@ -81,7 +81,7 @@ calculate_qc_statistics = {
     // transform("bam") to(sample + ".fragments.tsv") {
     produce("${sample}.fragments.tsv") {
         exec """
-            $SAMTOOLS/samtools view $input.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
+            $SAMTOOLS/samtools view $input.recal.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
         """
     }
     stage_status("calculate_qc_statistics", "exit", sample)
@@ -94,15 +94,15 @@ gatk_depth_of_coverage = {
     stage_status("gatk_depth_of_coverage", "enter", sample)
 
     output.dir = "qc"
-    transform("bam") to("."+target_name + ".cov.sample_cumulative_coverage_proportions", 
-                         "."+target_name + ".cov.sample_interval_statistics") { 
+    transform("recal.bam") to(".${target_name}.cov.sample_cumulative_coverage_proportions", 
+                         ".${target_name}.cov.sample_interval_statistics") { 
         exec """
             $JAVA -Xmx4g -jar $GATK/GenomeAnalysisTK.jar 
                -R $REF
                -T DepthOfCoverage 
                -o $output.sample_cumulative_coverage_proportions.prefix
                --omitDepthOutputAtEachBase
-               -I $input.bam
+               -I $input.recal.bam
                -ct 1 -ct 10 -ct 20 -ct 50 -ct 100
                -L $target_bed_file.${sample}.bed
         """
@@ -121,7 +121,7 @@ insert_size_metrics = {
 
     output.dir="qc"
     exec """
-        $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.bam O=$output.txt H=$output.pdf
+        $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.recal.bam O=$output.txt H=$output.pdf
     """
 
     check {
@@ -314,7 +314,7 @@ filtered_on_exons = {
 
     output.dir = "results"
 
-    produce("${run_id}_" + branch.name + ".filtered_on_exons.bam") {
+    produce("${run_id}_${branch.name}.filtered_on_exons.bam") {
         exec """
             python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
             $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
@@ -341,18 +341,20 @@ variant_filtering_report = {
     }
 }
 
+// no longer part of the default pipeline
 variant_bams = {
     doc "Create a bam file for each variant containing only reads overlapping 100bp either side of that variant"
     stage_status("variant_bams", "enter", sample)
 
     output.dir = "results/variant_bams"
 
-    from(run_id + "_" + branch.name + '*.lovd.tsv', branch.name + '.*.recal.bam') {   
+    from("${run_id}_${branch.name}*.lovd.tsv", "${branch.name}.*.recal.bam") {   
         // Slight hack here. Produce a log file that bpipe can track to confirm that the bams were produced.
         // Bpipe is not actually tracking the variant bams themselves. 
+        // TODO should these be generated from the HC output?
         produce(branch.name + ".variant_bams_log.txt") {
             exec """
-                python $SCRIPTS/variant_bams.py --bam $input.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
+                python $SCRIPTS/variant_bams.py --bam $input.recal.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
             """
         }
     }
@@ -380,6 +382,3 @@ analysis_ready_checks = segment {
     check_karyotype
 }
 
-post_analysis = segment {
-    variant_bams
-}

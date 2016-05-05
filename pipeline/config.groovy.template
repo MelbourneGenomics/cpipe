@@ -212,3 +212,10 @@ INTERVAL_PADDING_INDEL=25
 // do not filter synonymous with this range
 ALLOW_SYNONYMOUS_INTRON=0
 ALLOW_SYNONYMOUS_EXON=0
+
+////////////////////////////////////////////
+// trio related resources
+////////////////////////////////////////////
+// note: only needed for trio pathway
+TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+

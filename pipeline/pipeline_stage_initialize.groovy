@@ -172,12 +172,14 @@ create_synonymous_target = {
 }
 
 build_capture_stats = {
+    stage_status("build_capture_stats", "enter", "n/a");
     output.dir = "qc"
     produce( "exon_coverage_stats.txt" ) {
         exec """
             python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
         """
     }
+    stage_status("build_capture_stats", "exit", "n/a");
 }
 
 generate_pipeline_id = {
@@ -209,7 +211,7 @@ set_target_info = {
     branch.multi_annovar=false
 
     branch.batch = batch
-    branch.target_name = branch.name
+    branch.target_name = branch.name // this is the analysis profile
     branch.target_bed_file = "../design/${target_name}.bed"
     branch.target_gene_file = "../design/${target_name}.genes.txt"
     branch.target_samples = sample_info.grep { it.value.target == target_name }*.value*.sample
@@ -278,6 +280,7 @@ set_target_info = {
 }
 
 create_splice_site_bed = {
+    // note: this stage requires annovar
 
     // If no splice region window is defined, simply set the 
     if(!splice_region_window) {
