@@ -84,8 +84,15 @@ load 'pipeline_stage_reports.groovy'
 
 // specific to type of analysis
 load 'pipeline_stage_germline.groovy'
-load 'pipeline_stage_somatic.groovy'
 load 'pipeline_stage_trio.groovy'
+
+set_sample_name_without_target = {
+    if (branch.name == EMPTY_MARKER) {
+        stage_status('set_sample_name', 'skipping empty branch', branch.name)
+        succeed "This is a dummy branch. Not an error."
+    }
+    branch.sample = branch.name
+}
 
 set_sample_name = {
     if (branch.name == EMPTY_MARKER) {
@@ -93,6 +100,12 @@ set_sample_name = {
         succeed "This is a dummy branch. Not an error."
     }
     branch.sample = branch.name
+
+    // terminate the branch if the profile doesn't match
+    if(sample_info[branch.sample].target != branch.target_name) {
+        // This is expected because every file is processed for every target/flagship
+        succeed "skipping sample $sample for target $target_name"
+    }
 }
 
 set_analysis_type = {
@@ -157,12 +170,12 @@ run {
             proband_samples *
             [
                 // set_sample_name + set_analysis_type.using(new_analysis: "trio") + variant_analysis
-                set_sample_name + set_analysis_type_trio + variant_analysis
+                set_sample_name + set_analysis_type_trio + genotype_refinement_trio + variant_analysis
             ],
             individual_samples * // individuals and probands
             [
                 // set_sample_name + set_analysis_type.using(new_analysis: "individual") + variant_analysis
-                set_sample_name + set_analysis_type_individual + variant_analysis
+                set_sample_name + set_analysis_type_individual + genotype_refinement_individual + variant_analysis
             ]
         ]
 
@@ -171,16 +184,7 @@ run {
 
    // --- module 4. post-processing
    // Produce a mini bam for each variant to help investigate individual variants
-   [
-       proband_samples * 
-       [ 
-           set_sample_name + post_analysis // reports
-       ],
-       individual_samples * 
-       [ 
-           set_sample_name + post_analysis // reports
-       ] 
-   ] + // end of ANALYSIS_PROFILES
+   // * mini-bams are no longer produced
 
    // And then finally write the provenance report (1 per sample)
    all_samples *

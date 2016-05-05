@@ -29,10 +29,9 @@ vcf_normalize = {
 
     stage_status("vcf_normalize", "enter", "${sample} ${branch.analysis}");
     output.dir="variants"
-    // transform ("${sample}\\..*\\.genotype.raw.vcf") to("${sample}.genotype.norm.vcf") {
-    from ("${sample}.${analysis}.genotype.raw.vcf") produce ("${sample}.${analysis}.genotype.norm.vcf") {
+    from ("${sample}.${analysis}.refined.vcf") produce ("${sample}.${analysis}.genotype.norm.vcf") {
         exec """
-            $BCFTOOLS/bcftools norm -m -both $input.genotype.raw.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
+            $BCFTOOLS/bcftools norm -m -both $input.refined.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
         """
     }
     stage_status("vcf_normalize", "exit", "${sample} ${branch.analysis}");

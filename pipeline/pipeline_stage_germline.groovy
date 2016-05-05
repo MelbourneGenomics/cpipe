@@ -60,3 +60,13 @@ germline_analysis_phase_2 = {
     }
     stage_status('germline_analysis_phase_2', 'exit', sample);
 }
+
+genotype_refinement_individual = {
+    doc "skips the refinement steps and passes on the vcf to the next stage unchanged"
+    output.dir="variants"
+    from ("${sample}.${analysis}.genotype.raw.vcf") produce("${sample}.${analysis}.refined.vcf") {
+        exec """
+            cp $input $output
+        """
+    }
+}

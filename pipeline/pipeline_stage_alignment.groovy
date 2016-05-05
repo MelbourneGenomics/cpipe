@@ -265,7 +265,7 @@ dedup = {
     } otherwise {
         send text {"Rate of PCR duplicates for sample $sample is higher than $MAX_DUPLICATION_RATE"} to channel: cpipe_operator 
     }
-    stage_status("merge_bams", "exit", sample);
+    stage_status("dedup", "exit", sample);
 }
 
 cleanup_initial_bams = {

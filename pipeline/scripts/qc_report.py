@@ -84,7 +84,7 @@ def calculate_karyotype(exome_cov, log=None):
                 stats['{0}n'.format(target)] += 1
         else:
             write_log(log, 'skipped line {0}: {1}'.format(idx, line.strip()))
-        if idx % 100000 == 0:
+        if idx % 1000000 == 0:
             write_log(log, 'processed {0} lines...'.format(idx))
     write_log(log, 'processed {0} lines'.format(idx))
 
@@ -417,8 +417,10 @@ def build_categories(categories, prioritized, log):
         if line.startswith('#'):
             continue
         fields = line.strip().split('\t')
-        if len(fields) > 1:
+        if len(fields) > 1 and fields[1].isdigit():
             result[fields[0].lower()] = int(fields[1])
+        else:
+            write_log(log, 'Skipped line "{0}" while building categories'.format(line.strip()))
 
     # override with prioritized
     prioritized = prioritized.strip('"')
