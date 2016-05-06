@@ -12,6 +12,9 @@
 #
 ############################################################
 
+CUSTOM_ASSETS_URL="https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-assets-2.3"
+MANIFEST="manifest-2.3"
+
 # Helper functions
 function err() {
     prefix=`date "+%F %T"`
@@ -362,6 +365,37 @@ then
         set_config_variable GROOVY_NGS "$TOOLS/groovy-ngs-utils/1.0.1"
     fi
 fi
+
+msg "Checking for custom assets..."
+# download the manifest
+pushd $REFBASE
+[ -f $MANIFEST ] && rm $MANIFEST
+wget $CUSTOM_ASSETS_URL/$MANIFEST
+
+while read line; do
+  if [[ "$line" =~ ^#.* ]]; then
+    : #echo "comment"
+  else
+    filename=${line%,*}
+    md5=${line##*,}
+    echo "checking $filename..."
+    if [ -f $filename ]; then
+      # check md5
+      existing=`md5sum $filename | awk '{ print $1; }'`
+      if [ $existing == $md5 ]; then
+        echo "$filename is up to date"
+      else
+        echo "updating $filename"
+        rm $filename
+        wget "$CUSTOM_ASSETS_URL/$filename"
+      fi
+    else # download file
+      echo "downloading $filename"
+      wget "$CUSTOM_ASSETS_URL/$filename"
+    fi
+  fi
+done <"$MANIFEST"
+popd $REFBASE
 
 msg "Success: all the dependencies I know how to check are OK"
 
