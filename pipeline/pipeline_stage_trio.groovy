@@ -29,11 +29,11 @@
 trio_analysis_phase_2 = {
     stage_status("trio_analysis_phase_2", "enter", sample)
     // extract parent sample ids
-    additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
+    def additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
     // from_list = add
-    from_list = additional_samples.collect { "${it}.combined.g.vcf" }
+    def from_list = additional_samples.collect { "${it}.combined.g.vcf" }
     from_list.add("${sample}.combined.g.vcf")
-    stage_status("trio_analysis_phase_2", "trio samples: ${additional_samples}; from list: ${from_list}", sample)
+    stage_status("trio_analysis_phase_2", "sample: ${sample}; trio samples: ${additional_samples}; from list: ${from_list}", sample)
 
     output.dir="variants"
 
