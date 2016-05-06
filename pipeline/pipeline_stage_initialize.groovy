@@ -419,7 +419,7 @@ finish_batch_run = segment {
 
 // configure target regions and other settings for each profile
 initialize_profiles = segment {
-    set_target_info + 
-    create_splice_site_bed
+    set_target_info // + 
+    // create_splice_site_bed // currently disabled, not used (and requires annovar)
 }
 
