@@ -395,7 +395,7 @@ while read line; do
     fi
   fi
 done <"$MANIFEST"
-popd $REFBASE
+popd 
 
 msg "Success: all the dependencies I know how to check are OK"
 
