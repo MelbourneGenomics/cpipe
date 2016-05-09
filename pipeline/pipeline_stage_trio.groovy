@@ -31,40 +31,42 @@ trio_analysis_phase_2 = {
     // extract parent sample ids
     def additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
     // from_list = add
-    def from_list = additional_samples.collect { "${it}.combined.g.vcf" }
-    from_list.add("${sample}.combined.g.vcf")
+    def from_list = additional_samples.collect { "variants/${it}.combined.g.vcf" }
+    from_list.add("variants/${sample}.combined.g.vcf")
     stage_status("trio_analysis_phase_2", "sample: ${sample}; trio samples: ${additional_samples}; from list: ${from_list}", sample)
 
     output.dir="variants"
 
-    from(from_list) produce ("${sample}.trio.genotype.raw.vcf") {
-        stage_status("trio_analysis_phase_2", "inputs: ${inputs}", sample)
-        additional_variant_params = inputs.collect { "--variant $it" }.join(' ')
-        exec """
-            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
-                -R $REF
-                --disable_auto_index_creation_and_locking_when_reading_rods
-                --num_threads $threads
-                $additional_variant_params
-                --out $output
-                --logging_level INFO
-                --dbsnp $DBSNP
-                -G Standard
-                -A AlleleBalance
-                -A AlleleBalanceBySample
-                -A DepthPerAlleleBySample
-                -A GCContent
-                -A GenotypeSummaries
-                -A HardyWeinberg
-                -A LikelihoodRankSumTest
-                -A MappingQualityZero
-                -A SampleList
-                -A SpanningDeletions
-                -A StrandBiasBySample
-                -A TandemRepeatAnnotator
-                -A VariantType
-                -A TransmissionDisequilibriumTest
-        """, "gatk_genotype"
+    produce ("${sample}.trio.genotype.raw.vcf") {
+        from(from_list) {
+            stage_status("trio_analysis_phase_2", "inputs: ${inputs}", sample)
+            additional_variant_params = inputs.collect { "--variant $it" }.join(' ')
+            exec """
+                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
+                    -R $REF
+                    --disable_auto_index_creation_and_locking_when_reading_rods
+                    --num_threads $threads
+                    $additional_variant_params
+                    --out $output
+                    --logging_level INFO
+                    --dbsnp $DBSNP
+                    -G Standard
+                    -A AlleleBalance
+                    -A AlleleBalanceBySample
+                    -A DepthPerAlleleBySample
+                    -A GCContent
+                    -A GenotypeSummaries
+                    -A HardyWeinberg
+                    -A LikelihoodRankSumTest
+                    -A MappingQualityZero
+                    -A SampleList
+                    -A SpanningDeletions
+                    -A StrandBiasBySample
+                    -A TandemRepeatAnnotator
+                    -A VariantType
+                    -A TransmissionDisequilibriumTest
+            """, "gatk_genotype"
+        }
     } // produce
     stage_status("trio_analysis_phase_2", "exit", sample)
 }
@@ -82,18 +84,21 @@ genotype_refinement_trio = {
     // java -Xmx10g -jar /usr/local/gatk/4.5/GenomeAnalysisTK.jar -T VariantAnnotator -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta -V txxxx.genotype.raw.postCGP.GQfilter.vcf -A PossibleDeNovo -ped txxxx.ped -o txxxx.genotype.raw.postCGP.GQfilter.deNovos.vcf
     output.dir="variants"
     def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
-    from ("${sample}.${analysis}.genotype.raw.vcf", "results/${run_id}_family_${sample}.ped") produce("${sample}.${analysis}.refined.vcf") {
-        exec """
-            mkdir -p "$safe_tmp_dir"
+    produce("${sample}.${analysis}.refined.vcf") {
+        stage_status("genotype_refinement_trio", "sources are variants/${sample}.${analysis}.genotype.raw.vcf and results/${run_id}_family_${sample}.ped", sample)
+        from("variants/${sample}.${analysis}.genotype.raw.vcf", "results/${run_id}_family_${sample}.ped") {
+            exec """
+                mkdir -p "$safe_tmp_dir"
 
-            java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R $REF --supporting $TRIO_REFINEMENT_SUPPORTING -ped ${input.ped} -V ${input.vcf} -o "${safe_tmp_dir}/postCGP.vcf"
+                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R $REF --supporting $TRIO_REFINEMENT_SUPPORTING -ped ${input.ped} -V ${input.vcf} -o "${safe_tmp_dir}/postCGP.vcf"
 
-            java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantFiltration -R $REF -V "${safe_tmp_dir}/postCGP.vcf" -G_filter "GQ < 20.0" -G_filterName lowGQ -o "${safe_tmp_dir}/GQfilter.vcf"
+                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantFiltration -R $REF -V "${safe_tmp_dir}/postCGP.vcf" -G_filter "GQ < 20.0" -G_filterName lowGQ -o "${safe_tmp_dir}/GQfilter.vcf"
 
-            java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantAnnotator -R $REF -V "${safe_tmp_dir}/GQfilter.vcf" -A PossibleDeNovo -ped ${input.ped} -o ${output}
+                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantAnnotator -R $REF -V "${safe_tmp_dir}/GQfilter.vcf" -A PossibleDeNovo -ped ${input.ped} -o ${output}
 
-            rm -r "$safe_tmp_dir"
-        """, "genotype_refinement"
+                rm -r "$safe_tmp_dir"
+            """, "genotype_refinement"
+        }
     }
 
     stage_status("genotype_refinement_trio", "exit", sample)

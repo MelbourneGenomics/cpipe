@@ -110,13 +110,19 @@ update_gene_lists = {
 
     // builds additional genes from sample metadata file, then adds any new ones to the flagship
     // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
-    exec """
-        mkdir -p "../design"
+    produce ('update_gene_lists.log') {
+        from(sample_metadata_file) {
+            exec """
+                mkdir -p "../design"
 
-        python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
 
-        python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
-    """
+                python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
+
+                touch update_gene_lists.log
+            """
+        }
+    }
 }
 
 create_combined_target = {
@@ -361,9 +367,11 @@ create_sample_metadata = {
 
     output.dir="results"
     produce("results/samples.meta") {
-      exec """
-          python $SCRIPTS/update_pipeline_run_id.py --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
-      """
+        from(sample_metadata_file) {
+            exec """
+                python $SCRIPTS/update_pipeline_run_id.py --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
+            """
+        }
     }
 }
 
@@ -374,11 +382,13 @@ generate_ped_files = {
     output.dir="results"
 
     produce("${run_id}_families.log") {
-        exec """
-            mkdir -p results
+        from(sample_metadata_file) {
+            exec """
+                mkdir -p results
 
-            python $SCRIPTS/generate_peds.py --prefix "results/${run_id}_family_" < $sample_metadata_file 2>&1 | tee "results/${run_id}_families.log"
-        """
+                python $SCRIPTS/generate_peds.py --prefix "results/${run_id}_family_" < $sample_metadata_file 2>&1 | tee "results/${run_id}_families.log"
+            """
+        }
     }
 }
 

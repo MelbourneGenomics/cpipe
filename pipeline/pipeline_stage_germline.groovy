@@ -31,32 +31,34 @@ germline_analysis_phase_2 = {
     // joint_call_individual
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A LikelihoodRankSumTest -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest
     output.dir="variants"
-    from("${sample}.combined.g.vcf") produce("${sample}.individual.genotype.raw.vcf") {
-        exec """
-            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
-                -R $REF
-                --disable_auto_index_creation_and_locking_when_reading_rods
-                --num_threads $threads
-                --variant $input
-                --out $output
-                --logging_level INFO
-                --dbsnp $DBSNP
-                -G Standard
-                -A AlleleBalance
-                -A AlleleBalanceBySample
-                -A DepthPerAlleleBySample
-                -A GCContent
-                -A GenotypeSummaries
-                -A HardyWeinberg
-                -A LikelihoodRankSumTest
-                -A MappingQualityZero
-                -A SampleList
-                -A SpanningDeletions
-                -A StrandBiasBySample
-                -A TandemRepeatAnnotator
-                -A VariantType
-                -A TransmissionDisequilibriumTest
-        """, "gatk_genotype"
+    produce("${sample}.individual.genotype.raw.vcf") {
+        from("variants/${sample}.combined.g.vcf") {
+            exec """
+                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
+                    -R $REF
+                    --disable_auto_index_creation_and_locking_when_reading_rods
+                    --num_threads $threads
+                    --variant $input
+                    --out $output
+                    --logging_level INFO
+                    --dbsnp $DBSNP
+                    -G Standard
+                    -A AlleleBalance
+                    -A AlleleBalanceBySample
+                    -A DepthPerAlleleBySample
+                    -A GCContent
+                    -A GenotypeSummaries
+                    -A HardyWeinberg
+                    -A LikelihoodRankSumTest
+                    -A MappingQualityZero
+                    -A SampleList
+                    -A SpanningDeletions
+                    -A StrandBiasBySample
+                    -A TandemRepeatAnnotator
+                    -A VariantType
+                    -A TransmissionDisequilibriumTest
+            """, "gatk_genotype"
+        }
     }
     stage_status('germline_analysis_phase_2', 'exit', sample);
 }
@@ -64,9 +66,11 @@ germline_analysis_phase_2 = {
 genotype_refinement_individual = {
     doc "skips the refinement steps and passes on the vcf to the next stage unchanged"
     output.dir="variants"
-    from ("${sample}.${analysis}.genotype.raw.vcf") produce("${sample}.${analysis}.refined.vcf") {
-        exec """
-            cp $input $output
-        """
+    produce("${sample}.${analysis}.refined.vcf") {
+        from("variants/${sample}.${analysis}.genotype.raw.vcf") {
+            exec """
+                cp $input $output
+            """
+        }
     }
 }
