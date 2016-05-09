@@ -157,11 +157,11 @@ run {
         [
             proband_samples *
             [
-                set_sample_name + trio_analysis_phase_2 // .trio.genotype.raw.vcf
+                set_sample_name + trio_analysis_phase_2 // generates .trio.genotype.raw.vcf
             ],
             individual_samples * // individuals and probands
             [
-                set_sample_name + germline_analysis_phase_2 // .individual.genotype.raw.vcf
+                set_sample_name + germline_analysis_phase_2 // generates .individual.genotype.raw.vcf
             ]
         ] +
 
@@ -169,12 +169,10 @@ run {
         [ 
             proband_samples *
             [
-                // set_sample_name + set_analysis_type.using(new_analysis: "trio") + variant_analysis
                 set_sample_name + set_analysis_type_trio + genotype_refinement_trio + variant_analysis
             ],
             individual_samples * // individuals and probands
             [
-                // set_sample_name + set_analysis_type.using(new_analysis: "individual") + variant_analysis
                 set_sample_name + set_analysis_type_individual + genotype_refinement_individual + variant_analysis
             ]
         ]

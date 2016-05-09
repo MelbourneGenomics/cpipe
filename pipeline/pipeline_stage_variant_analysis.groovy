@@ -29,22 +29,26 @@ vcf_normalize = {
 
     stage_status("vcf_normalize", "enter", "${sample} ${branch.analysis}");
     output.dir="variants"
-    from ("${sample}.${analysis}.refined.vcf") produce ("${sample}.${analysis}.genotype.norm.vcf") {
-        exec """
-            $BCFTOOLS/bcftools norm -m -both $input.refined.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
-        """
+    produce ("${sample}.${analysis}.genotype.norm.vcf") {
+        from("variants/${sample}.${analysis}.refined.vcf") {
+            exec """
+                $BCFTOOLS/bcftools norm -m -both $input.refined.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
+            """
+        }
     }
     stage_status("vcf_normalize", "exit", "${sample} ${branch.analysis}");
 }
 
 vcf_filter_child = {
     doc "remove any hom ref variants"
+    stage_status("vcf_filter_child", "enter", "${sample} ${branch.analysis}");
     output.dir="variants"
     transform ("norm.vcf") to("soi.vcf") {
         exec """
             $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar -T SelectVariants -R $REF --variant $input.norm.vcf -select '!vc.getGenotype("$sample").isHomRef()' -o $output.soi.vcf
         """
     }
+    stage_status("vcf_filter_child", "exit", "${sample} ${branch.analysis}");
 }
 
 @filter("vep")
