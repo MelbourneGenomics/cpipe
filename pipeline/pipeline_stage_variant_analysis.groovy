@@ -88,6 +88,7 @@ vcf_to_table = {
 }
 
 table_to_lovd = {
+    doc "Explodes out all annotation fields for LOVD compatibility"
     stage_status("table_to_lovd", "enter", "${sample} ${branch.analysis}");
     output.dir="results"
     produce("${run_id}_${sample}.${analysis}.lovd.tsv") {

@@ -187,7 +187,8 @@ run {
    // And then finally write the provenance report (1 per sample)
    all_samples *
    [ 
-       provenance_report
+       provenance_report +
+       update_sample_database
    ] +
 
    // clean up

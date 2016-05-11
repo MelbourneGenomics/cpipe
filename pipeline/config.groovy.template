@@ -157,6 +157,9 @@ DBNSFP="$TOOLS/vep_plugins/dbNSFP/2016-01-13"
 VARIANT_DB="$BASE/variants.db"
 ID_FILE="$BASE/pipeline_id"
 
+// set this to be a central db of all analyses
+SAMPLE_DB="$BASE/samples.db"
+
 // By default variant counts are annotated from the same database as the
 // one that they were added to in the first place
 // However you can modify them to be separate if you wish
