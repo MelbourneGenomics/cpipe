@@ -204,7 +204,6 @@ run {
    ] +
  
    // write the provenance report (1 per sample)
-   module_stage_3 + 
    all_samples *
    [ 
        provenance_report
