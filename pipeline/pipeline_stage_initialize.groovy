@@ -392,6 +392,23 @@ generate_ped_files = {
     }
 }
 
+update_sample_database = {
+    doc "Write details of this sample analysis to the database (if specified)"
+
+    stage_status("update_sample_database", "enter", sample);
+
+    if (SAMPLE_DB && SAMPLE_DB != '') {
+        exec """
+            python $SCRIPTS/update_sample_db.py --db "$SAMPLE_DB" --sample "${sample}" --run_id "${run_id}" --analysis "${analysis}" --capture "${EXOME_TARGET}" --pipeline_version "`cat $BASE/version.txt`"
+        """
+    }
+    else {
+        stage_status("update_sample_database", "skipping...", sample);
+    }
+
+    stage_status("update_sample_database", "exit", sample);
+}
+
 ///////////////////////////////////////////////////////////////////
 // segments
 ///////////////////////////////////////////////////////////////////

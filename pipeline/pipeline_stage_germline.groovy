@@ -26,13 +26,17 @@ germline_analysis_phase_1 = segment {
 
 // given the g.vcf of the individual, convert this to a genotype.raw.vcf
 // we do this for probands and individuals, but not samples that are just for trios
-germline_analysis_phase_2 = {
-    stage_status('germline_analysis_phase_2', 'enter', sample);
+germline_genotype_gvcfs = {
+    stage_status('germline_genotype_gvcfs', 'enter', sample);
     // joint_call_individual
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -G Standard -A AlleleBalance -A AlleleBalanceBySample -A DepthPerAlleleBySample -A GCContent -A GenotypeSummaries -A HardyWeinberg -A LikelihoodRankSumTest -A MappingQualityZero -A SampleList -A SpanningDeletions -A StrandBiasBySample -A TandemRepeatAnnotator -A VariantType -A TransmissionDisequilibriumTest
     output.dir="variants"
+
+    var call_conf:5.0, 
+        emit_conf:5.0
+
     produce("${sample}.individual.genotype.raw.vcf") {
-        from("variants/${sample}.combined.g.vcf") {
+        from("variants/${sample}.hc.g.vcf") {
             exec """
                 java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
                     -R $REF
@@ -57,20 +61,28 @@ germline_analysis_phase_2 = {
                     -A TandemRepeatAnnotator
                     -A VariantType
                     -A TransmissionDisequilibriumTest
+                    -stand_call_conf $call_conf 
+                    -stand_emit_conf $emit_conf
             """, "gatk_genotype"
         }
     }
-    stage_status('germline_analysis_phase_2', 'exit', sample);
+    stage_status('germline_genotype_gvcfs', 'exit', sample);
 }
 
 genotype_refinement_individual = {
     doc "skips the refinement steps and passes on the vcf to the next stage unchanged"
     output.dir="variants"
     produce("${sample}.${analysis}.refined.vcf") {
-        from("variants/${sample}.${analysis}.genotype.raw.vcf") {
+        from("variants/${sample}.${analysis}.combined.genotype.vcf") {
             exec """
                 cp $input $output
             """
         }
     }
+}
+
+germline_analysis_phase_2 = segment {
+    germline_genotype_gvcfs +
+    filter_variants +
+    merge_variants
 }

@@ -296,11 +296,13 @@ qc_excel_report = {
 }
 
 provenance_report = {
+    stage_status("provenance_report", "enter", sample)
     branch.sample = branch.name
     output.dir = "results"
     produce(run_id + '_' + sample + ".provenance.pdf") {
        send report("scripts/provenance_report.groovy") to file: output.pdf
     }
+    stage_status("provenance_report", "exit", sample)
 }
 
 filtered_on_exons = {

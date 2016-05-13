@@ -18,6 +18,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
+load 'pipeline_helpers.groovy'
+
 
 //////////////////////////////////////////////////////////////////////
 // stages
@@ -26,16 +28,19 @@
 // at this point all samples have .g.vcf
 // want to generate the trio based genotype.raw.vcf
 // assumes this is called for all proband samples
-trio_analysis_phase_2 = {
-    stage_status("trio_analysis_phase_2", "enter", sample)
+trio_genotype_gvcfs = {
+    stage_status("trio_genotype_gvcfs", "enter", sample)
     // extract parent sample ids
     def additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
     // from_list = add
-    def from_list = additional_samples.collect { "variants/${it}.combined.g.vcf" }
-    from_list.add("variants/${sample}.combined.g.vcf")
+    def from_list = additional_samples.collect { "variants/${it}.hc.g.vcf" }
+    from_list.add("variants/${sample}.hc.g.vcf")
     stage_status("trio_analysis_phase_2", "sample: ${sample}; trio samples: ${additional_samples}; from list: ${from_list}", sample)
 
     output.dir="variants"
+
+    var call_conf:5.0, 
+        emit_conf:5.0
 
     produce ("${sample}.trio.genotype.raw.vcf") {
         from(from_list) {
@@ -65,10 +70,12 @@ trio_analysis_phase_2 = {
                     -A TandemRepeatAnnotator
                     -A VariantType
                     -A TransmissionDisequilibriumTest
+                    -stand_call_conf $call_conf 
+                    -stand_emit_conf $emit_conf
             """, "gatk_genotype"
         }
     } // produce
-    stage_status("trio_analysis_phase_2", "exit", sample)
+    stage_status("trio_genotype_gvcfs", "exit", sample)
 }
 
 genotype_refinement_trio = {
@@ -86,7 +93,7 @@ genotype_refinement_trio = {
     def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
     produce("${sample}.${analysis}.refined.vcf") {
         stage_status("genotype_refinement_trio", "sources are variants/${sample}.${analysis}.genotype.raw.vcf and results/${run_id}_family_${sample}.ped", sample)
-        from("variants/${sample}.${analysis}.genotype.raw.vcf", "results/${run_id}_family_${sample}.ped") {
+        from("variants/${sample}.${analysis}.combined.genotype.vcf", "results/${run_id}_family_${sample}.ped") {
             exec """
                 mkdir -p "$safe_tmp_dir"
 
@@ -104,3 +111,8 @@ genotype_refinement_trio = {
     stage_status("genotype_refinement_trio", "exit", sample)
 }
 
+trio_analysis_phase_2 = segment {
+    trio_genotype_gvcfs +
+    filter_variants +
+    merge_variants
+}
