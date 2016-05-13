@@ -397,9 +397,9 @@ update_sample_database = {
 
     stage_status("update_sample_database", "enter", sample);
 
-    if (SAMPLE_DB) {
+    if (SAMPLE_DB && SAMPLE_DB != '') {
         exec """
-            python $SCRIPTS/update_sample_db.py --target "$SAMPLE_DB" --sample ${sample} --run_id ${run_id}
+            python $SCRIPTS/update_sample_db.py --db "$SAMPLE_DB" --sample "${sample}" --run_id "${run_id}" --analysis "${analysis}" --capture "${EXOME_TARGET}" --pipeline_version "`cat $BASE/version.txt`"
         """
     }
     else {

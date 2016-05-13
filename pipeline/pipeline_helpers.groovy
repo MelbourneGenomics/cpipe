@@ -68,3 +68,85 @@ void stage_status(stage_name, stage_status, sample) {
     String current = new Date().format("yyMMdd-HHmmss")
     println("${current}: ${stage_name}: ${stage_status} (${sample})")
 }
+
+/////////////////////////////////////////////////////////
+// common stages
+/////////////////////////////////////////////////////////
+
+filter_variants = {
+    doc "Select only variants in the genomic regions defined for the $target_name target"
+    output.dir="variants"
+
+    stage_status("filter_variants", "enter", sample)
+
+    def pgx_flag = ""
+    if(file("../design/${target_name}.pgx.vcf").exists()) {
+        pgx_flag = "-L ../design/${target_name}.pgx.vcf"
+    }
+
+    msg "Filtering variants - finding INDELs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file.${sample}.bed $pgx_flag
+             --interval_padding $INTERVAL_PADDING_SNV
+             --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
+             -o $output.snv
+    """
+
+    msg "Filtering variants - finding SNVs"
+    exec """
+        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+             -R $REF
+             -T SelectVariants 
+             --variant $input.vcf 
+             -L $target_bed_file.${sample}.bed $pgx_flag
+             --interval_padding $INTERVAL_PADDING_INDEL
+             --selectTypeToInclude INDEL
+             -o $output.indel
+    """
+    stage_status("filter_variants", "exit", sample)
+}
+
+merge_variants_gvcf = {
+    doc "Merge SNVs and INDELs"
+    output.dir="variants"
+    stage_status("merge_variants_gvcf", "enter", sample)
+
+    produce("${sample}.combined.g.vcf") {
+        exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T CombineGVCFs
+            -R $REF
+            --variant:indel $input.indel
+            --variant:snv $input.snv
+            --out $output.combined.g.vcf
+        """
+    }
+    stage_status("merge_variants_gvcf", "exit", sample)
+}
+
+
+merge_variants = {
+    doc "Merge SNVs and INDELs"
+    output.dir="variants"
+    stage_status("merge_variants", "enter", "${sample} ${branch.analysis}")
+
+    msg "Merging SNVs and INDELs"
+    produce("${sample}.${analysis}.combined.genotype.vcf") {
+        exec """
+            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            -T CombineVariants
+            -R $REF
+            --variant:indel $input.indel
+            --variant:snv $input.snv
+            --out $output.vcf
+            --setKey set
+            --genotypemergeoption UNSORTED
+         """
+    }
+    stage_status("merge_variants", "exit", "${sample} ${branch.analysis}")
+}
+

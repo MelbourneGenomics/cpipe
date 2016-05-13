@@ -70,7 +70,7 @@ println "all samples: ${all_samples}; proband_samples: ${proband_samples}; trio_
 // due to bpipe not allowing empty branch lists https://github.com/ssadedin/bpipe/issues/180
 // we have to explicitly mark a list as empty
 // proband is the only one that could feasibly be empty and is used in a branch list
-EMPTY_MARKER = "** this is not a real sample **"
+EMPTY_MARKER = "** dummy sample **"
 if (proband_samples.size() == 0) {
     proband_samples.add(EMPTY_MARKER)
 }
@@ -91,7 +91,10 @@ set_sample_name_without_target = {
         stage_status('set_sample_name', 'skipping empty branch', branch.name)
         succeed "This is a dummy branch. Not an error."
     }
-    branch.sample = branch.name
+    else {
+        stage_status('set_sample_name', 'updating sample name', branch.name)
+        branch.sample = branch.name
+    }
 }
 
 set_sample_name = {
@@ -99,7 +102,9 @@ set_sample_name = {
         stage_status('set_sample_name', 'skipping empty branch', branch.name)
         succeed "This is a dummy branch. Not an error."
     }
-    branch.sample = branch.name
+    else {
+        branch.sample = branch.name
+    }
 
     // terminate the branch if the profile doesn't match
     if(sample_info[branch.sample].target != branch.target_name) {
@@ -157,11 +162,11 @@ run {
         [
             proband_samples *
             [
-                set_sample_name + trio_analysis_phase_2 // generates .trio.genotype.raw.vcf
+                set_sample_name + set_analysis_type_trio + trio_analysis_phase_2 // generates .trio.genotype.raw.vcf
             ],
             individual_samples * // individuals and probands
             [
-                set_sample_name + germline_analysis_phase_2 // generates .individual.genotype.raw.vcf
+                set_sample_name + set_analysis_type_individual + germline_analysis_phase_2 // generates .individual.combined.genotype.vcf
             ]
         ] +
 
@@ -178,17 +183,31 @@ run {
         ]
 
         // qc_excel_report deprecated, see analysis_ready_reports
+
    ] +
 
    // --- module 4. post-processing
    // Produce a mini bam for each variant to help investigate individual variants
    // * mini-bams are no longer produced
 
-   // And then finally write the provenance report (1 per sample)
+   // update the central database 
+   // update the central database 
+   [
+       proband_samples *
+       [
+           set_sample_name_without_target + set_analysis_type_trio + update_sample_database
+       ],
+       individual_samples * // individuals and probands
+       [
+           set_sample_name_without_target + set_analysis_type_individual + update_sample_database
+       ]
+   ] +
+ 
+   // write the provenance report (1 per sample)
+   module_stage_3 + 
    all_samples *
    [ 
-       provenance_report +
-       update_sample_database
+       provenance_report
    ] +
 
    // clean up

@@ -20,7 +20,10 @@
 #
 ###########################################################################
 #
+# writes run information to a database for each sample
+# see main() for usage info
 #
+###########################################################################
 '''
 
 import datetime
@@ -28,9 +31,10 @@ import os
 import sqlite3
 import sys
 
-VERSION=0
+# use this to manage schema versions
+SCHEMA_VERSION=0
 
-def update_sample_db(db, sample, run_id, log):
+def update_sample_db(db, sample, run_id, analysis, capture, pipeline_version, log):
     '''
         create table if required 
     '''
@@ -42,11 +46,11 @@ def update_sample_db(db, sample, run_id, log):
     version = conn.execute('select max(version) from version').fetchone()[0]
     if version is None: # create new
         log.write('update_sample_db: creating new schema\n')
-        conn.execute('create table if not exists analysis (sample, run_id, location, created)')
-        conn.execute('insert into version values (?, ?)', (VERSION, datetime.datetime.now()))
-    elif version < VERSION: # upgrade
-        log.write('update_sample_db: upgrading schema from {0} to {1}\n'.format(version, VERSION))
-        conn.execute('insert into version values (?, ?)', (VERSION, datetime.datetime.now()))
+        conn.execute('create table if not exists analysis (sample, run_id, location, created, analysis_type, capture, pipeline_version)')
+        conn.execute('insert into version values (?, ?)', (SCHEMA_VERSION, datetime.datetime.now()))
+    elif version < SCHEMA_VERSION: # upgrade
+        log.write('update_sample_db: upgrading schema from {0} to {1}\n'.format(version, SCHEMA_VERSION))
+        conn.execute('insert into version values (?, ?)', (SCHEMA_VERSION, datetime.datetime.now()))
     else:
         log.write('update_sample_db: schema is up to date at version {0}\n'.format(version))
 
@@ -54,7 +58,7 @@ def update_sample_db(db, sample, run_id, log):
     # now write record
     log.write('update_sample_db: writing record to {0}...\n'.format(db))
     location = os.getcwd()
-    conn.execute('insert into analysis values (?, ?, ?, ?)', (sample, run_id, location, datetime.datetime.now()))
+    conn.execute('insert into analysis values (?, ?, ?, ?, ?, ?, ?)', (sample, run_id, location, datetime.datetime.now(), analysis, capture, pipeline_version))
     conn.commit()
     log.write('update_sample_db: writing record to {0}: done\n'.format(db))
 
@@ -67,8 +71,11 @@ def main():
     parser.add_argument('--db', required=True, help='database file')
     parser.add_argument('--sample', required=True, help='sample name')
     parser.add_argument('--run_id', required=True, help='pipeline run id')
+    parser.add_argument('--analysis', required=True, help='type of analysis')
+    parser.add_argument('--capture', required=True, help='exome capture file')
+    parser.add_argument('--pipeline_version', required=True, help='version of Cpipe')
     args = parser.parse_args()
-    update_sample_db(args.db, args.sample, args.run_id, sys.stderr)
+    update_sample_db(args.db, args.sample, args.run_id, args.analysis, args.capture, args.pipeline_version, sys.stderr)
 
 if __name__ == '__main__':
     main()
