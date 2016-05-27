@@ -43,9 +43,10 @@ vcf_filter_child = {
     doc "remove any hom ref variants"
     stage_status("vcf_filter_child", "enter", "${sample} ${branch.analysis}");
     output.dir="variants"
+    // 23-may-2016 java -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T SelectVariants -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --variant txxxx.genotype.raw.split.norm.vcf -select 'vc.getGenotype("00NA12879").isHomVar() || vc.getGenotype("00NA12879").isHet() ' -o txxxx.genotype.raw.split.norm.ChildOnly.vcf
     transform ("norm.vcf") to("soi.vcf") {
         exec """
-            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar -T SelectVariants -R $REF --variant $input.norm.vcf -select '!vc.getGenotype("$sample").isHomRef()' -o $output.soi.vcf
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar -T SelectVariants -R $REF --variant $input.norm.vcf -select 'vc.getGenotype("$sample").isHomVar() || vc.getGenotype("$sample").isHet()' -o $output.soi.vcf
         """
     }
     stage_status("vcf_filter_child", "exit", "${sample} ${branch.analysis}");

@@ -45,6 +45,7 @@
 
 import collections
 import datetime
+import gzip
 import re
 import sys
 
@@ -472,8 +473,19 @@ def main():
     parser.add_argument('--padding', required=False, help='comma separated padding stats for all,indel,snv')
     args = parser.parse_args()
     write_log(sys.stderr, 'opening {0} for karyotype'.format(args.exome_cov))
-    karyotype = calculate_karyotype(open(args.exome_cov, 'r'), log=sys.stderr)
-    summary = calculate_summary(open(args.report_cov, 'r'), args.threshold, log=sys.stderr)
+
+    if args.exome_cov.endswith('.gz'):
+        exome_cov_fh = gzip.open(args.exome_cov, 'r')
+    else:
+        exome_cov_fh = open(args.exome_cov, 'r')
+    karyotype = calculate_karyotype(exome_cov_fh, log=sys.stderr)
+
+    if args.report_cov.endswith('.gz'):
+        report_cov_fh = gzip.open(args.report_cov, 'r')
+    else:
+        report_cov_fh = open(args.report_cov, 'r')
+    summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)
+
     sample = parse_metadata(open(args.meta, 'r'), args.study)
     if args.write_karyotype:
         write_karyotype(open(args.write_karyotype, 'w'), karyotype, sample)
