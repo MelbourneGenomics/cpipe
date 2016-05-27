@@ -29,24 +29,26 @@ calc_coverage_stats = {
 
     var MIN_ONTARGET_PERCENTAGE : 50
 
-    // transform("bam") to([sample + ".cov.txt", sample + ".cov.gz", sample + ".exome.txt", sample + ".ontarget.txt"]) {
-    produce("${sample}.cov.txt", "${sample}.cov.gz", "${sample}.exome.txt", "${sample}.ontarget.txt") {
+    // transform("bam") to([sample + ".cov.gz", sample + ".exome.gz", sample + ".ontarget.txt"]) {
+    produce("${sample}.cov.gz", "${sample}.exome.gz", "${sample}.ontarget.txt") {
         // only calculate coverage for bases overlapping the capture
         def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
 
         // coverage calculation for qc_report.py
+        // 1 determine the intersection between the target region and the exome
+        // 2 calculate the coverage in the bam file over this intersection
+        // 3 calculate the coverage in the bam file over the exome
+        // 4 calculate reads on target over the combined target region
         exec """
           mkdir -p "$safe_tmp_dir"
         
           $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET > "$safe_tmp_dir/intersect.bed"
 
-          $BEDTOOLS/bin/coverageBed -d -abam $input.recal.bam -b "$safe_tmp_dir/intersect.bed" > $output.txt
+          $BEDTOOLS/bin/coverageBed -d -a "$safe_tmp_dir/intersect.bed" -b $input.recal.bam | gzip > $output.cov.gz
 
-          gzip < $output.txt > $output2.gz
-
-          $BEDTOOLS/bin/coverageBed -d -abam $input.recal.bam -b $EXOME_TARGET > $output3.txt
+          $BEDTOOLS/bin/coverageBed -d -a $EXOME_TARGET -b $input.recal.bam | gzip > $output2.exome.gz
         
-          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.recal.bam | wc | awk '{ print \$1 }' > $output4.txt
+          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.recal.bam | wc | awk '{ print \$1 }' > $output3.ontarget.txt
 
           rm -r "$safe_tmp_dir"
         """
@@ -148,7 +150,7 @@ gap_report = {
     
     var LOW_COVERAGE_THRESHOLD : 15,
         LOW_COVERAGE_WIDTH : 1,
-        input_coverage_file: "qc/${sample}.cov.txt" // something about segments messes up $input
+        input_coverage_file: "qc/${sample}.cov.gz" // something about segments messes up $input
 
     produce("${run_id}_${sample}.gap.csv") {
         exec """
@@ -165,8 +167,8 @@ summary_report = {
 
     output.dir="results"
 
-    var input_coverage_file: "qc/${sample}.cov.txt", // something about segments messes up $input
-        input_exome_file: "qc/${sample}.exome.txt", 
+    var input_coverage_file: "qc/${sample}.cov.gz", // something about segments messes up $input
+        input_exome_file: "qc/${sample}.exome.gz", 
         input_ontarget_file: "qc/${sample}.ontarget.txt",
         input_fragments_file: "qc/${sample}.fragments.tsv"
 

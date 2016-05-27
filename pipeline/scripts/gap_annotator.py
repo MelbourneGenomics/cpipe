@@ -30,6 +30,7 @@
 
 import collections
 import datetime
+import gzip
 import math
 import os
 import sys
@@ -405,7 +406,13 @@ def main():
     else:
         download_db(sys.stderr)
         data_source = init_db(open('gap.db', 'r'), sys.stderr)
-    find_gaps(open(args.coverage, 'r'), args.min_gap_width, args.min_coverage_ok, sys.stdout, data_source, sys.stderr)
+
+    if args.coverage.endswith('.gz'):
+        coverage_fh = gzip.open(args.coverage, 'r')
+    else:
+        coverage_fh = open(args.coverage, 'r')
+
+    find_gaps(coverage_fh, args.min_gap_width, args.min_coverage_ok, sys.stdout, data_source, sys.stderr)
 
 if __name__ == '__main__':
     main()

@@ -115,7 +115,13 @@ ANNOVAR_DB="$TOOLS/annovar/humandb"
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
 GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+
+// gatk < 2.8
 GATK_LEGACY=false
+
+// do not do genotyping, directly call the variants
+// gatk < 3.5
+GATK_VARIANT_ONLY=false
 
 // Utilities for making Excel files 
 EXCEL="$TOOLS/excel/1.0"

@@ -244,13 +244,15 @@ else
 fi
 
 # download dbnsfp dataset
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
+#if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
+if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
   pushd "$TOOLS/vep_plugins/dbNSFP"
-  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+  #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
   msg "downloading dbnsfp..."
   wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
   msg "processing dbnsfp..."
-  unzip dbNSFPv3.0b2a.zip
+  unzip dbNSFPv2.9.1.zip
   cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
   "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
   msg "processing dbnsfp: done"

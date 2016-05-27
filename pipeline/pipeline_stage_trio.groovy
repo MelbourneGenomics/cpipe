@@ -42,6 +42,7 @@ trio_genotype_gvcfs = {
     var call_conf:5.0, 
         emit_conf:5.0
 
+    // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.fewerA.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.fewerA.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -A AlleleBalance -A VariantType
     produce ("${sample}.trio.genotype.raw.vcf") {
         from(from_list) {
             stage_status("trio_analysis_phase_2", "inputs: ${inputs}", sample)
@@ -57,19 +58,7 @@ trio_genotype_gvcfs = {
                     --dbsnp $DBSNP
                     -G Standard
                     -A AlleleBalance
-                    -A AlleleBalanceBySample
-                    -A DepthPerAlleleBySample
-                    -A GCContent
-                    -A GenotypeSummaries
-                    -A HardyWeinberg
-                    -A LikelihoodRankSumTest
-                    -A MappingQualityZero
-                    -A SampleList
-                    -A SpanningDeletions
-                    -A StrandBiasBySample
-                    -A TandemRepeatAnnotator
                     -A VariantType
-                    -A TransmissionDisequilibriumTest
                     -stand_call_conf $call_conf 
                     -stand_emit_conf $emit_conf
             """, "gatk_genotype"
