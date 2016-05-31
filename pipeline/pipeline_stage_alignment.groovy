@@ -156,6 +156,7 @@ align_bwa = {
         BWA_THREADS = 1
     }
 
+    stage_status("align_bwa", "output file is ${outputFile}", sample);
     produce(outputFile) {
         //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
         //    secondary alignments for each read, which upsets downstream tools such as 
@@ -414,10 +415,10 @@ analysis_ready_reads = segment {
      ] +
      merge_bams +
      dedup + 
-     cleanup_initial_bams +
+     // cleanup_initial_bams + // seems to mess things up
      realignIntervals + 
      realign + index_bam +
-     bsqr_recalibration + index_bam +
-     cleanup_intermediate_bams
+     bsqr_recalibration + index_bam
+     // cleanup_intermediate_bams
 }
 

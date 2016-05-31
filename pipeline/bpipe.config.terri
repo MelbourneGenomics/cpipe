@@ -108,6 +108,12 @@ commands {
                 procs=4
         }
 
+        calc_coverage_stats {
+            walltime="4:00:00"
+            memory="16"
+            queue="terri"
+        }
+
         coverageBed {
             walltime="24:00:00"
             memory="4"
