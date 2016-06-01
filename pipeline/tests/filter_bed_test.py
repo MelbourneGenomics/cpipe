@@ -60,3 +60,11 @@ class FilterBedTest(unittest.TestCase):
         lines = target.getvalue().split('\n')
         assert lines[0] == 'chr1\t200\t300\tC\t3\t10'
         assert len(lines) == 2 # one empty
+
+    def test_no_genes(self):
+        source = ['chr1\t100\t200\n', 'chr1\t200\t300\n']
+        target = StringIO.StringIO()
+        filter_bed.filter_bed(source, target, None, None)
+        lines = target.getvalue().split('\n')
+        assert lines[0] == 'chr1\t100\t200'
+        assert len(lines) == 3 # one empty
