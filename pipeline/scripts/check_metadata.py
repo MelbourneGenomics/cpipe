@@ -24,6 +24,7 @@
 ###########################################################################
 '''
 
+import argparse
 import sys
 
 IS_NUMERIC = set(['dna concentration', 'dna quantity', 'dna quality', 'mean coverage'])
@@ -54,17 +55,24 @@ def is_valid_date(field):
     '''
     return len(field) == 0 or len(field) == 8 and field.isdigit()
 
-def validate(sample_fh, out, err):
+def validate(sample_fh, out, err, fields=None):
     '''
         validate incoming fh
     '''
     headers = sample_fh.readline().strip().split('\t')
     idx = -1
     warnings = []
+    field_filter = set()
+    if fields is not None:
+        for field in fields.split(','):
+            field_filter.add(field.lower().strip())
+
     for idx, line in enumerate(sample_fh):
         out.write("===== Sample {0} =====\n".format(idx))
         fields = line.strip('\n').split('\t')
         for jdx, field in enumerate(fields):
+            if len(field_filter) > 0 and headers[jdx].lower() not in field_filter:
+                continue
             out.write("{0:>24}: {1}\n".format(headers[jdx], field))
             if field.startswith(' '):
                 warnings.append('Sample {0} field {1} (column {2}) contains leading whitespace'.format(idx, headers[jdx], jdx))
@@ -85,4 +93,8 @@ def validate(sample_fh, out, err):
         err.write("No warnings\n")
 
 if __name__ == '__main__':
-    validate(sys.stdin, sys.stdout, sys.stderr)
+    parser = argparse.ArgumentParser(description='check metadata')
+    parser.add_argument('--fields', help='comma separated list of fields to display')
+    args = parser.parse_args()
+
+    validate(sys.stdin, sys.stdout, sys.stderr, args.fields)

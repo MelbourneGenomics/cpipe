@@ -400,13 +400,31 @@ update_sample_database = {
     if (SAMPLE_DB && SAMPLE_DB != '') {
         exec """
             python $SCRIPTS/update_sample_db.py --db "$SAMPLE_DB" --sample "${sample}" --run_id "${run_id}" --analysis "${analysis}" --capture "${EXOME_TARGET}" --pipeline_version "`cat $BASE/version.txt`"
-        """
+        """, "update_sample_database"
     }
     else {
         stage_status("update_sample_database", "skipping...", sample);
     }
 
     stage_status("update_sample_database", "exit", sample);
+}
+
+mark_batch_finished = {
+    stage_status("mark_batch_finished", "enter", "");
+
+    var commandline: "";
+
+    if (READ_ONLY_POST_ANALYSIS) {
+        commandline += "--read_only ";
+    }
+    if (MOVE_POST_ANALYSIS) {
+        commandline += "--move ";
+    }
+    
+    exec """
+        python $SCRIPTS/mark_batch_finished.py $commandline
+    """
+    stage_status("mark_batch_finished", "exit", "");
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -441,7 +459,10 @@ finish_batch_run = segment {
    write_run_info +
 
    // update metadata and pipeline ID
-   create_sample_metadata
+   create_sample_metadata +
+
+   // move and mark as read only
+   mark_batch_finished
 }
 
 // configure target regions and other settings for each profile

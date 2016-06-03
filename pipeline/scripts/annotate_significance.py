@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 '''
-# vim: expandtab:ts=4:sw=4:cindent
 ###########################################################################
 #
 # This file is part of Cpipe.
