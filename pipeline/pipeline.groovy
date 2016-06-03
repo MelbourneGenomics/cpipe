@@ -190,7 +190,15 @@ run {
    // Produce a mini bam for each variant to help investigate individual variants
    // * mini-bams are no longer produced
 
-   // update the central database 
+   // write the provenance report (1 per sample)
+   all_samples *
+   [ 
+       provenance_report
+   ] +
+
+   // clean up, mark read only, move
+   finish_batch_run +
+
    // update the central database 
    [
        proband_samples *
@@ -201,15 +209,7 @@ run {
        [
            set_sample_name_without_target + set_analysis_type_individual + update_sample_database
        ]
-   ] +
- 
-   // write the provenance report (1 per sample)
-   all_samples *
-   [ 
-       provenance_report
-   ] +
-
-   // clean up
-   finish_batch_run
-}
+   ]
+   
+ }
 

@@ -222,6 +222,12 @@ INTERVAL_PADDING_INDEL=25
 ALLOW_SYNONYMOUS_INTRON=0
 ALLOW_SYNONYMOUS_EXON=0
 
+// mark batch directory read only after an analysis completes
+POST_ANALYSIS_READ_ONLY=false
+
+// move batch directory after an analysis completes
+POST_ANALYSIS_MOVE=false
+
 ////////////////////////////////////////////
 // trio related resources
 ////////////////////////////////////////////

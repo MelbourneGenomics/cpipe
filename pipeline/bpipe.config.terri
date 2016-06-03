@@ -145,6 +145,9 @@ commands {
         validate_batch {
             executor="local" // pdftotext requirement
         }
+        update_sample_database {
+            executor="local"
+        }
 }
 
 /*
