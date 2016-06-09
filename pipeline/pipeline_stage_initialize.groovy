@@ -136,18 +136,19 @@ create_combined_target = {
     // This way we avoid calling variants over the entire genome, but still
     // include everything of interest
     String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(" ")
+    String diseaseBedFiles = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.bed" }.join(" ")
 
     output.dir = "../design"
 
     produce("combined_target_regions.bed") {
         exec """
-            { python $SCRIPTS/genelist_to_bed.py $diseaseGeneLists ../design/*.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed; cat $EXOME_TARGET; } |
-                cut -f 1,2,3 | 
-                $BEDTOOLS/bin/bedtools sort | 
-                $BEDTOOLS/bin/bedtools merge > $output.bed
+            python $SCRIPTS/combine_target_regions.py --genefiles $diseaseGeneLists --genefiles_required ../design/*.addonce.*.genes.txt --bedfiles $diseaseBedFiles $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed |
+            cut -f 1,2,3 | 
+            $BEDTOOLS/bin/bedtools sort | 
+            $BEDTOOLS/bin/bedtools merge > $output.bed
         """
-
     }
+
     branch.COMBINED_TARGET = output.bed
     exec """
         echo "create_combined_target: combined target is $COMBINED_TARGET"
@@ -236,9 +237,9 @@ set_target_info = {
         exec """
             if [ -e $BASE/designs/$target_name/${target_name}.bed ];
             then
-                cp $BASE/designs/$target_name/${target_name}.bed $target_bed_file; 
+                python $SCRIPTS/combine_target_regions.py --bedfiles $BASE/designs/$target_name/${target_name}.bed --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
             else
-                python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.*.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file;
+                python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
             fi
         """
     }

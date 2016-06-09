@@ -216,9 +216,17 @@ def calculate_summary(report_cov, threshold, log):
     # now record medians of each gene
     gene_results = {}
     for gene in stats:
-        gene_results[gene] = {'ok': 100. * total_ok[gene] / total[gene], 'median': int(median(stats[gene]))}
+        if len(stats[gene]) > 0:
+            gene_results[gene] = {'ok': 100. * total_ok[gene] / total[gene], 'median': int(median(stats[gene]))}
+        else:
+            write_log(log, 'WARNING: gene {0} has no coverage'.format(gene))
+            gene_results[gene] = {'ok': 100. * total_ok[gene] / total[gene], 'median': 0}
 
-    return {'mean': overall_mean, 'median': median(overall_stats), 'genes': gene_results, 'mean_stats': mean_stats}
+    if len(overall_stats) > 0:
+        return {'mean': overall_mean, 'median': median(overall_stats), 'genes': gene_results, 'mean_stats': mean_stats}
+    else:
+        write_log(log, 'WARNING: no coverage information found in report coverage')
+        return {'mean': overall_mean, 'median': 0, 'genes': gene_results, 'mean_stats': mean_stats}
 
 def is_ok(percent, conversion):
     '''return the status for a gene'''
@@ -314,7 +322,7 @@ def group_number(number):
         s = s[:-3]
     return s + ','.join(reversed(groups))
 
-def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out):
+def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log):
     '''
         generate a report from the provided summary
     '''
@@ -373,7 +381,11 @@ def generate_report(summary, karyotype, meta, threshold, categories, conversion,
     if fragments is not None:
         out.write('**Mean fragment size (Std. dev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['fragment_mean']), float(fragments['fragment_sd'])))
         out.write('**Mean read length (Std. dev)** | {0:.1f} ({1:.1f})\n'.format(float(fragments['read_mean']), float(fragments['read_sd'])))
-        out.write('**% Bases >= Q30** | {0:.1f}%\n'.format(100. * float(fragments['base_pass']) / float(fragments['base_count'])))
+        if float(fragments['base_count']) > 0:
+            out.write('**% Bases >= Q30** | {0:.1f}%\n'.format(100. * float(fragments['base_pass']) / float(fragments['base_count'])))
+        else:
+            write_log(log, 'WARNING: Base count is zero. Is fragments file valid?')
+            out.write('**% Bases >= Q30** | {0}\n'.format('N/A'))
 
     # padding
     if padding is not None:
@@ -496,7 +508,7 @@ def main():
         fragments = parse_tsv(open(args.fragments, 'r'))
     else:
         fragments = None
-    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout)
+    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout, log=sys.stderr)
 
 if __name__ == '__main__':
     main()

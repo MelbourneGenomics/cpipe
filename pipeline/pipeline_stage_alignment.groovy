@@ -50,7 +50,7 @@ set_sample_info = {
 
     // generate a custom bed file that only includes the incidentalome for this sample
     exec """
-        python $SCRIPTS/genelist_to_bed.py $target_gene_file ../design/${target_name}.addonce.${sample}.genes.txt < $BASE/designs/genelists/exons.bed > $target_bed_file.${sample}.bed
+        python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $target_bed_file.${sample}.bed
     """
  
     println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
