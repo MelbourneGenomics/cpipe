@@ -1,5 +1,6 @@
 #!/bin/bash
-# vim: expandtab:shiftwidth=4:ts=4:cindent
+# This script has been deprecated and may be removed.
+# Refer to manage_batch.py to manage batch creation
 ###########################################################################
 #
 # This file is part of Cpipe.
