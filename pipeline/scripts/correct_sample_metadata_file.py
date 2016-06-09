@@ -36,7 +36,7 @@ def correct_column(value):
         @value: uncorrected genelist
         @returns: corrected genelist
     '''
-    parts = re.split('(*[^0-9:]*[0-9]+:)', value.strip()) # 3:
+    parts = re.split('( *[^0-9:]*[0-9]+:)', value.strip()) # 3:
     corrected = []
     for part in parts:
         if part.endswith(':'):
