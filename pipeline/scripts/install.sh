@@ -223,7 +223,7 @@ else
 fi
 
 ########## condel plugin ##########
-msg "Configuring Condel Plugin ..."
+msg "Configuring Condel plugin..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
 
 if [ ! -e $TOOLS/vep_plugins/Condel.pm ]; then
@@ -259,6 +259,14 @@ if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
   popd
 else
   msg "dbnsfp dataset already downloaded"
+fi
+
+# grantham plugin
+msg "Configuring Grantham plugin..."
+if [ ! -e "$TOOLS/vep_plugins/Grantham.pm" ]; then
+  ln -s "$TOOLS/vep_plugins/grantham/20160614/Grantham.pm" "$TOOLS/vep_plugins"
+else
+  msg "grantham symlink already configured"
 fi
 
 ##########
