@@ -232,7 +232,11 @@ def annotate_gap_from_ref(gap, data_source, log):
             # find closest by traversing the entire tree
             result, handler = traversal_handler_builder(gap_start_pos, gap_end)
             data_source['cds'].chroms[gap['chr']].traverse(handler)
-            return [{'interval': result[0], 'distance': result[1], 'direction': result[2]}]
+            if result[0].other['strand'] == '+':
+                exon_rank = result[0].other['number'] # straight from refgene
+            else:
+                exon_rank = result[0].other['count'] - result[0].other['number'] + 1 # count from the end
+            return [{'interval': result[0], 'distance': result[1], 'direction': result[2], 'rank': exon_rank}]
         else: # 1 or more overlaps found
             results = []
             for candidate in target:
@@ -242,7 +246,7 @@ def annotate_gap_from_ref(gap, data_source, log):
                     coding_intersect = [abs_intersect[0] - candidate.start + 1, abs_intersect[1] - candidate.start] # relative position of overlap in the exon. start=1 based, end=inclusive
                 else:
                     coding_intersect = [candidate.end - abs_intersect[1] + 1, candidate.end - abs_intersect[0]] # relative position of overlap in the exon. start=1 based, end=inclusive
-                    
+
                 #    coding_intersect = [x - target[0].start for x in intersect]
                 #else: # count from end
                 #    coding_intersect = [target[0].end - x for x in intersect]
@@ -254,14 +258,12 @@ def annotate_gap_from_ref(gap, data_source, log):
                 # determine exon rank
                 if candidate.other['strand'] == '+':
                     exon_rank = candidate.other['number'] # straight from refgene
-                    previous_exons = range(1, exon_rank) # 1 ... exon_rank-1
                 else:
                     exon_rank = candidate.other['count'] - candidate.other['number'] + 1 # count from the end
-                    previous_exons = range(exon_rank + 1, candidate.other['count'] + 1)
 
                 # calculate length of all exons preceding this one
 
-                results.append( {'interval': candidate, 'distance': 0, 'coding_intersect': coding_intersect, 'codon_positions': codon_positions, 'rank': exon_rank} )
+                results.append({'interval': candidate, 'distance': 0, 'coding_intersect': coding_intersect, 'codon_positions': codon_positions, 'rank': exon_rank})
 
             #write_log(log, "annotate_gap: coding region intersect: {0} codons: {1}".format(coding_intersect, codon_positions))
             return results
@@ -322,6 +324,9 @@ HEADLINE = ['Chr', 'Gene', 'Start', 'End', 'Min Cov', 'Max Cov', 'Median Cov', '
 DEFAULT_NA = 'N/A'
 
 def write_line(target, items):
+    '''
+        write csv to output
+    '''
     target.write('{0}\n'.format(','.join([str(item) for item in items])))
 
 def write_gap(gap, target, data_source, log, beds):
@@ -330,17 +335,17 @@ def write_gap(gap, target, data_source, log, beds):
     '''
     # note that we want to write start and end as inclusive
 
-    # annotate from bed files 
+    # annotate from bed files
     additional_headings = []
     additional_data = []
     for bed in sorted(beds.keys()):
         additional_headings.append(bed)
-        additional_data.append(';'.join(annotate_gap_from_bed(gap, beds[bed], log))) # join bed 
+        additional_data.append(';'.join(annotate_gap_from_bed(gap, beds[bed], log))) # join bed
 
     # annotate from data source
     annotations = annotate_gap_from_ref(gap, data_source, log)
     if annotations is None: # shouldn't happen unless things are really wrong
-        write_line(target, [gap['chr'], gap['gene'], gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] + gap['length'] - 1 - 1, min(gap['coverage']), max(gap['coverage']), median(gap['coverage']), round(mean(gap['coverage']),1), gap['length'], DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA] + additional_data)
+        write_line(target, [gap['chr'], gap['gene'], gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] + gap['length'] - 1 - 1, min(gap['coverage']), max(gap['coverage']), median(gap['coverage']), round(mean(gap['coverage']), 1), gap['length'], DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA] + additional_data)
     else:
         for annotation in annotations: # write a line for each overlap found
             if annotation['distance'] == 0: # gap overlapping coding sequence
@@ -359,13 +364,15 @@ def write_gap(gap, target, data_source, log, beds):
                     distance = -annotation['distance']
                 else:
                     distance = annotation['distance']
-                     
-                write_line(target, [gap['chr'], gap['gene'], gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] + gap['length'] - 1 - 1, min(gap['coverage']), max(gap['coverage']), median(gap['coverage']), round(mean(gap['coverage']), 1), gap['length'], annotation['interval'].other['name'], annotation['interval'].other['strand'], distance, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, annotation['interval'].other['number'], DEFAULT_NA] + additional_data)
 
-def find_gaps(coverage, min_width, max_coverage, target, data_source, log, beds={}):
+                write_line(target, [gap['chr'], gap['gene'], gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] + gap['length'] - 1 - 1, min(gap['coverage']), max(gap['coverage']), median(gap['coverage']), round(mean(gap['coverage']), 1), gap['length'], annotation['interval'].other['name'], annotation['interval'].other['strand'], distance, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, annotation['interval'].other['number'], annotation['rank']] + additional_data)
+
+def find_gaps(coverage, min_width, max_coverage, target, data_source, log, beds=None):
     '''
         find gaps and annotate
     '''
+    if beds is None:
+        beds = {}
     target.write('{0}\n'.format(','.join(HEADLINE + sorted(beds.keys()))))
     current = None
     gaps = 0
@@ -413,17 +420,20 @@ def find_intersect(candidate_start, candidate_end, range_start, range_end):
     else:
         return (max(candidate_start, range_start), min(candidate_end, range_end))
 
-def init_db(target, log, exclusions=set()):
+def init_db(target, log, exclusions=None):
     '''
         prepare annotation db
         @target: is refgene, and expects the following fields:
          - name(1), chrom(2), strand(3), cds_start(6), cds_end(7), count(8), exon_start(9), exon_end(10)
     '''
     write_log(log, 'starting init_db...')
+    if exclusions is None:
+        exclusions = set()
     result = {'cds': IntervalTree()}
     added = 0
     first = True
-    for i, line in enumerate(target):
+    position = 0
+    for position, line in enumerate(target):
         if first:
             first = False
             continue
@@ -457,8 +467,8 @@ def init_db(target, log, exclusions=set()):
             for i, exon in enumerate(to_add):
                 exon['other']['next'] = sum(sizes[i+1:]) # next contains sum of exons after this one
                 result['cds'].insert(exon['item'], other=exon['other'])
-        if i % 10000 == 0:
-            write_log(log, 'init_db: {0} lines processed {1} cds intervals last {2}...'.format(i, added, item))
+        if position % 10000 == 0:
+            write_log(log, 'init_db: {0} lines processed {1} cds intervals last {2}...'.format(position, added, item))
     write_log(log, 'init_db: done with {0} intervals'.format(added))
     return result
 
@@ -471,6 +481,8 @@ def init_bed(target, target_name, log):
     i = 0
     for i, line in enumerate(target):
         fields = line.strip('\n').split('\t')
+        if len(fields) < 4:
+            write_log(log, 'WARNING: {0} contains too few columns on line {1}'.format(target_name, i))
         result.insert(Interval(start=int(fields[1]), end=int(fields[2]), chrom=fields[0]), other={'name': fields[3]})
     write_log(log, 'processing {0}: done processing {1} lines'.format(target_name, i))
     return result
@@ -484,6 +496,9 @@ def download_db(log):
     write_log(log, 'download_db: done')
 
 def build_exclusion_list(incoming_fh):
+    '''
+        build a list of transcripts to exclude
+    '''
     result = set()
     for line in incoming_fh:
         result.add(line.strip().upper())
@@ -518,9 +533,10 @@ def main():
 
     # bed files
     beds = {}
-    for bed in args.beds:
-        target_name = os.path.basename(bed).split('.')[0]
-        beds[target_name] = init_bed(open(bed, 'r'), target_name, log=sys.stderr)
+    if args.beds:
+        for bed in args.beds:
+            target_name = os.path.basename(bed).split('.')[0]
+            beds[target_name] = init_bed(open(bed, 'r'), target_name, log=sys.stderr)
 
     # coverage data
     if args.coverage.endswith('.gz'):

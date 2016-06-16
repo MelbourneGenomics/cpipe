@@ -54,7 +54,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,100,101,0,0,0.0,0.0,2,NM_033083,+,15469185,N/A,N/A,N/A,N/A,N/A,N/A,1,N/A'
+        assert lines[1] == 'chr1,A,100,101,0,0,0.0,0.0,2,NM_033083,+,15469185,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -126,7 +126,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,100,101,0,0,0.0,0.0,2,NM_033083,+,4,N/A,N/A,N/A,N/A,N/A,N/A,1,N/A'
+        assert lines[1] == 'chr1,A,100,101,0,0,0.0,0.0,2,NM_033083,+,4,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
  
     def test_neg_distance(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
@@ -137,7 +137,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,925,926,0,0,0.0,0.0,2,NM_033083,+,-6,N/A,N/A,N/A,N/A,N/A,N/A,2,N/A'
+        assert lines[1] == 'chr1,A,925,926,0,0,0.0,0.0,2,NM_033083,+,-6,N/A,N/A,N/A,N/A,N/A,N/A,2,2'
  
     def test_neg_strand(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
@@ -148,7 +148,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,925,926,0,0,0.0,0.0,2,NM_033083,-,6,N/A,N/A,N/A,N/A,N/A,N/A,2,N/A'
+        assert lines[1] == 'chr1,A,925,926,0,0,0.0,0.0,2,NM_033083,-,6,N/A,N/A,N/A,N/A,N/A,N/A,2,1'
 
     def test_cds_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
@@ -203,7 +203,9 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 1, target, ds, log, beds=beds)
         lines = target.getvalue().split('\n')
-        assert self.find_value(lines, 'b1')[0] == 'bed1;bed2'
+        value = self.find_value(lines, 'b1')[0]
+        assert 'bed1' in value
+        assert 'bed2' in value
         assert self.find_value(lines, 'b2')[0] == 'b3'
 
     def test_bed_no_overlap(self):
