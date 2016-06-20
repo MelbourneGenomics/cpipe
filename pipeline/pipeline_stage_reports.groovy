@@ -194,6 +194,71 @@ summary_report = {
     stage_status("summary_report", "exit", sample)
 }
 
+summary_report_trio = {
+    doc """Generate the summary report and include details of trio members"""
+    // this is the quick solution that concatenates the reports together
+    stage_status("summary_report_trio", "enter", sample)
+
+    output.dir="results"
+
+    // extract parent sample ids
+    def additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
+    // from_list = add
+    def sample_list = additional_samples.collect { "results/${run_id}_${it}.summary.md" }
+    sample_list.add("results/${run_id}_${sample}.summary.md")
+    stage_status("summary_report_trio", "sample_list", sample_list)
+    def sample_string = sample_list.join(' ')
+    stage_status("summary_report_trio", "sample_list", sample_string)
+
+    var input_coverage_file: "qc/${sample}.cov.gz", // something about segments messes up $input
+        input_exome_file: "qc/${sample}.exome.gz", 
+        input_ontarget_file: "qc/${sample}.ontarget.txt",
+        input_fragments_file: "qc/${sample}.fragments.tsv"
+
+    produce("${run_id}_${sample}.trio.summary.htm", "${run_id}_${sample}.trio.summary.md") {
+        // from("$input_exome_file", "$input_ontarget_file", "$input_fragments_file") {
+        from(sample_list) {
+            exec """
+                cat ${sample_string} > $output.md
+
+                python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+            """
+        }
+    }
+ 
+    stage_status("summary_report_trio", "exit", sample)
+}
+
+// this is the final solution that builds a nice report that properly integrates the samples
+// currently not complete or used
+// summary_report_trio_2 = {
+//     doc """Generate the summary report and include details of trio members"""
+//     stage_status("summary_report_trio", "enter", sample)
+// 
+//     output.dir="results"
+// 
+//     // extract parent sample ids
+//     def additional_samples = sample_info[sample].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(',');
+//     // from_list = add
+//     def sample_list = additional_samples.collect { "results/${run_id}_${it}.summary.md" }
+//     sample_list.add("results/${run_id}_${sample}.summary.md")
+//     stage_status("summary_report_trio", "sample_list", sample_list)
+//     def sample_string = ' '.join(sample_list)
+//     stage_status("summary_report_trio", "sample_list", sample_string)
+// 
+//     produce("${run_id}_${sample}.trio.summary.htm", "${run_id}_${sample}.trio.summary.md") {
+//         from("$input_exome_file", "$input_ontarget_file", "$input_fragments_file") {
+//             exec """
+//                 python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
+// 
+//                 python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+//             """
+//         }
+//     }
+//  
+//     stage_status("summary_report_trio", "exit", sample)
+// }
+
 exon_qc_report = {
 
     requires sample_metadata_file : "File describing meta data for pipeline run (usually, samples.txt)"

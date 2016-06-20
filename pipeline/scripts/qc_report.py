@@ -322,12 +322,14 @@ def group_number(number):
         s = s[:-3]
     return s + ','.join(reversed(groups))
 
-def generate_report(summary, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log):
+def generate_report(summaries, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log):
     '''
         generate a report from the provided summary
     '''
     if anonymous:
         meta['sample_id'] = 'ANONYMOUS'
+
+    summary = summaries[0] # we don't support multiple summaries just yet
 
     # headline
     out.write('# Sequencing Summary Report for Study {0}\n\n'.format(meta['sample_id']))
@@ -467,7 +469,7 @@ def main():
     '''
     import argparse
     parser = argparse.ArgumentParser(description='Generate coverage report')
-    parser.add_argument('--report_cov', required=True, help='intersected coverage file with genes from bedtools')
+    parser.add_argument('--report_cov', nargs='*', required=True, help='intersected coverage file(s) with genes from bedtools')
     parser.add_argument('--gene_cov', required=True, help='coverage of each gene')
     parser.add_argument('--exome_cov', required=True, help='exome coverage file with genes')
     parser.add_argument('--ontarget', required=False, help='target reads count file')
@@ -486,17 +488,22 @@ def main():
     args = parser.parse_args()
     write_log(sys.stderr, 'opening {0} for karyotype'.format(args.exome_cov))
 
+    # calculate karyotype for the main sample from exome_cov
     if args.exome_cov.endswith('.gz'):
         exome_cov_fh = gzip.open(args.exome_cov, 'r')
     else:
         exome_cov_fh = open(args.exome_cov, 'r')
     karyotype = calculate_karyotype(exome_cov_fh, log=sys.stderr)
 
-    if args.report_cov.endswith('.gz'):
-        report_cov_fh = gzip.open(args.report_cov, 'r')
-    else:
-        report_cov_fh = open(args.report_cov, 'r')
-    summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)
+    # calculate coverage for all samples from report_cov
+    summaries = []
+    for report_cov in args.report_cov:
+        if args.report_cov.endswith('.gz'):
+            report_cov_fh = gzip.open(args.report_cov, 'r')
+        else:
+            report_cov_fh = open(args.report_cov, 'r')
+        summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)
+        summaries.append(summary)
 
     sample = parse_metadata(open(args.meta, 'r'), args.study)
     if args.write_karyotype:
@@ -508,7 +515,7 @@ def main():
         fragments = parse_tsv(open(args.fragments, 'r'))
     else:
         fragments = None
-    generate_report(summary, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout, log=sys.stderr)
+    generate_report(summaries, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout, log=sys.stderr)
 
 if __name__ == '__main__':
     main()
