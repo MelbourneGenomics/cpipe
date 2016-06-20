@@ -25,8 +25,12 @@
 # Usage:
 #   See main() for arguments
 #
+# History:
+#   1.0 20-jun-2016 PG initial release
 ###########################################################################
 '''
+
+__version__ = '1.0'
 
 import collections
 import datetime
@@ -516,6 +520,7 @@ def main():
     parser.add_argument('--db', required=False, help='db to annotate gaps')
     parser.add_argument('--exclude', required=False, help='file containing transcripts to exclude from gap report')
     parser.add_argument('--beds', required=False, nargs='*', help='additional bed files to find overlaps in')
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s {0}'.format(__version__))
     args = parser.parse_args()
 
     # exclusions
