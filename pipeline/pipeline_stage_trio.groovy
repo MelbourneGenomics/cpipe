@@ -20,6 +20,7 @@
 
 load 'pipeline_helpers.groovy'
 
+load "pipeline_stage_reports.groovy" // uses summary_report_trio
 
 //////////////////////////////////////////////////////////////////////
 // stages
@@ -101,6 +102,7 @@ genotype_refinement_trio = {
 }
 
 trio_analysis_phase_2 = segment {
+    summary_report_trio +
     trio_genotype_gvcfs +
     filter_variants +
     merge_variants

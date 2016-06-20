@@ -82,22 +82,31 @@ class QCReportTest(unittest.TestCase):
         assert s['genes']['A']['median'] == 10
         assert s['genes']['A']['ok'] == 25.0
 
-#    def test_report(self):
-#        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
-#        log = StringIO.StringIO()
-#        s = qc_report.calculate_summary(cov, 20, log)
-#
-#        exome_cov = ['chr1\t100\t200\t1\t5', 'chrX\t100\t200\t1\t40', 'chrX\t400\t500\t1\t60']
-#        k = qc_report.calculate_karyotype(exome_cov, log)
-#
-#        m = [ 'Batch\tSample_ID\tDNA_Tube_ID\tSex\tMean_Coverage\n', '026\t12345\t\tFemale\t100.2\n', '026\t11111\t22222\t\n' ]
-#        p = qc_report.parse_metadata(m, '12345')
-#
-#        threshold = 20
-#
-#        out = StringIO.StringIO()
-#        qc_report.generate_report(s, k, p, threshold, out, log)
-#        print out.getvalue()
+    def test_report(self):
+        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
+        log = StringIO.StringIO()
+        s = qc_report.calculate_summary(cov, 20, log)
+
+        exome_cov = ['chr1\t100\t200\t1\t5', 'chrX\t100\t200\t1\t40', 'chrX\t400\t500\t1\t60']
+        k = qc_report.calculate_karyotype(exome_cov, log)
+
+        m = [ 'Batch\tSample_ID\tDNA_Tube_ID\tSex\tMean_Coverage\tPrioritised_Genes\n', '026\t12345\t\tFemale\t100.2\t\n', '026\t11111\t22222\t\t\n' ]
+        p = qc_report.parse_metadata(m, '12345')
+
+        threshold = 20
+        categories = qc_report.build_categories('', '', log)
+        conversion = 'GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED'
+        metin = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics', 'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE', 'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885', '## HISTOGRAM\tjava.lang.Double' ]
+        metrics = qc_report.build_metrics(metin, ['12345'], log)
+        capture = qc_report.build_capture(['a1bg\t73.719376392'], log=log)
+        anonymous = False
+        fragments = None
+        padding = '20,10,5'
+
+        out = StringIO.StringIO()
+        qc_report.generate_report([s], k, p, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log)
+        lines = out.getvalue().split('\n')
+        assert lines[0] == '# Sequencing Summary Report for Study 12345'
 
     def test_parse_tsv(self):
         frags = ['mean\t123.4\n', 'sd\t567.9\n']
