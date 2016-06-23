@@ -228,6 +228,9 @@ POST_ANALYSIS_READ_ONLY=false
 // move batch directory after an analysis completes
 POST_ANALYSIS_MOVE=false
 
+// space separated list of additional beds to search when generating gap report
+GAP_ANNOTATOR_CUSTOM_BEDS=""
+
 ////////////////////////////////////////////
 // trio related resources
 ////////////////////////////////////////////
