@@ -88,6 +88,24 @@ vcf_to_table = {
     stage_status("vcf_to_table", "exit", "${sample} ${branch.analysis}");
 }
 
+@filter("acr")
+annotate_custom_regions = {
+    doc "if a custom bed file is specified, add an annotation marking whether it is in a region"
+    stage_status("annotate_custom_regions", "enter", "${sample} ${branch.analysis}");
+    output.dir="results"
+    if (ANNOTATE_CUSTOM_REGIONS != "") {
+        exec """
+            python $SCRIPTS/annotate_custom_regions.py --bed $ANNOTATE_CUSTOM_REGIONS < $input > $output
+        """
+    }
+    else { // nothing to do
+        exec """
+            cp "$input" "$output"
+        """
+    }
+    stage_status("annotate_custom_regions", "exit", "${sample} ${branch.analysis}");
+}
+
 table_to_lovd = {
     doc "Explodes out all annotation fields for LOVD compatibility"
     stage_status("table_to_lovd", "enter", "${sample} ${branch.analysis}");
@@ -105,7 +123,8 @@ variant_analysis = segment {
     vcf_normalize +
     vcf_filter_child +
     vcf_annotate +
-    vcf_post_annotation_filter +
+    vcf_post_annotation_filter + // vep filter
     vcf_to_table +
+    annotate_custom_regions +
     table_to_lovd
 }
