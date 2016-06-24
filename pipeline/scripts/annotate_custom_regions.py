@@ -252,7 +252,7 @@ def build_regions(bed_fh, log):
     for lines, line in enumerate(bed_fh):
         fields = line.strip('\n').split('\t')
         if len(fields) < 3:
-            write_log(log, 'WARNING: bed file contains too few columns on line {1}'.format(lines))
+            log.write('WARNING: bed file contains too few columns on line {1}\n'.format(lines))
         if len(fields) < 4:
             result.insert(Interval(start=int(fields[1]), end=int(fields[2]), chrom=fields[0]), other={'name': FOUND})
         else:
