@@ -1,5 +1,4 @@
 #!/bin/bash
-# vim: ts=4:expandtab:sw=4:cindent
 ############################################################
 #
 # Installation check script for Melbourne Genomics Pipeline
