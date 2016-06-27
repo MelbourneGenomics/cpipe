@@ -210,7 +210,7 @@ PYTHON="python"
 splice_region_window=2
 
 // custom annotation for variants in specified bed file
-ANNOTATE_CUSTOM_REGIONS = ""
+ANNOTATE_CUSTOM_REGIONS=""
 
 // interval padding to pass to the variant caller
 INTERVAL_PADDING_CALL=25
