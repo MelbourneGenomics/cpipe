@@ -113,7 +113,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     target_file = os.path.join(batch_directory, "target_regions.txt")
     write_log(log, 'writing {0}...'.format(target_file))
     with open(target_file, 'w') as target_fh:
-        target_fh.write('EXOME_TARGET={0}\n'.format(target_region))
+        target_fh.write('EXOME_TARGET="{0}"\n'.format(target_region))
     write_log(log, 'writing {0}: done'.format(target_file))
 
     # generate samples.txt
