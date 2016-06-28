@@ -234,6 +234,23 @@ POST_ANALYSIS_MOVE=false
 // space separated list of additional beds to search when generating gap report
 GAP_ANNOTATOR_CUSTOM_BEDS=""
 
+/////////////////////////////////////////////
+// filtering options. 
+// if any of these criteria are not met, the variant will be filtered
+// if the variant includes multiple samples (i.e. trio), the average value must meet this criteria
+/////////////////////////////////////////////
+// minimum allele depth
+HARD_FILTER_AD=2
+
+// minimum allele frequency
+HARD_FILTER_AF=0.15
+
+// minimum depth
+HARD_FILTER_DP=5
+
+// minimum quality
+HARD_FILTER_QUAL=5
+
 ////////////////////////////////////////////
 // trio related resources
 ////////////////////////////////////////////

@@ -20,8 +20,14 @@
 
 load "pipeline_helpers.groovy"
 
-vcf_filter = {
-  // TODO not implemented... see hardfiltering.slurm
+@filter("hf")
+filter_table = {
+    doc "filter tsv based on specified cutoffs"
+    stage_status("table_filter", "enter", "${sample} ${branch.analysis}");
+    exec """
+        python $SCRIPTS/filter_tsv.py --ad ${HARD_FILTER_AD} --af ${HARD_FILTER_AF} --dp ${HARD_FILTER_DP} --qual ${HARD_FILTER_QUAL} < $input > $output
+    """
+    stage_status("table_filter", "exit", "${sample} ${branch.analysis}");
 }
 
 vcf_normalize = {
@@ -119,12 +125,12 @@ table_to_lovd = {
 }
 
 variant_analysis = segment {
-    // vcf_filter +
     vcf_normalize +
     vcf_filter_child +
     vcf_annotate +
     vcf_post_annotation_filter + // vep filter
     vcf_to_table +
+    filter_table +
     annotate_custom_regions +
     table_to_lovd
 }
