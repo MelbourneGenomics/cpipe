@@ -498,10 +498,10 @@ def main():
     # calculate coverage for all samples from report_cov
     summaries = []
     for report_cov in args.report_cov:
-        if args.report_cov.endswith('.gz'):
-            report_cov_fh = gzip.open(args.report_cov, 'r')
+        if report_cov.endswith('.gz'):
+            report_cov_fh = gzip.open(report_cov, 'r')
         else:
-            report_cov_fh = open(args.report_cov, 'r')
+            report_cov_fh = open(report_cov, 'r')
         summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)
         summaries.append(summary)
 
