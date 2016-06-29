@@ -1,5 +1,4 @@
 #!/bin/bash
-# vim: ts=4:expandtab:sw=4:cindent
 ############################################################
 #
 # Installation check script for Melbourne Genomics Pipeline
@@ -213,10 +212,12 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP; 
-        perl INSTALL.pl --CACHEDIR ../vep_cache --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
-        perl convert_cache.pl -species homo_sapiens -version ${VEP_VERSION}_GRCh37 --dir ../vep_cache || err "Failed to run VEP tabix for homo_sapiens"
-        perl convert_cache.pl -species homo_sapiens_refseq -version ${VEP_VERSION}_GRCh37 --dir ../vep_cache || err "Failed to run VEP tabix for homo_sapiens_refseq"
-        perl convert_cache.pl -species homo_sapiens_merged -version ${VEP_VERSION}_GRCh37 --dir ../vep_cache || err "Failed to run VEP tabix for homo_sapiens_merged"
+        # convert ../vep_cache to absolute path
+        VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        perl convert_cache.pl -species homo_sapiens -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens"
+        perl convert_cache.pl -species homo_sapiens_refseq -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens_refseq"
+        perl convert_cache.pl -species homo_sapiens_merged -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens_merged"
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
