@@ -276,7 +276,7 @@ exon_qc_report = {
 
     produce("${sample}.exon.qc.xlsx", "${sample}.exon.qc.tsv") {
         exec """
-             JAVA_OPTS="-Xmx3g" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/exon_qc_report.groovy 
+             JAVA_OPTS="-Xmx3g" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" $SCRIPTS/exon_qc_report.groovy 
                 -cov $input.cov.gz
                 -targets $target_bed_file
                 -refgene $ANNOVAR_DB/hg19_refGene.txt 
@@ -355,7 +355,7 @@ qc_excel_report = {
     def samples = sample_info.grep { it.value.target == target_name }.collect { it.value.sample }
     produce(target_name + ".qc.xlsx") {
             exec """
-                JAVA_OPTS="-Xmx16g -Djava.awt.headless=true" $GROOVY -cp $GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar $SCRIPTS/qc_excel_report.groovy 
+                JAVA_OPTS="-Xmx16g -Djava.awt.headless=true" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" $SCRIPTS/qc_excel_report.groovy 
                     -s ${target_samples.join(",")} 
                     -t $LOW_COVERAGE_THRESHOLD
                     -w $LOW_COVERAGE_WIDTH

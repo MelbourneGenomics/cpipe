@@ -13,8 +13,13 @@ import collections
 import datetime
 import sys
 
+# what to consider an unknown or empty value
 EMPTY_BEFORE = ('', 'NA', 'unknown')
-EMPTY_AFTER = 'unknown'
+
+# what to replace empty fields with 
+EMPTY_AFTER = ''
+
+# max number of warnings to show
 MAX_WARNINGS = 100
 
 def write_log_factory(params):

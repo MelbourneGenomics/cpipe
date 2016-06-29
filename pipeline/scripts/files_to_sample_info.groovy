@@ -43,11 +43,11 @@ if (opts.simple) {
 else {
   // print header
   if (!opts.noheader) {
-    println( [ "Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality", "DNA_Date", "Cohort", "Sample_Type", "Fastq_Files", "Prioritised_Genes", "Consanguinity", "Variants_File", "Pedigree_File", "Ethnicity", "VariantCall_Group", "Capture_Date", "Sequencing_Date", "Mean_Coverage", "Duplicate_Percentage", "Machine_ID", "DNA_Extraction_Lab", "Sequencing_Lab", "Exome_Capture", "Library_Preparation", "Barcode_Pool_Size", "Read_Type", "Machine_Type", "Sequencing_Chemistry", "Sequencing_Software", "Demultiplex_Software", "Hospital_Centre", "Sequencing_Contact", "Pipeline_Contact", "Notes" ].join( '\t' ) )
+    println( [ "Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality", "DNA_Date", "Cohort", "Sample_Type", "Fastq_Files", "Prioritised_Genes", "Consanguinity", "Variants_File", "Pedigree_File", "Ethnicity", "VariantCall_Group", "Capture_Date", "Sequencing_Date", "Mean_Coverage", "Duplicate_Percentage", "Machine_ID", "DNA_Extraction_Lab", "Sequencing_Lab", "Exome_Capture", "Library_Preparation", "Barcode_Pool_Size", "Read_Type", "Machine_Type", "Sequencing_Chemistry", "Sequencing_Software", "Demultiplex_Software", "Hospital_Centre", "Sequencing_Contact", "Pipeline_Contact", "Notes", "Pipeline_Notes", "Analysis_Type" ].join( '\t' ) )
   }
   for (sample in samples) {
     fastq = sample.value.files.collect { it.key == "all" ? [] : it.value }.flatten().join(",")
     geneCategories = sample.value.geneCategories.collect { it.key + ":" + it.value.join(",") }.join(" ")
-    println( [ sample.value.batch, sample.value.sample, "", sample.value.sex.encode(), "", "", "", "", "", sample.value.target, "Normal", fastq, geneCategories, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ].join( '\t' ) )
+    println( [ sample.value.batch, sample.value.sample, "", sample.value.sex.encode(), "", "", "", "", "", sample.value.target, "Normal", fastq, geneCategories, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ].join( '\t' ) )
   }
 }
