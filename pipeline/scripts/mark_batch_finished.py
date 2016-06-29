@@ -61,8 +61,8 @@ def mark_batch_finished(directory, log, read_only, move, dry=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Mark Cpipe batch as complete')
     parser.add_argument('--dry', required=False, default=False, action='store_true', help='dry run')
-    parser.add_argument('--read_only', required=False, default=True, action='store_true', help='mark files read only')
-    parser.add_argument('--move', required=False, default=True, action='store_true', help='move directory to completion')
+    parser.add_argument('--read_only', required=False, default=False, action='store_true', help='mark files read only')
+    parser.add_argument('--move', required=False, default=False, action='store_true', help='move directory to completion')
     args = parser.parse_args()
 
     mark_batch_finished(os.getcwd(), sys.stderr, read_only=args.read_only, move=args.move, dry=args.dry)

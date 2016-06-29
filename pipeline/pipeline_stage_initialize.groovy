@@ -415,10 +415,10 @@ mark_batch_finished = {
 
     var commandline: "";
 
-    if (POST_ANALYSIS_READ_ONLY) {
+    if (POST_ANALYSIS_READ_ONLY == true) {
         commandline += "--read_only ";
     }
-    if (POST_ANALYSIS_MOVE) {
+    if (POST_ANALYSIS_MOVE == true) {
         commandline += "--move ";
     }
     
