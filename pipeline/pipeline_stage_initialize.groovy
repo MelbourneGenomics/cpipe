@@ -324,7 +324,7 @@ sample_similarity_report = {
 
     produce("similarity_report.txt") {
         exec """
-            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.3.4.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.3.4.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }
@@ -415,10 +415,10 @@ mark_batch_finished = {
 
     var commandline: "";
 
-    if (READ_ONLY_POST_ANALYSIS) {
+    if (POST_ANALYSIS_READ_ONLY) {
         commandline += "--read_only ";
     }
-    if (MOVE_POST_ANALYSIS) {
+    if (POST_ANALYSIS_MOVE) {
         commandline += "--move ";
     }
     

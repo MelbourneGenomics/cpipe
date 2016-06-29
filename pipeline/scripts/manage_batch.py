@@ -124,7 +124,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         data_files = ' '.join(data_files)
     write_log(log, 'writing {0}...'.format(target_file))
     # for now we outsource sample file creation to the groovy
-    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -disease {1} {2} > samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
+    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp \"$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar\" $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -disease {1} {2} > samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
     write_log(log, 'writing {0}: done'.format(target_file))
 
     analysis_directory = os.path.join(batch_directory, "analysis")
@@ -147,7 +147,7 @@ def add_sample(batch_name, profile_name, data_files, log):
         data_files = ' '.join(data_files)
 
     write_log(log, 'writing {0}...'.format(target_file))
-    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -noheader -disease {1} {2} >> samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
+    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp \"$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar\" $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -noheader -disease {1} {2} >> samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
     write_log(log, 'writing {0}: done'.format(target_file))
 
 def show_batch(batch_name, out):

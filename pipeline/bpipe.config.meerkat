@@ -1,5 +1,6 @@
 // Include ngs utils to make them available to pipeline
-libs="../tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar"
+// libs="../tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar"
+libs="../tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:../tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar"
 
 executor="torque"
 queue="batchq"
