@@ -50,7 +50,7 @@ class ConvertToLovdTest(unittest.TestCase):
         convert_to_lovd.process_table(table, out, ann, log)
         result = out.getvalue().split('\n')[1].split('\t') 
         assert len(result) == 10
-        assert result == ['chrM', '4746', '.', 'A', 'G', '6482.14', 'G', 'intergenic_variant', 'MODIFIER', 'unknown']
+        assert result == ['chrM', '4746', '.', 'A', 'G', '6482.14', 'G', 'intergenic_variant', 'MODIFIER', '']
 
     def test_no_ann(self):
         table = []
@@ -62,4 +62,4 @@ class ConvertToLovdTest(unittest.TestCase):
         convert_to_lovd.process_table(table, out, ann, log)
         result = out.getvalue().split('\n')[1].split('\t') 
         assert len(result) == 10
-        assert result == ['chrM', '4746', '.', 'A', 'G', '6482.14', 'unknown', 'unknown', 'unknown', 'unknown']
+        assert result == ['chrM', '4746', '.', 'A', 'G', '6482.14', '', '', '', '']
