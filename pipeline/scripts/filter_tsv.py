@@ -44,22 +44,28 @@ def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats):
     '''
     result = True
     # AF
-    if float(fields[headers.index('AF')]) < af_min:
-        result = False
-        stats['AF'] += 1
+    try:
+        if float(fields[headers.index('AF')]) < af_min:
+            result = False
+            stats['AF'] += 1
+    except ValueError:
+        pass
 
     # QUAL
-    if float(fields[headers.index('QUAL')]) < qual_min:
-        result = False
-        stats['QUAL'] += 1
+    try:
+        if float(fields[headers.index('QUAL')]) < qual_min:
+            result = False
+            stats['QUAL'] += 1
+    except ValueError:
+        pass
 
     # sample values: DP, AD
     sample_results = {'DP': 0, 'AD': 0, 'DPc': 0, 'ADc': 0}
     for header, field in zip(headers, fields):
-        if header.endswith('.DP'):
+        if header.endswith('.DP') and field.isdigit():
             sample_results['DP'] += int(field)
             sample_results['DPc'] += 1
-        if header.endswith('.AD'):
+        if header.endswith('.AD') and field.isdigit():
             sample_results['AD'] += int(field.split(',')[1])
             sample_results['ADc'] += 1
 
@@ -94,7 +100,7 @@ def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, re
                 if reverse:
                     target.write(line)
                 filtered += 1
-    total = written + filtered
+    total = max(1, written + filtered)
     write_log(log, 'filter_tsv: done. wrote {0} filtered {1} ({2:.1f}%). breakdown: {3}'.format(written, filtered, 100. * filtered / total, ', '.join(['{0}: {1} ({2:.1f}%)'.format(x, stats[x], 100. * stats[x] / total) for x in stats])))
 
 def main():
