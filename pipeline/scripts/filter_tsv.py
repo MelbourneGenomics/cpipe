@@ -63,7 +63,6 @@ def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats, prob
     # p is proband; c is count; default DPp to low in case proband is not specified
     sample_results = {'DP': 0, 'DPc': 0, 'DPp': 0}
     passing_samples = set()
-    ad_ok = False
     # look at dp
     for header, field in zip(headers, fields):
         if header.endswith('.DP') and field.isdigit():
@@ -78,6 +77,7 @@ def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats, prob
                 passing_samples.add(header[:-3])
 
     # look at ad
+    ad_ok = False
     for header, field in zip(headers, fields):
         if header.endswith('.AD') and header[:-3] in passing_samples:
             allele_depth = field.split(',')[1]
