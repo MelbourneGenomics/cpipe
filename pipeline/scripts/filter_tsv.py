@@ -38,7 +38,7 @@ def write_log(log, msg):
     if log is not None:
         log.write('%s: %s\n' % (now, msg))
 
-def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats):
+def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats, proband=''):
     '''
         return true if the variant passes filter cutoffs
     '''
@@ -60,28 +60,43 @@ def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats):
         pass
 
     # sample values: DP, AD
-    sample_results = {'DP': 0, 'AD': 0, 'DPc': 0, 'ADc': 0}
+    # p is proband; c is count; default DPp to low in case proband is not specified
+    sample_results = {'DP': 0, 'DPc': 0, 'DPp': 0}
+    passing_samples = set()
+    ad_ok = False
+    # look at dp
     for header, field in zip(headers, fields):
         if header.endswith('.DP') and field.isdigit():
+            # sum of depths
             sample_results['DP'] += int(field)
             sample_results['DPc'] += 1
-        if header.endswith('.AD') and field.isdigit():
-            sample_results['AD'] += int(field.split(',')[1])
-            sample_results['ADc'] += 1
+            # keep track of proband
+            if header == '{0}.DP'.format(proband):
+                sample_results['DPp'] = int(field)
+            # keep track of passing samples
+            if int(field) >= dp_min:
+                passing_samples.add(header[:-3])
 
-    if sample_results['DP'] < dp_min * sample_results['DPc']: # average dp is too low
+    # look at ad
+    for header, field in zip(headers, fields):
+        if header.endswith('.AD') and header[:-3] in passing_samples:
+            allele_depth = field.split(',')[1]
+            if allele_depth.isdigit() and int(allele_depth) >= ad_min:
+                ad_ok = True
+
+    if sample_results['DP'] < dp_min * sample_results['DPc'] and sample_results['DPp'] < dp_min: # average dp is too low and proband is too low
         result = False
         stats['DP'] += 1
-    if sample_results['AD'] < ad_min * sample_results['ADc']: # average ad is too low
+    if not ad_ok: # ad is too low for all samples with sufficient depth
         result = False
         stats['AD'] += 1
     return result
 
-def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False):
+def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, proband='', reverse=False):
     '''
         given variants from src, write to target those that pass the filter requirements
     '''
-    write_log(log, 'filter_tsv: starting. requirement: af >= {0} qual >= {1} dp >= {2} ad >= {3}'.format(af_min, qual_min, dp_min, ad_min))
+    write_log(log, 'filter_tsv: starting. requirement: af >= {0} qual >= {1} dp >= {2} ad >= {3} proband "{4}"'.format(af_min, qual_min, dp_min, ad_min, proband))
     written = filtered = 0
     stats = {'AF': 0, 'DP': 0, 'QUAL': 0, 'AD': 0}
     header = None
@@ -92,7 +107,7 @@ def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, re
         else:
             fields = line.strip('\n').split('\t')
             # decide whether to keep this line
-            if allow_variant(header, fields, af_min, qual_min, dp_min, ad_min, stats):
+            if allow_variant(header, fields, af_min, qual_min, dp_min, ad_min, stats, proband=proband):
                 if not reverse:
                     target.write(line)
                 written += 1
@@ -113,8 +128,9 @@ def main():
     parser.add_argument('--dp', type=int, default=5, help='minimum depth')
     parser.add_argument('--ad', type=int, default=2, help='minimum allele depth')
     parser.add_argument('--reverse', action='store_true', default=False, help='write filtered items instead of allowed')
+    parser.add_argument('--proband', default='', help='proband sample name')
     args = parser.parse_args()
-    filter_tsv(sys.stdin, sys.stdout, sys.stderr, af_min=args.af, qual_min=args.qual, dp_min=args.dp, ad_min=args.ad, reverse=args.reverse)
+    filter_tsv(sys.stdin, sys.stdout, sys.stderr, af_min=args.af, qual_min=args.qual, dp_min=args.dp, ad_min=args.ad, proband=args.proband, reverse=args.reverse)
 
 if __name__ == '__main__':
     main()
