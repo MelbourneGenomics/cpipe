@@ -26,9 +26,10 @@ perlbrew install perl-5.18.1
 perlbrew switch perl-5.18.1
 
 # vep and perl
-sudo yum install perl-core perl-DBD-MySQL
+#sudo yum install perl-core perl-DBD-MySQL
 
 # don't need sudo if using perlbrew
 cpan -e "install HTTP::Tiny"
 #cpan -e "install LWP::Simple"
 cpan -e "install Archive::Zip"
+perl -MCPAN -e 'install DBI'
