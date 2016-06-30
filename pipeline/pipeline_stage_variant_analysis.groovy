@@ -26,7 +26,7 @@ filter_table = {
     stage_status("table_filter", "enter", "${sample} ${branch.analysis}");
     output.dir="results"
     exec """
-        python $SCRIPTS/filter_tsv.py --ad ${HARD_FILTER_AD} --af ${HARD_FILTER_AF} --dp ${HARD_FILTER_DP} --qual ${HARD_FILTER_QUAL} < $input > $output
+        python $SCRIPTS/filter_tsv.py --ad ${HARD_FILTER_AD} --af ${HARD_FILTER_AF} --dp ${HARD_FILTER_DP} --qual ${HARD_FILTER_QUAL} --proband ${sample} < $input > $output
     """
     stage_status("table_filter", "exit", "${sample} ${branch.analysis}");
 }
