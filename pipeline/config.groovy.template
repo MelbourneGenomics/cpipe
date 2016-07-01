@@ -101,15 +101,6 @@ PICARD_HOME="$BASE/tools/picard/picard-tools-2.2.1"
 
 HTSLIB="$BASE/tools/htslib/1.3"
 
-// Set location of Annovar distribution
-// Due to license restrictions on Annovar, you must download
-// it yourself and place it in this location
-// Note also that many databases also need to be downloaded,
-// using annovar's downdb function. See scripts/download_annovar_db.sh for
-// a helper script.
-ANNOVAR="$TOOLS/annovar/2013aug23"
-ANNOVAR_DB="$TOOLS/annovar/humandb"
-
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)
@@ -256,4 +247,7 @@ HARD_FILTER_QUAL=5
 ////////////////////////////////////////////
 // note: only needed for trio pathway
 TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+
+// Support custom perl libraries installed in tools/perl5
+PERL5LIB='$PERL5LIB:$BASE/tools/perl5'
 
