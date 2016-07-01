@@ -12,6 +12,7 @@
 sudo yum update
 sudo yum install git make gcc poppler-utils
 sudo yum install java-1.8.0-openjdk zlib-devel ncurses-devel gcc-c++ R patch
+sudo yum install openssl-devel
 
 # java home
 echo "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java" >> ~/.bash_profile
@@ -30,6 +31,7 @@ perlbrew switch perl-5.18.1
 
 # don't need sudo if using perlbrew
 cpan -e "install HTTP::Tiny"
-#cpan -e "install LWP::Simple"
+cpan -e "install LWP::Simple"
 cpan -e "install Archive::Zip"
-perl -MCPAN -e 'install DBI'
+perl -MCPAN -e "install DBI"
+perl -MCPAN -e "install LWP::Protocol::https"
