@@ -86,7 +86,7 @@ filter_variants = {
 
     msg "Filtering variants - finding INDELs"
     exec """
-        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+        $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
@@ -98,7 +98,7 @@ filter_variants = {
 
     msg "Filtering variants - finding SNVs"
     exec """
-        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+        $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
@@ -117,7 +117,7 @@ merge_variants_gvcf = {
 
     produce("${sample}.combined.g.vcf") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineGVCFs
             -R $REF
             --variant:indel $input.indel
@@ -137,7 +137,7 @@ merge_variants = {
     msg "Merging SNVs and INDELs"
     produce("${sample}.${analysis}.combined.genotype.vcf") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineVariants
             -R $REF
             --variant:indel $input.indel

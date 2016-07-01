@@ -49,7 +49,7 @@ trio_genotype_gvcfs = {
             stage_status("trio_analysis_phase_2", "inputs: ${inputs}", sample)
             additional_variant_params = inputs.collect { "--variant $it" }.join(' ')
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
                     -R $REF
                     --disable_auto_index_creation_and_locking_when_reading_rods
                     --num_threads $threads
@@ -74,7 +74,7 @@ genotype_refinement_trio = {
     // more details at https://www.broadinstitute.org/gatk/guide/article?id=4723, https://www.broadinstitute.org/gatk/guide/article?id=4727
 
     // Step 1: Derive posterior probabilities of genotypes
-    // java -Xmx20g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --supporting ref_files/1000G_phase3_v4_20130502.sites.hg19.vcf -ped txxxx.ped -V txxxx.genotype.raw.vcf -o txxxx.genotype.raw.postCGP.vcf
+    // $JAVA -Xmx20g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --supporting ref_files/1000G_phase3_v4_20130502.sites.hg19.vcf -ped txxxx.ped -V txxxx.genotype.raw.vcf -o txxxx.genotype.raw.postCGP.vcf
     // Step 2: Filter low quality genotypes
     // java -Xmx10g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T VariantFiltration -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta -V txxxx.genotype.raw.postCGP.vcf -G_filter "GQ < 20.0" -G_filterName lowGQ -o txxxx.genotype.raw.postCGP.GQfilter.vcf
     // Step 3: Annotate possible de novo mutations
@@ -87,11 +87,11 @@ genotype_refinement_trio = {
             exec """
                 mkdir -p "$safe_tmp_dir"
 
-                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R $REF --supporting $TRIO_REFINEMENT_SUPPORTING -ped ${input.ped} -V ${input.vcf} -o "${safe_tmp_dir}/postCGP.vcf"
+                $JAVA -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T CalculateGenotypePosteriors -R $REF --supporting $TRIO_REFINEMENT_SUPPORTING -ped ${input.ped} -V ${input.vcf} -o "${safe_tmp_dir}/postCGP.vcf"
 
-                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantFiltration -R $REF -V "${safe_tmp_dir}/postCGP.vcf" -G_filter "GQ < 20.0" -G_filterName lowGQ -o "${safe_tmp_dir}/GQfilter.vcf"
+                $JAVA -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantFiltration -R $REF -V "${safe_tmp_dir}/postCGP.vcf" -G_filter "GQ < 20.0" -G_filterName lowGQ -o "${safe_tmp_dir}/GQfilter.vcf"
 
-                java -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantAnnotator -R $REF -V "${safe_tmp_dir}/GQfilter.vcf" -A PossibleDeNovo -ped ${input.ped} -o ${output}
+                $JAVA -Xmx10g -jar $GATK/GenomeAnalysisTK.jar -T VariantAnnotator -R $REF -V "${safe_tmp_dir}/GQfilter.vcf" -A PossibleDeNovo -ped ${input.ped} -o ${output}
 
                 rm -r "$safe_tmp_dir"
             """, "genotype_refinement"
