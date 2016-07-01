@@ -229,6 +229,7 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP; 
+        export PERL5LIB="$PERL5LIB:$TOOLS/perl5"
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
