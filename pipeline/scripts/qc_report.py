@@ -71,8 +71,8 @@ def calculate_karyotype(exome_cov, log=None):
     stats = collections.defaultdict(int)
     idx = 0
     for idx, line in enumerate(exome_cov):
-        fields = line.strip().split('\t') # chr, start, end, offset, coverage
-        if len(fields) > 4:
+        fields = line.strip().split('\t') # chr, start, end, gene, offset, coverage
+        if len(fields) > 5:
             target = None
             if fields[0].lower() == 'chrx':
                 target = 'x'
@@ -81,7 +81,7 @@ def calculate_karyotype(exome_cov, log=None):
             if fields[0].lower() == 'chr1' or fields[0].lower() == 'chr22':
                 target = 'a'
             if target is not None:
-                stats['{0}c'.format(target)] += int(fields[4])
+                stats['{0}c'.format(target)] += int(fields[5])
                 stats['{0}n'.format(target)] += 1
         else:
             write_log(log, 'skipped line {0}: {1}'.format(idx, line.strip()))
