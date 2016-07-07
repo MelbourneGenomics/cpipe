@@ -33,7 +33,7 @@ import qc_report
 class QCReportTest(unittest.TestCase):
 
     def test_male(self):
-        exome_cov = ['chr1\t100\t200\t1\t20', 'chrX\t100\t200\t1\t10', 'chrY\t100\t200\t1\t10']
+        exome_cov = ['chr1\t100\t200\tg\t1\t20', 'chrX\t100\t200\tg\t1\t10', 'chrY\t100\t200\tg\t1\t10']
         log = StringIO.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
         assert result['sex'] == 'MALE'
@@ -42,7 +42,7 @@ class QCReportTest(unittest.TestCase):
         assert result['autosome_mean_coverage'] == 20.
 
     def test_female(self):
-        exome_cov = ['chr1\t100\t200\t1\t5', 'chrX\t100\t200\t1\t40', 'chrX\t400\t500\t1\t60']
+        exome_cov = ['chr1\t100\t200\tg\t1\t5', 'chrX\t100\t200\tg\t1\t40', 'chrX\t400\t500\tg\t1\t60']
         log = StringIO.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
         assert result['sex'] == 'FEMALE'
@@ -87,7 +87,7 @@ class QCReportTest(unittest.TestCase):
         log = StringIO.StringIO()
         s = qc_report.calculate_summary(cov, 20, log)
 
-        exome_cov = ['chr1\t100\t200\t1\t5', 'chrX\t100\t200\t1\t40', 'chrX\t400\t500\t1\t60']
+        exome_cov = ['chr1\t100\t200\tg\t1\t5', 'chrX\t100\t200\tg\t1\t40', 'chrX\t400\t500\tg\t1\t60']
         k = qc_report.calculate_karyotype(exome_cov, log)
 
         m = [ 'Batch\tSample_ID\tDNA_Tube_ID\tSex\tMean_Coverage\tPrioritised_Genes\n', '026\t12345\t\tFemale\t100.2\t\n', '026\t11111\t22222\t\t\n' ]
