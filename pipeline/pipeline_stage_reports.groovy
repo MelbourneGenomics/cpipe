@@ -28,6 +28,7 @@ calc_coverage_stats = {
     output.dir="qc"
 
     var MIN_ONTARGET_PERCENTAGE : 50
+    var EXOME_MAPQ : 1
 
     // transform("bam") to([sample + ".cov.gz", sample + ".exome.gz", sample + ".ontarget.txt"]) {
     produce("${sample}.cov.gz", "${sample}.exome.gz", "${sample}.ontarget.txt") {
@@ -39,6 +40,7 @@ calc_coverage_stats = {
         // 2 calculate the coverage in the bam file over this intersection
         // 3 calculate the coverage in the bam file over the exome
         // 4 calculate reads on target over the combined target region
+        // the exome coverage is for reads with mapq EXOME_MAPQ or above
         exec """
           mkdir -p "$safe_tmp_dir"
         
@@ -49,6 +51,8 @@ calc_coverage_stats = {
           $BEDTOOLS/bin/coverageBed -d -sorted -a "$safe_tmp_dir/intersect.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output.cov.gz
 
           sort -k 1,1 -k2,2n < $EXOME_TARGET > "$safe_tmp_dir/exome.bed"
+
+          $SAMTOOLS/samtools view -b -q $EXOME_MAPQ $input.recal.bam | $BEDTOOLS/bin/bedtools bamtobed -i stdin | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
 
           $BEDTOOLS/bin/coverageBed -d -sorted -a "$safe_tmp_dir/exome.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output2.exome.gz
         
