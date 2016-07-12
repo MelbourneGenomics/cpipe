@@ -209,6 +209,10 @@ PYTHON="python"
 
 splice_region_window=2
 
+/////////////////////////////////////////////
+// analysis options.
+/////////////////////////////////////////////
+
 // custom annotation for variants in specified bed file
 ANNOTATE_CUSTOM_REGIONS=""
 
@@ -256,4 +260,11 @@ HARD_FILTER_QUAL=5
 ////////////////////////////////////////////
 // note: only needed for trio pathway
 TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+
+////////////////////////////////////////////
+// output options
+////////////////////////////////////////////
+
+// generate a filtered bam file. options are exons, design, or skip
+FILTERED_ON_EXONS="skip"
 

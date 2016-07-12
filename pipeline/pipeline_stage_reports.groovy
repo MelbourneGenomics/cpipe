@@ -389,26 +389,39 @@ filtered_on_exons = {
     stage_status("filtered_on_exons", "enter", sample)
     // bedtools exons.bed + padding100bp - incidentalome
     // TODO this might be faster if we sorted the bam and used -sorted
-    var GENE_BAM_PADDING: 100
+    // configuration options:
+    // - exons
+    // - design profile
+    // - skip
 
-    def safe_tmp = ['tmp', UUID.randomUUID().toString()].join( '' )
+    if (FILTERED_ON_EXONS != 'skip') {
+       var GENE_BAM_PADDING: 100
+       var BED_FILE: "$BASE/designs/genelists/exons.bed"
+       if (FILTERED_ON_EXONS == 'design') {
+           BED_FILE = branch.target_bed_file
+       }
 
-    output.dir = "results"
+       def safe_tmp = ['tmp', UUID.randomUUID().toString()].join( '' )
 
-    produce("${run_id}_${branch.name}.filtered_on_exons.bam") {
-        exec """
-            python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
-            $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
+       output.dir = "results"
+
+       produce("${run_id}_${branch.name}.filtered_on_exons.bam", "${run_id}_${branch.name}.filtered_on_exons.bam.bai") {
+           exec """
+               python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
+               $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
             
-            python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BASE/designs/genelists/exons.bed |
-            $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
-            $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
-            sort -k1,1 -k2,2n |
-            $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
+               python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
+               $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
+               $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
+               sort -k1,1 -k2,2n |
+               $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
     
-            rm "$safe_tmp"
-        """
-    }
+               $SAMTOOLS/samtools index $output.bam
+
+               rm "$safe_tmp"
+           """
+       } // produce
+    } // skip
     stage_status("filtered_on_exons", "exit", sample)
 }
 
@@ -455,7 +468,7 @@ analysis_ready_reports = segment {
     gap_report +
     gatk_depth_of_coverage +
     insert_size_metrics +
-    filtered_on_exons + index_bam 
+    filtered_on_exons
 }
 
 analysis_ready_checks = segment {
