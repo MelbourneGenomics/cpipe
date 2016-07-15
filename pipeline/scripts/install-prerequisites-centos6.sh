@@ -12,7 +12,7 @@
 sudo yum update
 sudo yum install git make gcc poppler-utils
 sudo yum install java-1.8.0-openjdk zlib-devel ncurses-devel gcc-c++ R patch
-sudo yum install openssl-devel
+sudo yum install openssl-devel mysql
 
 # java home
 echo "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java" >> ~/.bash_profile
