@@ -48,6 +48,7 @@ else
     PATH="$PATH:$3"
     perl $4/variant_effect_predictor.pl \
         --allele_number \
+        --assembly GRCh37 \
         --cache \
         --canonical \
         --check_alleles \

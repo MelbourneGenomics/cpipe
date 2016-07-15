@@ -215,9 +215,7 @@ else
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
-        perl convert_cache.pl -species homo_sapiens -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens"
-        perl convert_cache.pl -species homo_sapiens_refseq -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens_refseq"
-        perl convert_cache.pl -species homo_sapiens_merged -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || err "Failed to run VEP tabix for homo_sapiens_merged"
+        # we don't run convert_cache as it (currently) messes up the frequency data (gmaf, etc)
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
@@ -252,6 +250,15 @@ if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
   DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
   msg "downloading dbnsfp..."
   wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+  msg "downloading dbnsfp: done"
+  popd
+else
+  msg "dbnsfp dataset already downloaded"
+fi
+
+# process dbnsfp dataset
+if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
+  pushd "$TOOLS/vep_plugins/dbNSFP"
   msg "processing dbnsfp..."
   unzip dbNSFPv2.9.1.zip
   cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
