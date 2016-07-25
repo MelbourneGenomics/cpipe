@@ -55,7 +55,7 @@ else
         --check_existing \
         --dir $4/../vep_cache \
         --dir_plugins $5/vep_plugins \
-        --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa \
+        --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
         --force_overwrite \
         --gmaf \
         --hgvs \
