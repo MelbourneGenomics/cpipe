@@ -16,7 +16,7 @@ sudo yum install openssl-devel mysql
 sudo yum install perl-devel
 
 # java home
-echo "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java" >> ~/.bash_profile
+echo "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64" >> ~/.bash_profile
 . ~/.bash_profile
 
 # perl too old?
