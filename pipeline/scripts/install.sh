@@ -172,22 +172,19 @@ compile "$BEDTOOLS/bin/bedtools"
 msg "Check GATK is downloaded and available"
 [ -e $GATK/GenomeAnalysisTK.jar ] || {
     echo "
- The recommended version of GATK for Cpipe is 3.3. However license 
- terms prevent Cpipe from including this version with Cpipe. Cpipe
- includes GATK 2.3.9 which can be used instead. If you wish to use
- a later version of GATK, please abort this script (Ctrl-c), download
- that version after separately agreeing to the license terms, and 
+ The recommended version of GATK for Cpipe is 3.6, but license 
+ terms prevent Cpipe from including this version with Cpipe. 
+ Please download GATK separately agreeing to the license terms, and 
  place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
  you have done that, set the GATK variable in pipeline/config.groovy 
  appropriately and re-run this script.
     "
-    prompt "Continue with GATK 2.3.9? (y/n)" "y"
+    prompt "Continue without GATK? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        set_config_variable GATK "$BASE/tools/gatk/2.3.9"
-        set_config_variable GATK_LEGACY "true"
+        msg "WARNING: your installation will not work unless you configure GATK manually youself in pipeline/config.groovy"
     else
-        msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
+        err "Please install GATK then re-run this script"
     fi
 }
 
