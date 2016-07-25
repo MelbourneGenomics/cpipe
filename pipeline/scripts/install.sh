@@ -211,14 +211,21 @@ else
     prompt "Do you want to run the VEP installer now? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        cd $VEP; 
+        cd $VEP
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
-        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        msg "INFO: VEP is installing homo_sapiens_vep"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        msg "INFO: VEP is installing homo_sapiens_refseq"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        msg "INFO: VEP is installing homo_sapiens_merged"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         # we don't run convert_cache as it (currently) messes up the frequency data (gmaf, etc)
+        cd -
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
+    msg "INFO: VEP has finished"
 fi
 
 ########## condel plugin ##########
