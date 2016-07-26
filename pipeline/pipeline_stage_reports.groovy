@@ -185,7 +185,7 @@ summary_report = {
     produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
         from("$input_exome_file", "$input_ontarget_file", "$input_fragments_file") {
             exec """
-                python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
+                python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold $QC_THRESHOLD --classes GOOD:$QC_GOOD:GREEN,PASS:$QC_PASS:ORANGE,FAIL:$QC_FAIL:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
                 python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
             """
