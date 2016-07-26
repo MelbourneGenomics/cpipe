@@ -7,12 +7,12 @@ JAVA_VERSON=8u91-b14-0ubuntu4~16.04.1
 curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 export PATH="/home/ubuntu/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"' >> ~/.bash_profile
+eval "$(pyenv virtualenv-init -)" >> ~/.bash_profile
 pyenv install $PYTHON_VERSION
 
 # Install perl using perlbrew
 curl -L https://install.perlbrew.pl | bash
-"source ~/perl5/perlbrew/etc/bashrc" >> ~/.bash_profile
+echo "source ~/perl5/perlbrew/etc/bashrc" >> ~/.bash_profile
 perlbrew install perl-$PERL_VERSION
 
 #Fix docker issues
