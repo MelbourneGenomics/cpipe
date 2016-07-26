@@ -25,10 +25,10 @@ sudo systemctl daemon-reload
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
 sudo add-apt-repository 'deb http://cran.ms.unimelb.edu.au/bin/linux/ubuntu xenial/'
 sudo apt-get update
-sudo apt-get install r-base=$R_VERSION\*
+sudo apt-get install -y r-base=$R_VERSION\*
 
 # Install Java
-sudo apt-get install openjdk-8-jre=$JAVA_VERSION\*
+sudo apt-get install -y openjdk-8-jre=$JAVA_VERSION\*
 
 # Install apt-getable things
-sudo apt-get install git make gcc poppler-utils zlib-dev ncurses-dev gcc-c++ patch openssl-dev
+sudo apt-get install -y git make gcc poppler-utils zlib1g-dev ncurses-dev g++ patch libssl-dev
