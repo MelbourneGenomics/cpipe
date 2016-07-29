@@ -30,6 +30,15 @@ function download_github {
     echo $lib
 }
 
+# $1 is the URL, $2 is the name of the asset, $3 is the directory
+# e.g. download_zip_asset http://apache.mirror.amaze.com.au/groovy/2.4.7/sources/apache-groovy-src-2.4.7.zip groovy
+function download_zip_asset {
+    ZIP_FILE="$ROOT/$3/$2.zip"\
+    && wget $1 -O $ZIP_FILE\
+    && unzip $ZIP_FILE -d "$ROOT/$3/$2"\
+    && rm ZIP_FILE
+}
+
 function check_success {
     if [ $? -ne 0 ] ; then
         echo failed.
