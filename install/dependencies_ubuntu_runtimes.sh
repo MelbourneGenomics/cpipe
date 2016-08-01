@@ -1,4 +1,4 @@
-\PYTHON_VERSION=2.7.12
+PYTHON_VERSION=2.7.12
 PERL_VERSION=5.24.0
 R_VERSION=3.3.1
 GROOVY_VERSION=2.4.7
@@ -49,7 +49,7 @@ download_gz http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz $PERL_ROOT\
 
 download_gz http://cran.csiro.au/src/base/R-3/R-$R_VERSION.tar.gz $R_ROOT
 
-download_zip http://apache.mirror.amaze.com.au/groovy/$GROOVY_VERSION/sources/apache-groovy-src-$GROOVY_VERSION.zip $TOOLS_ROOT groovy\
+download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT groovy\
   && mv $TOOLS_ROOT/groovy-$GROOVY_VERSION $TOOLS_ROOT/groovy
 
 git clone https://github.com/ssadedin/groovy-ngs-utils --depth=1
