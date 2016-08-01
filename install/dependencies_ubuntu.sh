@@ -1,9 +1,8 @@
+#!/usr/bin/env bash
+
 # Installs all dependencies for the installer and pipeline
 # Note: Only for Ubuntu 16.04
 
-PYTHON_VERSION=2.7.12
-PERL_VERSION=5.24.0
-R_VERSION=3.3.1-1xenial0
 JAVA_VERSON=8u91-b14-0ubuntu4~16.04.1
 
 # Install python using pyenv
