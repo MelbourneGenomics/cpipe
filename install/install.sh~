@@ -33,5 +33,4 @@ for DIRECTORY in ../tools/*/; do
     compile $DIRECTORY
 done
 
-# Add all tool directories and bin folders to PATH
-export PATH=`join ':' $ROOT/tools/*/`:`join ':' $ROOT/tools/*/bin/`:$PATH
+export PATH=`join ':' $ROOT/tools/*/`:$ROOT/tools/bedtools2/bin/:$PATH
