@@ -10,7 +10,7 @@ ExecStart=/usr/bin/docker daemon -H fd:// -s overlay' >> /etc/systemd/system/doc
 systemctl daemon-reload
 
 # Install gradle repos
-add-apt-repository ppa:cwchien/gradle
+add-apt-repository -y ppa:cwchien/gradle
 apt-get update
 
 # Install apt-getable things
