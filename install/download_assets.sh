@@ -1,9 +1,14 @@
+#!/usr/bin/env bash
+
 # Version constants
 BWA_VERSION="0.7.13"
 HTSLIB_VERSION="1.3" # Samtools and Bcftools also use this
 BEDTOOLS_VERSION="2.25.0"
 GATK_VERSION="3.6"
 VEP_VERSION="84"
+PYTHON_VERSION="2.7.12"
+PERL_VERSION="5.24.0"
+R_VERSION="3.3.1-1xenial0"
 
 ROOT=$(dirname $(pwd)) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -68,36 +73,48 @@ mkdir $DATA_ROOT $TOOLS_ROOT
 cd $TOOLS_ROOT
 
 #BWA#
-echo -n 'Downloading BWA...'
-download_github lh3/bwa v$BWA_VERSION > /dev/null
-check_success
+if [[ ! -e $TOOLS_ROOT/bwa ]]; then
+    echo -n 'Downloading BWA...'\
+    && download_github lh3/bwa v$BWA_VERSION > /dev/null
+    check_success
+fi
 
 #Htslib (requirement for samtools and bcftool)#
-echo -n 'Downloading Htslib...'
-download_github samtools/htslib $HTSLIB_VERSION > /dev/null
-check_success
+if [[ ! -e $TOOLS_ROOT/htslib ]]; then
+    echo -n 'Downloading Htslib...'\
+    && download_github samtools/htslib $HTSLIB_VERSION > /dev/null
+    check_success
+fi
 
 #Samtools#
-echo -n 'Downloading Samtools...'
-download_github samtools/samtools $HTSLIB_VERSION > /dev/null
-check_success
+if [[ ! -e $TOOLS_ROOT/samtools ]]; then
+    echo -n 'Downloading Samtools...'\
+    && download_github samtools/samtools $HTSLIB_VERSION > /dev/null
+    check_success
+fi
 
 #Bcftools#
-echo -n 'Downloading Bcftools...'
-download_github samtools/bcftools $HTSLIB_VERSION > /dev/null
-check_success
+if [[ ! -e $TOOLS_ROOT/bwa ]]; then
+    echo -n 'Downloading Bcftools...'\
+    && download_github samtools/bcftools $HTSLIB_VERSION > /dev/null
+    check_success
+fi
 
 #Bedtools#
-echo -n 'Downloading Bedtools...'
-download_github arq5x/bedtools2 v$BEDTOOLS_VERSION >/dev/null
-check_success
+if [[ ! -e $TOOLS_ROOT/bedtools ]]; then
+    echo -n 'Downloading Bedtools...'\
+    && download_github arq5x/bedtools2 v$BEDTOOLS_VERSION >/dev/null
+    check_success
+fi
 
 #GATK, also pre-compile the .jar file
-echo -n 'Downloading GATK...'
-GATK=`download_github broadgsa/gatk-protected $GATK_VERSION`\
+if [[ ! -e $TOOLS_ROOT/gatk ]]; then
+    echo -n 'Downloading GATK...'\
+    && GATK=`download_github broadgsa/gatk-protected $GATK_VERSION`\
     && mv $GATK gatk
-check_success
+    check_success
 
+<<<<<<< HEAD
 echo -n 'Compiling GATK...'
 pushd gatk\
     && mvn --quiet verify -P\!queue > /dev/null\
@@ -109,12 +126,14 @@ popd
 
 #VEP, including assets#
 # Download and extract
-echo -n 'Downloading VEP...'
-wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
-    && unzip vep.zip > /dev/null\
-    && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
-    && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
-check_success
+if [[ ! -e $TOOLS_ROOT/vep ]]; then
+    echo -n 'Downloading VEP...'\
+        && wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
+        && unzip vep.zip > /dev/null\
+        && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
+        && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
+    check_success
+fi
 
 # Setup Perl variables
 PERL5LIB=$TOOLS_ROOT:$PERL5LIB
@@ -127,25 +146,29 @@ cd $TOOLS_ROOT/vep\
 check_success
 
 echo -n 'Installing VEP databases...'
-VEP_CACHE=$DATA_ROOT/vep_cache
-mkdir $VEP_CACHE/
-    && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 > /dev/null
-check_success
+if [[ ! -e $DATA_ROOT/vep_cache ]]; then
+    VEP_CACHE=$DATA_ROOT/vep_cache\
+        && mkdir $VEP_CACHE\
+        && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 > /dev/null
+    check_success
+fi
 
 cd ..
 
-echo -n 'Downloading GATK bundle...'
-mkdir $DATA_ROOT/gatk
-GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz"
+if [[ ! -e $DATA_ROOT/gatk ]]; then
+    echo -n 'Downloading GATK bundle...'
+    mkdir $DATA_ROOT/gatk
+    GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
+    GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz"
 
-for f in $GATK_BUNDLE_FILES ;  do
-     URL="$GATK_BUNDLE_ROOT$f";
-     BASE=`basename $f .gz`;
-     echo "Downloading $BASE...";
-     curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE;
-     check_success;
- done
+    for f in $GATK_BUNDLE_FILES ;  do
+         URL="$GATK_BUNDLE_ROOT$f";
+         BASE=`basename $f .gz`;
+         echo "Downloading $BASE...";
+         curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE;
+         check_success;
+    done
+fi
 
 # Note: this has been commented out as tabix format does not seem to store frequency information
 #echo -n 'Converting cache to tabix format...'

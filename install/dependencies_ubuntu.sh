@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Installs all dependencies for the installer and pipeline
 # Note: Only for Ubuntu 16.04
 
