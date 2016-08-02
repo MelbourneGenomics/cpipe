@@ -9,9 +9,6 @@ ROOT=$(dirname $(pwd)) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
 DATA_ROOT=$ROOT/data
 
-# Other constants
-NECTAR_PASSWORD="ZjA5MzE5YjY5NzBlZTll"
-
 # Utility functions
 function download_github {
     # Downloads a gzip file of the source for a particular github release
@@ -102,10 +99,13 @@ GATK=`download_github broadgsa/gatk-protected $GATK_VERSION`\
 check_success
 
 echo -n 'Compiling GATK...'
-cd gatk\
-    && mvn --quiet install > /dev/null
+pushd gatk\
+    && mvn --quiet verify -P\!queue > /dev/null\
+    && mv target/executable/GenomeAnalysisTK.jar .\
+    && shopt -s extglob\
+    && rm -rf !(GenomeAnalysisTK.jar)
 check_success
-cd ..
+popd
 
 #VEP, including assets#
 # Download and extract
