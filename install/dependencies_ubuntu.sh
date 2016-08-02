@@ -3,8 +3,7 @@
 # Installs all dependencies for the installer and pipeline on Ubuntu
 
 #Fix docker issues
-sudo -s
-mkdir /etc/systemd/system/docker.service.d/
+mkdir -p /etc/systemd/system/docker.service.d/
 echo '[Service]
 ExecStart=
 ExecStart=/usr/bin/docker daemon -H fd:// -s overlay' >> /etc/systemd/system/docker.service.d/overlay.conf
