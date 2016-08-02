@@ -15,7 +15,7 @@ function compile {
         autoconf
     fi
     if [[ -f configure ]]; then
-        ./configure
+        yes | ./configure
     fi
     if [[ -f Configure ]]; then
         ./Configure -d
