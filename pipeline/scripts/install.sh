@@ -235,7 +235,13 @@ else
   msg "condel symlink already configured"
 fi
 
-sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
+# Used to use sed to set this as below, but not all versions of sed
+# support alternate pattern separators (s,foo,bar,g) which makes it tricky to use
+# for file paths - instead use some inline groovy to do it
+unset GROOVY_HOME
+./tools/groovy/2.3.4/bin/groovy -e 'new File(args[0]).text = new File(args[0]).text.replaceAll("do not use", args[1])' \
+           $CONDEL/config/condel_SP.conf $CONDEL\/config \
+           || err "Unable to configure Condel plugin"
 
 ########## dbnsfp plugin ##########
 msg "Configuring dbNSFP plugin"
@@ -388,11 +394,20 @@ then
     fi
 fi
 
+# Since Mac's don't ship with md5sum 
+: ${MD5SUM:=md5sum}
+type $MD5SUM > /dev/null 2>&1 || {
+  type md5sum-lite > /dev/null 2>&1 || err "Cannot find a suitable md5sum utility. Please set MD5SUM environment variable"
+  MD5SUM=md5sum-lite
+  echo "Using MD5SUM=$MD5SUM"
+}
+
 msg "Checking for custom assets..."
 # download the manifest
 pushd $REFBASE
 [ -f $MANIFEST ] && rm $MANIFEST
 wget $CUSTOM_ASSETS_URL/$MANIFEST
+
 
 while read line; do
   if [[ "$line" =~ ^#.* ]]; then
@@ -403,7 +418,7 @@ while read line; do
     echo "checking $filename..."
     if [ -f $filename ]; then
       # check md5
-      existing=`md5sum $filename | awk '{ print $1; }'`
+      existing=`$MD5SUM $filename | awk '{ print $1; }'`
       if [ $existing == $md5 ]; then
         echo "$filename is up to date"
       else
