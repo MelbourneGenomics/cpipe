@@ -210,11 +210,7 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 JAVA="java"
 
 // Support custom perl libraries installed in tools/perl5
-PERL5LIB="$TOOLS/perl/5.22.1/lib/5.22.1:$TOOLS/perl/5.22.1/lib/site_perl"
-
-// Modify this to the perl 5.22.1 directory
-PERL="$TOOLS/perl/5.22.1/bin/perl"
-
+PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline

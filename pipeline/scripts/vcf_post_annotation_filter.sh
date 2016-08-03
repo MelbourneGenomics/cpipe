@@ -7,7 +7,6 @@
 
 TOOLS="$4"
 
-
 VARIANTS=`grep -c -v '^#' < $1`
 echo "$VARIANTS variant(s) found in $1"
 if [ $VARIANTS -eq 0 ];
