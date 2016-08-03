@@ -100,6 +100,13 @@ function set_config_variable() {
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
     sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    
+    $TOOLS/groovy/2.3.4/bin/groovy -D name="$NAME" -D value="$VALUE" \
+      -pne 'line.startsWith(System.properties.name+"=")?line.replaceAll("=.*",/="/+java.util.regex.Matcher.quoteReplacement(System.properties.value)+/"/): line' \
+      "$BASE/pipeline/config.groovy.tmp" > \
+      "$BASE/pipeline/config.groovy" \
+        || err "Failed to set configuration variable $NAME to value $VALUE"
+        
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
 }
