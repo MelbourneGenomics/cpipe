@@ -1,6 +1,4 @@
-if [ -z "$BASE" ];
-then
-    BASE="."
-fi
-CONFIG=`sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+#!/usr/bin/env bash
+FILENAME=$1
+CONFIG=`sed 's/\/\/.*$//' $FILENAME`
 eval "$CONFIG"

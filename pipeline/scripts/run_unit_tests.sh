@@ -24,11 +24,14 @@
 #
 ########################################################
 
+source $PWD/pipeline/scripts/load_config_groovy.sh $PWD/pipeline/config.groovy
 export GROOVY="$PWD/tools/groovy/$GROOVY_VERSION/bin/groovy"
-export GROOVY_NGS="$PWD/tools/groovy-ngs-utils/1.0.2"
-export EXCEL="$PWD/tools/excel/1.0"
-GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/$GROOVY_VERSION/lib/groovy-$GROOVY_VERSION.jar:$PWD/tools/groovy/$GROOVY_VERSION/lib/hamcrest-core-1.3.jar:$PWD/tools/groovy/$GROOVY_VERSION/lib/junit-4.11.jar:$PWD/pipeline/tests/lib/cpsuite-1.2.6.jar:$EXCEL/excel.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$PWD/pipeline/tests/lib/JUnitXmlFormatter.jar"
-GROOVYC="$PWD/tools/groovy/$GROOVY_VERSION/bin/groovyc"
+export GROOVY_NGS="$PWD/tools/groovy-ngs-utils"
+# Note: using echo here for glob expansion
+GROOVY_TEST_LIBRARIES=$PWD/tools/groovy/$GROOVY_VERSION/lib/groovy-$GROOVY_VERSION.jar:`echo $PWD/tools/groovy/lib/hamcrest-core-*.jar`:`echo $PWD/tools/groovy/lib/junit-*.jar`:`echo $PWD/tools/java_libs/takari-cpsuite-*.jar`:$GROOVY_NGS/groovy-ngs-utils.jar:$PWD/tools/java_libs/JUnitXmlFormatter.jar
+GROOVYC="$PWD/tools/groovy/bin/groovyc"
+echo $GROOVY_TEST_LIBRARIES
+echo $PWD/tools/groovy/lib/hamcrest-core-*.jar
 
 # python tests
 pushd pipeline/tests
@@ -40,5 +43,5 @@ pushd pipeline/tests
 # compile scripts and tests
 mkdir -p tmp
 sh $GROOVYC -cp $GROOVY_TEST_LIBRARIES -d tmp ../scripts/*.groovy ./*.groovy
-java -cp $GROOVY_TEST_LIBRARIES:tmp RunAll
+echo java -cp $GROOVY_TEST_LIBRARIES:tmp RunAll
 popd
