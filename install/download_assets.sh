@@ -6,10 +6,11 @@ HTSLIB_VERSION="1.3" # Samtools and Bcftools also use this
 BEDTOOLS_VERSION="2.25.0"
 GATK_VERSION="3.6"
 VEP_VERSION="84"
-PYTHON_VERSION=2.7.12
-PERL_VERSION=5.24.0
-R_VERSION=3.3.1
-GROOVY_VERSION=2.4.7
+PYTHON_VERSION="2.7.12"
+PERL_VERSION="5.24.0"
+R_VERSION="3.3.1"
+GROOVY_VERSION="2.4.7"
+CPSUITE_VERSION="1.2.7"
 
 ROOT=$(dirname $(pwd)) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -17,6 +18,7 @@ DATA_ROOT=$ROOT/data
 PYTHON_ROOT=$TOOLS_ROOT/python
 PERL_ROOT=$TOOLS_ROOT/perl
 R_ROOT=$TOOLS_ROOT/r
+JAVA_LIBS_ROOT=$TOOLS_ROOT/java_libs
 
 ### Utility Functions ###
 function download_gz {
@@ -79,7 +81,7 @@ sudo cpan App::cpanminus
 export JAVA_HOME=/usr
 
 ## Move Paths ##
-mkdir $DATA_ROOT $TOOLS_ROOT
+mkdir $DATA_ROOT $TOOLS_ROOT $JAVA_LIBS_ROOT
 cd $TOOLS_ROOT
 
 ##Language installations##
@@ -205,6 +207,28 @@ if [[ ! -e $DATA_ROOT/gatk ]]; then
          curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE;
          check_success;
     done
+fi
+
+## Jar Dependencies ##
+pushd $JAVA_LIBS_ROOT
+if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
+    echo "Compiling JAR dependencies"\
+    && git clone https://github.com/barrypitman/JUnitXmlFormatter\
+    && pushd JUnitXmlFormatter\
+    && mvn install\
+    && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
+    && popd\
+    && rm -rf JUnitXmlFormatter
+    check_success
+
+fi
+if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
+    echo "Downloading maven dependencies"
+    mvn --quiet dependency:copy \
+        -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
+        -DoutputDirectory=$JAVA_LIBS_ROOT\
+        -DstripVersion=true
+    check_success
 fi
 
 # Note: this has been commented out as tabix format does not seem to store frequency information
