@@ -1,5 +1,5 @@
-#Note: must be called from the install directory (cpipe/install)
-ROOT=$(dirname $(pwd))
+#Note: must be called with a first argument as the cpipe root
+ROOT=$1
 
 function join() {
     local IFS=$1
@@ -29,7 +29,7 @@ function compile {
 
 echo `pwd`
 
-for DIRECTORY in ../tools/*/; do
+for DIRECTORY in $ROOT/tools/*/; do
     compile $DIRECTORY
 done
 
