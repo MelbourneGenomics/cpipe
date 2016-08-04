@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #Note: must be called with a first argument as the cpipe root
 ROOT=$1
 
@@ -18,7 +19,7 @@ function compile {
         yes | ./configure
     fi
     if [[ -f Configure ]]; then
-        ./Configure -d
+        yes | ./Configure -d
     fi
     if [[ -f Makefile ]]; then
         make
