@@ -41,7 +41,7 @@ EMAILS=""
 ////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/hg19" 
+REFBASE="$BASE/data/gatk" 
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
@@ -97,24 +97,15 @@ TOOLS="$BASE/tools"
 SCRIPTS="$BASE/pipeline/scripts"
 
 // Location of Picard tools here
-PICARD_HOME="$BASE/tools/picard/picard-tools-2.2.1"
+PICARD_HOME="$BASE/tools/picard"
 
-HTSLIB="$BASE/tools/htslib/1.3"
-
-// Set location of Annovar distribution
-// Due to license restrictions on Annovar, you must download
-// it yourself and place it in this location
-// Note also that many databases also need to be downloaded,
-// using annovar's downdb function. See scripts/download_annovar_db.sh for
-// a helper script.
-ANNOVAR="$TOOLS/annovar/2013aug23"
-ANNOVAR_DB="$TOOLS/annovar/humandb"
+HTSLIB="$BASE/tools/htslib"
 
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
-GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+GATK="$TOOLS/gatk/"
 
 // gatk < 2.8
 GATK_LEGACY=false
@@ -124,20 +115,20 @@ GATK_LEGACY=false
 GATK_VARIANT_ONLY=false
 
 // Utilities for making Excel files 
-EXCEL="$TOOLS/excel/1.0"
+EXCEL="$TOOLS/excel"
 
 // Location of Bedtools distribution
-BEDTOOLS="$TOOLS/bedtools/2.25.0"
+BEDTOOLS="$TOOLS/bedtools"
 
 // Location of Samtools
-BCFTOOLS="$TOOLS/bcftools/1.3"
-SAMTOOLS="$TOOLS/samtools/1.3"
+BCFTOOLS="$TOOLS/bcftools"
+SAMTOOLS="$TOOLS/samtools"
 
 // FastQC tool
-FASTQC="$TOOLS/fastqc/0.11.5"
+FASTQC="$TOOLS/fastqc"
 
 // Utilties for processing NGS data in Java/Groovy
-GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
+GROOVY_NGS="$TOOLS/groovy-ngs-utils"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
@@ -145,18 +136,18 @@ GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
 // that name if desired).
 // See tools/vep/README for more information
 VEP_VERSION="83"
-VEP="$TOOLS/vep/$VEP_VERSION"
+VEP="$TOOLS/vep"
 
-IGVTOOLS="$TOOLS/IGVTools/2.3.72"
+IGVTOOLS="$TOOLS/IGVTools"
 
 // IGV location
-IGV="$TOOLS/tools/igv/2.3.72"
+IGV="$TOOLS/tools/igv"
 
 // Location and version of BWA
-BWA="$TOOLS/bwa/0.7.13/bwa"
+BWA="$TOOLS/bwa"
 BWA_THREADS="5"
 
-CONDEL="$TOOLS/vep_plugins/condel/2.4"
+CONDEL="$TOOLS/vep_plugins/condel"
 DBNSFP="$TOOLS/vep_plugins/dbNSFP"
 
 // Database of unique variants, updated for each sample
@@ -173,10 +164,10 @@ UPDATE_VARIANT_DB=VARIANT_DB
 ANNOTATION_VARIANT_DB=VARIANT_DB
 
 // Location of groovy installation
-GROOVY_HOME="$TOOLS/groovy/2.3.4"
-
+GROOVY_HOME="$TOOLS/groovy"
+GROOVY_VERSION="2.4.7"
 // GROOVY binary
-GROOVY="$GROOVY_HOME/bin/groovy"
+GROOVY="$TOOLS/groovy/bin/groovy"
 
 // Whether to fail analysis if FASTQC produces warnings
 CHECK_FASTQC_FAILURES=false
@@ -193,16 +184,16 @@ JAVA="java"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
-SNPEFF="$TOOLS/snpeff/3.1"
+SNPEFF="$TOOLS/snpeff"
 
 // Genome needed for expanded splice regions
 HG19_CHROM_INFO="$REFBASE/hg19.genome"
 
 // Trimmomatic location
-TRIMMOMATIC="$TOOLS/trimmomatic/0.30"
+TRIMMOMATIC="$TOOLS/trimmomatic"
 
 // Bamsurgeon location
-BAMSURGEON="$TOOLS/bamsurgeon/20150331"
+BAMSURGEON="$TOOLS/bamsurgeon"
 
 
 PYTHON="python"
