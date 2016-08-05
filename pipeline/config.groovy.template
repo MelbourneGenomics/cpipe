@@ -128,7 +128,7 @@ SAMTOOLS="$TOOLS/samtools"
 FASTQC="$TOOLS/fastqc"
 
 // Utilties for processing NGS data in Java/Groovy
-GROOVY_NGS="$TOOLS/groovy-ngs-utils"
+GROOVY_NGS="$TOOLS/java_libs"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
