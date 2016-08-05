@@ -169,6 +169,12 @@ if [[ ! -e $TOOLS_ROOT/vep ]]; then
     check_success
 fi
 
+# Bpipe
+git clone https://github.com/ssadedin/bpipehttps://github.com/ssadedin/bpipe
+#pushd bpipe
+#    ./gradlew
+#popd
+
 # Setup Perl variables
 PERL5LIB=$TOOLS_ROOT:$PERL5LIB
 PATH=$TOOLSROOT/htslib:$PATH
