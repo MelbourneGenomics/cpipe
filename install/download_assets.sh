@@ -108,11 +108,6 @@ if [[ ! -e $GROOVY_ROOT ]]; then
     && mv $TOOLS_ROOT/groovy-$GROOVY_VERSION $TOOLS_ROOT/groovy
 fi
 
-# Groovy ngs utils
-if [[ ! -e $TOOLS_ROOT/groovy-ngs-utils ]]; then
-    git clone https://github.com/ssadedin/groovy-ngs-utils --depth=1
-fi
-
 #BWA
 if [[ ! -e $TOOLS_ROOT/bwa ]]; then
     echo -n 'Downloading BWA...'\
@@ -211,25 +206,39 @@ fi
 
 ## Jar Dependencies ##
 pushd $JAVA_LIBS_ROOT
-if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
-    echo "Compiling JAR dependencies"\
-    && git clone https://github.com/barrypitman/JUnitXmlFormatter\
-    && pushd JUnitXmlFormatter\
-    && mvn install\
-    && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
-    && popd\
-    && rm -rf JUnitXmlFormatter
-    check_success
+    if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
+        echo "Compiling JUnitXmlFormatter dependencies"\
+        && git clone https://github.com/barrypitman/JUnitXmlFormatter\
+        && pushd JUnitXmlFormatter\
+            && mvn install\
+            && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
+        && popd\
+        && rm -rf JUnitXmlFormatter
+        check_success
+    fi
 
-fi
-if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
-    echo "Downloading maven dependencies"
-    mvn --quiet dependency:copy \
-        -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
-        -DoutputDirectory=$JAVA_LIBS_ROOT\
-        -DstripVersion=true
-    check_success
-fi
+    # Groovy ngs utils
+    if [[ ! -e $JAVA_LIBS_ROOT/groovy-ngs-utils ]]; then
+        echo "Compiling JUnitXmlFormatter dependencies"\
+        && git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
+        && pushd groovy-ngs-utils\
+        && ./gradlew jar --quiet\
+        && popd\
+        && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
+        && rm -rf groovy-ngs-utils
+    fi
+
+
+    if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
+        echo "Downloading maven dependencies"
+        mvn --quiet dependency:copy \
+            -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
+            -DoutputDirectory=$JAVA_LIBS_ROOT\
+            -DstripVersion=true
+        check_success
+    fi
+
+popd
 
 # Note: this has been commented out as tabix format does not seem to store frequency information
 #echo -n 'Converting cache to tabix format...'
