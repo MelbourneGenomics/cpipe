@@ -191,6 +191,9 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 // Use default Java installed in PATH
 JAVA="java"
 
+// Support custom perl libraries installed in tools/perl5
+PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
+
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
 SNPEFF="$TOOLS/snpeff/3.1"

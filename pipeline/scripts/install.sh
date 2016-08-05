@@ -216,6 +216,7 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP
+        export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         msg "INFO: VEP is installing homo_sapiens_vep"
