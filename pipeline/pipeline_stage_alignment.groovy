@@ -359,7 +359,7 @@ legacy_recal_count = {
 
     transform("recal.csv") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T BaseRecalibrator
             -R $REF
             -l INFO
@@ -378,7 +378,7 @@ legacy_recal = {
     from("csv","bam") {
         transform('bam') {
             exec """
-                java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+                $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
                     -L $COMBINED_TARGET $splice_region_bed_flag
                     -R $REF
