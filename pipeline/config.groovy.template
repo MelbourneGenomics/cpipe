@@ -290,3 +290,6 @@ QC_GOOD=95
 QC_PASS=80
 // what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
 QC_FAIL=0
+
+// Whether to enable Seqr export or not
+ENABLE_SEQR_EXPORT=false
