@@ -115,11 +115,11 @@ update_gene_lists = {
             exec """
                 mkdir -p "../design"
 
-                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $input1
 
                 python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
 
-                touch update_gene_lists.log
+                touch $output1
             """
         }
     }
@@ -436,6 +436,7 @@ initialize_batch_run = segment {
     // ANALYSIS_PROFILES = sample_info*.value*.target as Set
     // Check the basic sample information first
     check_sample_info +  // check that fastq files are present
+    correct_sample_metadata_stage +
     check_tools +
     update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
