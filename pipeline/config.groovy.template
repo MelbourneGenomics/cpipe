@@ -307,3 +307,6 @@ QC_FAIL=0
 
 // custom annotation for variants in specified bed file
 ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/vep_phenotype_associated.sort.bed"
+
+// Whether to enable Seqr export or not
+ENABLE_SEQR_EXPORT=false

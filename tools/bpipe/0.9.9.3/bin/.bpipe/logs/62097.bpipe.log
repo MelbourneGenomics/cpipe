@@ -1,0 +1,5 @@
+bpipe.Runner	[1]	INFO	|7:48:16 Starting 
+bpipe.Runner	[1]	INFO	|7:48:16 OS: Mac OS X (10.11.6) Java: 1.8.0_72 Vendor: Oracle Corporation 
+bpipe.Runner	[1]	INFO	|7:48:16 Initializing plugins ... 
+bpipe.Config	[1]	INFO	|7:48:16 No plugins directory found: /Users/simon/bpipe/bin/.bpipe/plugins 
+bpipe.Runner	[11]	INFO	|7:48:16 Deleting job file /Users/simon/.bpipedb/jobs/62097 

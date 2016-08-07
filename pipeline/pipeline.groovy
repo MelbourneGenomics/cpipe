@@ -197,7 +197,7 @@ run {
    ] +
 
    // clean up, mark read only, move
-   finish_batch_run +
+   finish_batch_run  +
 
    // update the central database 
    [
