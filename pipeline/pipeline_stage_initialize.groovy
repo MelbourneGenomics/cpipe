@@ -96,8 +96,11 @@ check_tools = {
         """
     }
 
-    if(file(GROOVY_NGS).name in ["1.0.1","1.0"])
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.2. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+    if(file(GROOVY_NGS).name != "1.0.5")
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+
+    if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.6") 
+        fail "This version of Cpipe requires GROOVY >= 2.4.6. Please edit config.groovy to set the latest version of GROOVY"
 
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
@@ -324,7 +327,7 @@ sample_similarity_report = {
 
     produce("similarity_report.txt") {
         exec """
-            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.3.4.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.4.6.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }

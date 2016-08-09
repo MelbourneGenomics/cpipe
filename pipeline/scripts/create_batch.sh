@@ -158,7 +158,7 @@ unset GROOVY_HOME
 
 echo "Creating sample meta data file batches/$BATCH_ID/samples.txt with disease $TARGET..."
 
-$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET $DATA_FILES > samples.txt || \
+$GROOVY -cp $BASE/tools/groovy-ngs-utils/1.0.5/groovy-ngs-utils.jar $BASE/pipeline/scripts/files_to_sample_info.groovy -batch $BATCH_ID -disease $TARGET $DATA_FILES > samples.txt || \
         err "Configuring the samples.txt file failed. Please check error messages for the reason and ensure your FASTQ files are named correctly"
 
 
