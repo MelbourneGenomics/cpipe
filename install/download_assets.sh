@@ -11,25 +11,28 @@ PERL_VERSION="5.24.0"
 R_VERSION="3.3.1"
 GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
+FASTQC_VERSION="0.11.5"
 
-ROOT=$(dirname $(pwd)) #The cpipe root directory
+ROOT=$( cd "$(dirname "${BASH_SOURCE}")"/.. ; pwd -P ) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
 DATA_ROOT=$ROOT/data
 PYTHON_ROOT=$TOOLS_ROOT/python
 PERL_ROOT=$TOOLS_ROOT/perl
 R_ROOT=$TOOLS_ROOT/r
 JAVA_LIBS_ROOT=$TOOLS_ROOT/java_libs
+GROOVY_ROOT=$TOOLS_ROOT/groovy
 
 ### Utility Functions ###
 function download_gz {
     # $1 is the URL
     # $2 is the directory
     # e.g. download_gz http://cran.csiro.au/src/base/R-3/R-3.3.1.tar.gz /mnt/cpipe/tools/r
+
     FILE_NAME=`basename $1`\
-    && echo -n "Downloading $FILE_NAME into $2..."\
     && mkdir -p $2\
     && curl -s $1 | tar -xz --strip-components=1 -C $2
 
+    # && echo -n "Downloading $FILE_NAME into $2..."\
     check_success
 }
 
@@ -37,8 +40,8 @@ function download_zip {
     # $1 is the URL
     # $2 is the directory to extract into
     # e.g. download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-2.4.7.zip /mnt/cpipe/tools/groovy
+    #      && echo -n "Downloading $FILE_NAME into $2..."\
       FILE_NAME=`basename $1` `#FILE_NAME is just the zip file without a URL e.g. apache-groovy-binary-2.4.7.zip`\
-      && echo -n "Downloading $FILE_NAME into $2..."\
       && mkdir -p $2 `# Make the target directory`\
       && ZIP_FILE=$2/$FILE_NAME `# ZIP_FILE is the full path to the downloaded zip file`\
       && wget $1 -P $2 -q `#Perform the download`\
@@ -59,6 +62,11 @@ function check_success {
     fi
 }
 
+function existsExactlyOne {
+# Fails unless there is exactly one argument which is a filename to an existing file
+    [[ $# -eq 1 && -f $1 ]];
+}
+
 ### Preliminary checks ###
 ## Check Java ##
 if [ -f $JAVA_HOME/bin/java ] ; then
@@ -74,18 +82,25 @@ if [ $VALID_JAVA != 'PASSED' ]; then
     exit 1
 fi
 
+function pushd {
+    command pushd "$@" > /dev/null
+}
+
+function popd {
+    command popd "$@" > /dev/null
+}
+
 ### Start of script ###
 
 ## General Dependencies ##
-sudo cpan App::cpanminus
+sudo cpan App::cpanminus > /dev/null
 export JAVA_HOME=/usr
 
 ## Move Paths ##
-mkdir $DATA_ROOT $TOOLS_ROOT $JAVA_LIBS_ROOT
+mkdir -p $DATA_ROOT $TOOLS_ROOT $JAVA_LIBS_ROOT
 cd $TOOLS_ROOT
 
 ##Language installations##
-
 #Python
 if [[ ! -e $PYTHON_ROOT ]]; then
     download_gz https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz $PYTHON_ROOT
@@ -104,7 +119,7 @@ fi
 
 #Groovy
 if [[ ! -e $GROOVY_ROOT ]]; then
-    download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT groovy\
+    download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
     && mv $TOOLS_ROOT/groovy-$GROOVY_VERSION $TOOLS_ROOT/groovy
 fi
 
@@ -143,22 +158,6 @@ if [[ ! -e $TOOLS_ROOT/bedtools ]]; then
     check_success
 fi
 
-#GATK, also pre-compile the .jar file
-if [[ ! -e $TOOLS_ROOT/gatk ]]; then
-    echo -n 'Downloading GATK...'\
-    && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/GATK_VERSION $TOOLS_ROOT/gatk
-    check_success
-
-    echo -n 'Compiling GATK...'
-    pushd gatk\
-        && mvn --quiet verify -P\!queue > /dev/null\
-        && mv target/executable/GenomeAnalysisTK.jar .\
-        && shopt -s extglob\
-        && rm -rf !(GenomeAnalysisTK.jar)
-    check_success
-    popd
-fi
-
 #VEP, including assets. Involves downloading ensembl-tools and deleting everything that isn't the VEP script
 if [[ ! -e $TOOLS_ROOT/vep ]]; then
     echo -n 'Downloading VEP...'\
@@ -169,37 +168,53 @@ if [[ ! -e $TOOLS_ROOT/vep ]]; then
     check_success
 fi
 
+# Fastqc
+if [[ ! -e $TOOLS_ROOT/fastqc ]]; then
+    echo -n 'Downloading fastqc...'\
+    && download_zip "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip" $TOOLS_ROOT/fastqc
+    check_success
+fi
+
 # Bpipe
-git clone https://github.com/ssadedin/bpipehttps://github.com/ssadedin/bpipe
-#pushd bpipe
-#    ./gradlew
-#popd
+if [[ ! -e $TOOLS_ROOT/bpipe ]]; then
+    git clone https://github.com/ssadedin/bpipe
+    pushd bpipe
+        ./gradlew dist
+    popd
+fi
 
 # Setup Perl variables
 PERL5LIB=$TOOLS_ROOT:$PERL5LIB
 PATH=$TOOLSROOT/htslib:$PATH
 
-echo -n 'Installing VEP perl dependencies...'
-pushd $TOOLS_ROOT/vep\
-    && mv $ROOT/cpanfile $TOOLS_ROOT/vep\
-    && sudo cpanm --installdeps . > /dev/null
+echo -n 'Installing VEP perl dependencies...'\
+&& pushd $TOOLS_ROOT/vep\
+    && { [[ -e $TOOLS_ROOT/vep/cpanfile ]] || mv $ROOT/cpanfile $TOOLS_ROOT/vep ;}\
+    && sudo cpanm --installdeps . > /dev/null\
+&& popd
 check_success
 
-echo -n 'Installing VEP databases...'
+## Data Files ##
+
 if [[ ! -e $DATA_ROOT/vep_cache ]]; then
-    VEP_CACHE=$DATA_ROOT/vep_cache\
-        && mkdir $VEP_CACHE\
-        && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 > /dev/null
+    echo -n 'Installing VEP databases...'\
+    && VEP_CACHE=$DATA_ROOT/vep_cache\
+    && mkdir $VEP_CACHE\
+    && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 > /dev/null
     check_success
 fi
-
-popd
 
 if [[ ! -e $DATA_ROOT/gatk ]]; then
     echo -n 'Downloading GATK bundle...'
     mkdir $DATA_ROOT/gatk
     GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-    GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz"
+    GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
+    dbsnp_138.hg19.vcf.idx.gz\
+    Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
+    Mills_and_1000G_gold_standard.indels.hg19.vcf.idx.gz\
+    ucsc.hg19.dict.gz\
+    ucsc.hg19.fasta.gz\
+    ucsc.hg19.fasta.fai.gz"
 
     for f in $GATK_BUNDLE_FILES ;  do
          URL="$GATK_BUNDLE_ROOT$f";
@@ -210,9 +225,32 @@ if [[ ! -e $DATA_ROOT/gatk ]]; then
     done
 fi
 
+if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
+    mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from hg19.chromInfo" > $DATA_ROOT/hg19.genome
+fi
+
+## Index Reference File ##
+$TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+
 ## Jar Dependencies ##
 pushd $JAVA_LIBS_ROOT
-    if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
+    #GATK, also pre-compile the .jar file
+     if ! existsExactlyOne $JAVA_LIBS_ROOT/GenomeAnalysisTK.jar ; then
+        echo -n 'Downloading GATK...'\
+        && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/$GATK_VERSION $JAVA_LIBS_ROOT/gatk
+        check_success
+
+        echo -n 'Compiling GATK...'
+        pushd gatk\
+            && mvn --quiet verify -P\!queue > /dev/null\
+            && mv target/executable/GenomeAnalysisTK.jar $JAVA_LIBS_ROOT\
+            && shopt -s extglob\
+        && popd\
+        && rm -rf gatk
+        check_success
+    fi
+
+    if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
         echo "Compiling JUnitXmlFormatter dependencies"\
         && git clone https://github.com/barrypitman/JUnitXmlFormatter\
         && pushd JUnitXmlFormatter\
@@ -224,8 +262,8 @@ pushd $JAVA_LIBS_ROOT
     fi
 
     # Groovy ngs utils
-    if [[ ! -e $JAVA_LIBS_ROOT/groovy-ngs-utils ]]; then
-        echo "Compiling JUnitXmlFormatter dependencies"\
+    if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
+        echo "Compiling groovy-ngs-utils dependencies"\
         && git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
         && pushd groovy-ngs-utils\
         && ./gradlew jar --quiet\
@@ -235,8 +273,8 @@ pushd $JAVA_LIBS_ROOT
     fi
 
 
-    if [[ ! -e $JAVA_LIBS_ROOT/JUnitXmlFormatter ]]; then
-        echo "Downloading maven dependencies"
+    if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
+        echo "Downloading cpsuite"
         mvn --quiet dependency:copy \
             -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
             -DoutputDirectory=$JAVA_LIBS_ROOT\

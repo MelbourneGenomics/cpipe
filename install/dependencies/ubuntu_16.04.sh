@@ -15,4 +15,4 @@ apt-get update
 
 # Install apt-getable things
 apt-get install -y git make gcc poppler-utils zlib1g-dev ncurses-dev g++ patch libssl-dev unzip maven\
- gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip
+ gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip mysql-client
