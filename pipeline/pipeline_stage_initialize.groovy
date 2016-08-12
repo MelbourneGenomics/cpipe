@@ -212,8 +212,8 @@ set_target_info = {
 
     var HG19_CHROM_INFO : false
 
-    exec """
-        echo "set_target_info: combined target is $COMBINED_TARGET"
+    msg """
+        set_target_info: combined target is $COMBINED_TARGET
     """
 
     branch.splice_region_window=false
