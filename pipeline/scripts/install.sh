@@ -86,12 +86,27 @@ function compile() {
     fi
 }
 
+# 
+# Load config from config.groovy
+# If an argument is passed then the values are filtered through grep to only
+# include the given values.
+#
+# Note that here we are taking advantage of the fact that Groovy and Bash share
+# common syntax for defining variables.
+#
 function load_config() {
     if [ -z "$BASE" ];
     then
         BASE="."
     fi
-    CONFIG=`sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+    
+    if [ ! -z "$1" ];
+    then
+        CONFIG=`sed 's/\/\/.*$//' $BASE/pipeline/config.groovy | grep "$1"` 
+    else
+        CONFIG=`sed 's/\/\/.*$//' $BASE/pipeline/config.groovy` 
+    fi
+    
     eval "$CONFIG"
 }
 
@@ -99,9 +114,8 @@ function set_config_variable() {
     NAME="$1"
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
-    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
-    
-    $TOOLS/groovy/2.3.4/bin/groovy -D name="$NAME" -D value="$VALUE" \
+   
+    $GROOVY -D name="$NAME" -D value="$VALUE" \
       -pne 'line.startsWith(System.properties.name+"=")?line.replaceAll("=.*",/="/+java.util.regex.Matcher.quoteReplacement(System.properties.value)+/"/): line' \
       "$BASE/pipeline/config.groovy.tmp" > \
       "$BASE/pipeline/config.groovy" \
@@ -163,6 +177,8 @@ fi
         fi
 
         BASE=`pwd`
+        TOOLS="$BASE/tools"
+        load_config GROOVY
         set_config_variable BASE "$BASE"
         load_config
 }
