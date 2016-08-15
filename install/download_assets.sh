@@ -13,7 +13,7 @@ GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 
-ROOT=$( cd "$(dirname "${BASH_SOURCE}")"/.. ; pwd -P ) #The cpipe root directory
+ROOT=$(readlink -f $(dirname $0)/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
 DATA_ROOT=$ROOT/data
 PYTHON_ROOT=$TOOLS_ROOT/python
@@ -230,7 +230,14 @@ if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
 fi
 
 ## Index Reference File ##
-$TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.bwt ]] ; then
+    $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+fi
+
+## Index Reference File ##
+if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.fai ]] ; then
+    $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/gatk/ucsc.hg19.fasta
+fi
 
 ## Jar Dependencies ##
 pushd $JAVA_LIBS_ROOT
