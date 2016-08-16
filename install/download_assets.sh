@@ -12,6 +12,7 @@ R_VERSION="3.3.1"
 GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
+PICARD_VERSION="2.6.0"
 
 ROOT=$(readlink -f $(dirname $0)/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -183,6 +184,28 @@ if [[ ! -e $TOOLS_ROOT/bpipe ]]; then
     popd
 fi
 
+#GATK, also pre-compile the .jar file
+if [[ ! -e $TOOLS_ROOT/gatk ]]; then
+    echo -n 'Downloading GATK...'\
+    && mkdir -p $TOOLS_ROOT/gatk\
+    && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/$GATK_VERSION $TOOLS_ROOT/gatk
+    check_success
+
+    echo -n 'Compiling GATK...'
+    pushd $TOOLS_ROOT/gatk\
+        && mvn --quiet verify -P\!queue > /dev/null\
+        && mv target/executable/GenomeAnalysisTK.jar .\
+        && shopt -s extglob\
+        && bash -O extglob -c 'rm -rf !(GenomeAnalysisTK.jar)'\
+    && popd
+    check_success
+fi
+
+if [[ ! -e $TOOLS_ROOT/picard ]]; then
+    mkdir -p $TOOLS_ROOT/picard\
+    && wget -q -P $TOOLS_ROOT/picard https://github.com/broadinstitute/picard/releases/download/2.6.0/picard.jar
+fi
+
 # Setup Perl variables
 PERL5LIB=$TOOLS_ROOT:$PERL5LIB
 PATH=$TOOLSROOT/htslib:$PATH
@@ -241,22 +264,6 @@ fi
 
 ## Jar Dependencies ##
 pushd $JAVA_LIBS_ROOT
-    #GATK, also pre-compile the .jar file
-     if ! existsExactlyOne $JAVA_LIBS_ROOT/GenomeAnalysisTK.jar ; then
-        echo -n 'Downloading GATK...'\
-        && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/$GATK_VERSION $JAVA_LIBS_ROOT/gatk
-        check_success
-
-        echo -n 'Compiling GATK...'
-        pushd gatk\
-            && mvn --quiet verify -P\!queue > /dev/null\
-            && mv target/executable/GenomeAnalysisTK.jar $JAVA_LIBS_ROOT\
-            && shopt -s extglob\
-        && popd\
-        && rm -rf gatk
-        check_success
-    fi
-
     if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
         echo "Compiling JUnitXmlFormatter dependencies"\
         && git clone https://github.com/barrypitman/JUnitXmlFormatter\
@@ -278,7 +285,6 @@ pushd $JAVA_LIBS_ROOT
         && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
         && rm -rf groovy-ngs-utils
     fi
-
 
     if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
         echo "Downloading cpsuite"

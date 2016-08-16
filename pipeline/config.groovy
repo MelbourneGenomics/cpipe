@@ -105,7 +105,7 @@ HTSLIB="$BASE/tools/htslib"
 // GATK yourself and place it in this location
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
-GATK="$TOOLS/gatk/"
+GATK="$TOOLS/gatk"
 
 // gatk < 2.8
 GATK_LEGACY=false
