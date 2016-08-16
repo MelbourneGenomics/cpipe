@@ -193,9 +193,10 @@ if [[ ! -e $TOOLS_ROOT/gatk ]]; then
 
     echo -n 'Compiling GATK...'
     pushd $TOOLS_ROOT/gatk\
-        && mvn --quiet verify -P\!queue > /dev/null\
-        && mv target/executable/GenomeAnalysisTK.jar .\
-        && shopt -s extglob\
+        && mvn --quiet verify > /dev/null\
+        && GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
+        && unlink target/GenomeAnalysisTK.jar\
+        && mv $GATK_JAR ./GenomeAnalysisTK.jar\
         && bash -O extglob -c 'rm -rf !(GenomeAnalysisTK.jar)'\
     && popd
     check_success
