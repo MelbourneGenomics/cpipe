@@ -14,5 +14,6 @@ add-apt-repository -y ppa:cwchien/gradle
 apt-get update
 
 # Install apt-getable things
-apt-get install -y git make gcc poppler-utils zlib1g-dev ncurses-dev g++ patch libssl-dev unzip maven\
- gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip mysql-client
+apt-get install -y git make poppler-utils zlib1g-dev ncurses-dev gcc g++ gfortran patch libssl-dev unzip maven\
+ gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma\
+ libpcre3-dev
