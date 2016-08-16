@@ -29,7 +29,7 @@ si = sample_info[sample]
 // Pull out the output files that are for this sample specifically
 println "Searching for sample $sample in output files"
 sampleFiles = outputGraph.findAllOutputsBy { 
-    def branchParts = it.branchPath.split("/")
+    def branchParts = it.branchPath?.split("/")?:[]
     return (branchParts.contains(sample)|| branchParts[-1]==si.target) 
 }
 
