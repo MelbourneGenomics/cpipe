@@ -5,7 +5,7 @@ BWA_VERSION="0.7.13"
 HTSLIB_VERSION="1.3" # Samtools and Bcftools also use this
 BEDTOOLS_VERSION="2.25.0"
 GATK_VERSION="3.6"
-VEP_VERSION="84"
+VEP_VERSION="85"
 PYTHON_VERSION="2.7.12"
 PERL_VERSION="5.24.0"
 R_VERSION="3.3.1"
@@ -221,11 +221,18 @@ check_success
 ## Data Files ##
 
 if [[ ! -e $DATA_ROOT/vep_cache ]]; then
+    # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
+
     echo -n 'Installing VEP databases...'\
     && VEP_CACHE=$DATA_ROOT/vep_cache\
     && mkdir $VEP_CACHE\
-    && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep,homo_sapiens_refseq,homo_sapiens_merged --ASSEMBLY GRCh37 > /dev/null
+    && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 > /dev/null
     check_success
+fi
+
+#Unzip cache fasta
+if [[ ! existsExactlyOne $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa ]]; then
+    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
 fi
 
 if [[ ! -e $DATA_ROOT/gatk ]]; then
