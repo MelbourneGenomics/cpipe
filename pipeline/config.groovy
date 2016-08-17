@@ -19,6 +19,8 @@
 // the folder this file is in)
 BASE="/home/michael/Programming/cpipe_installer/cpipe"
 
+DATA="$BASE/data"
+
 // Set a good location for storing large temp files here (probably not /tmp)
 TMPDIR="$BASE/tmpdata"
 
@@ -137,6 +139,8 @@ GROOVY_NGS="$TOOLS/java_libs"
 // See tools/vep/README for more information
 VEP_VERSION="83"
 VEP="$TOOLS/vep"
+
+VEP_CACHE="$DATA/vep_cache"
 
 IGVTOOLS="$TOOLS/IGVTools"
 

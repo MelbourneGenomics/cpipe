@@ -66,7 +66,7 @@ vcf_annotate = {
     output.dir="variants"
     // NB we write an empty output file for the case where vep doesn't write anything
     exec """
-        /usr/bin/env bash $SCRIPTS/vcf_annotate.sh "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
+        /usr/bin/env bash $SCRIPTS/vcf_annotate.sh "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP" "$VEP_CACHE"
     """
     stage_status("vcf_annotate", "exit", "${sample} ${branch.analysis}");
 }
