@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-#Note: must be called with a first argument as the cpipe root
-ROOT=$1
+
+ROOT=`readlink -f $(dirname $0)`
+
+# Load config variables
+source $ROOT/pipeline/scripts/load_config_groovy.sh
 
 function join() {
     local IFS=$1
@@ -28,11 +31,14 @@ function compile {
     popd
 }
 
-echo `pwd`
-
-for DIRECTORY in $ROOT/tools/*/; do
+# Compile everything
+for DIRECTORY in $TOOLS_ROOT/*/; do
     compile $DIRECTORY
 done
 
 # Add all tool directories and bin folders to PATH
-export PATH=`join ':' $ROOT/tools/*/`:`join ':' $ROOT/tools/*/bin/`:$PATH
+export PATH=`join ':' $TOOLS_ROOT/*/`:`join ':' $TOOLS_ROOT/*/bin/`:$PATH
+export HTSLIB_DIR=$TOOLS_ROOT/htslib
+
+# Get HTSlib module
+cpanm Bio::DB::HTS

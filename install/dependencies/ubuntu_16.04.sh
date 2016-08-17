@@ -13,6 +13,9 @@ systemctl daemon-reload
 add-apt-repository -y ppa:cwchien/gradle
 apt-get update
 
+#Set ubuntu-specific variables
+export JAVA_HOME=/usr
+
 # Install apt-getable things
 apt-get install -y git make poppler-utils zlib1g-dev ncurses-dev gcc g++ gfortran patch libssl-dev unzip maven\
  gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma\

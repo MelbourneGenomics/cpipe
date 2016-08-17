@@ -95,7 +95,6 @@ function popd {
 
 ## General Dependencies ##
 sudo cpan App::cpanminus > /dev/null
-export JAVA_HOME=/usr
 
 ## Move Paths ##
 mkdir -p $DATA_ROOT $TOOLS_ROOT $JAVA_LIBS_ROOT
@@ -226,7 +225,7 @@ if [[ ! -e $DATA_ROOT/vep_cache ]]; then
     echo -n 'Installing VEP databases...'\
     && VEP_CACHE=$DATA_ROOT/vep_cache\
     && mkdir $VEP_CACHE\
-    && perl $TOOLS_ROOT/vep/INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 > /dev/null
+    && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 > /dev/null
     check_success
 fi
 
