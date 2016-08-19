@@ -131,7 +131,7 @@ else
 fi
 
 #R
-echo -n 'Downloading perl...'
+echo -n 'Downloading R...'
 if [[ ! -e $R_ROOT ]]; then
     download_gz http://cran.csiro.au/src/base/R-3/R-$R_VERSION.tar.gz $R_ROOT
 else
@@ -142,7 +142,6 @@ fi
 echo -n 'Downloading groovy...'
 if [[ ! -e $GROOVY_ROOT ]]; then
     download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
-    && mv $TOOLS_ROOT/groovy-$GROOVY_VERSION $TOOLS_ROOT/groovy
 else
     echo 'already satisfied'
 fi
