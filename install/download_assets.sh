@@ -91,102 +91,144 @@ function popd {
     command popd "$@" > /dev/null
 }
 
-### Start of script ###
+function command_exists {
+    type $1 > /dev/null 2>&1
+}
 
-## General Dependencies ##
-sudo cpan App::cpanminus > /dev/null
+### Start of script ###
 
 ## Move Paths ##
 mkdir -p $DATA_ROOT $TOOLS_ROOT $JAVA_LIBS_ROOT
 cd $TOOLS_ROOT
 
-##Language installations##
-#Python
-if [[ ! -e $PYTHON_ROOT ]]; then
-    download_gz https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz $PYTHON_ROOT
+## General Dependencies ##
+echo -n 'Installing cpanm...'
+if command_exists cpanm; then
+    echo 'already satisfied.'
+else
+    sudo cpan App::cpanminus > /dev/null
+    check_success
 fi
 
+##Language installations##
+#Python
+echo -n 'Downloading python...'
+if [[ ! -e $PYTHON_ROOT ]]; then
+    download_gz https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz $PYTHON_ROOT
+    check_success
+else
+    echo 'already satisfied'
+fi
+
+
 #Perl
+echo -n 'Downloading perl...'
 if [[ ! -e $PERL_ROOT ]]; then
     download_gz http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz $PERL_ROOT\
       && mv $PERL_ROOT/configure.gnu $PERL_ROOT/configure.sh
+else
+    echo 'already satisfied'
 fi
 
 #R
+echo -n 'Downloading perl...'
 if [[ ! -e $R_ROOT ]]; then
     download_gz http://cran.csiro.au/src/base/R-3/R-$R_VERSION.tar.gz $R_ROOT
+else
+    echo 'already satisfied'
 fi
 
 #Groovy
+echo -n 'Downloading groovy...'
 if [[ ! -e $GROOVY_ROOT ]]; then
     download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
     && mv $TOOLS_ROOT/groovy-$GROOVY_VERSION $TOOLS_ROOT/groovy
+else
+    echo 'already satisfied'
 fi
 
 #BWA
+echo -n 'Downloading BWA...'
 if [[ ! -e $TOOLS_ROOT/bwa ]]; then
-    echo -n 'Downloading BWA...'\
-    && download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
+    download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
     check_success
+else
+    echo 'already satisfied'
 fi
 
 #Htslib (requirement for samtools and bcftool)
+echo -n 'Downloading Htslib...'
 if [[ ! -e $TOOLS_ROOT/htslib ]]; then
-    echo -n 'Downloading Htslib...'\
-     && download_gz https://codeload.github.com/samtools/htslib/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/htslib
+    download_gz https://codeload.github.com/samtools/htslib/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/htslib
     check_success
+else
+    echo 'already satisfied'
 fi
 
 #Samtools
+echo -n 'Downloading Samtools...'
 if [[ ! -e $TOOLS_ROOT/samtools ]]; then
-    echo -n 'Downloading Samtools...'\
-    && download_gz https://codeload.github.com/samtools/samtools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/samtools
+    download_gz https://codeload.github.com/samtools/samtools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/samtools
     check_success
+else
+    echo 'already satisfied'
 fi
 
 #Bcftools
+echo -n 'Downloading Bcftools...'
 if [[ ! -e $TOOLS_ROOT/bwa ]]; then
-    echo -n 'Downloading Bcftools...'\
-    && download_gz https://codeload.github.com/samtools/bcftools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/bcftools
+    download_gz https://codeload.github.com/samtools/bcftools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/bcftools
     check_success
+else
+    echo 'already satisfied'
 fi
 
 #Bedtools
+echo -n 'Downloading Bedtools...'
 if [[ ! -e $TOOLS_ROOT/bedtools ]]; then
-    echo -n 'Downloading Bedtools...'\
-    && download_gz https://codeload.github.com/arq5x/bedtools2/tar.gz/v$BEDTOOLS_VERSION $TOOLS_ROOT/bedtools
+    download_gz https://codeload.github.com/arq5x/bedtools2/tar.gz/v$BEDTOOLS_VERSION $TOOLS_ROOT/bedtools
     check_success
+else
+    echo 'already satisfied'
 fi
 
 #VEP, including assets. Involves downloading ensembl-tools and deleting everything that isn't the VEP script
+echo -n 'Downloading VEP...'
 if [[ ! -e $TOOLS_ROOT/vep ]]; then
-    echo -n 'Downloading VEP...'\
-        && wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
+        wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
         && unzip vep.zip > /dev/null\
         && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
         && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
     check_success
+else
+    echo 'already satisfied'
 fi
 
 # Fastqc
+echo -n 'Downloading fastqc...'
 if [[ ! -e $TOOLS_ROOT/fastqc ]]; then
-    echo -n 'Downloading fastqc...'\
-    && download_zip "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip" $TOOLS_ROOT/fastqc
+    download_zip "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip" $TOOLS_ROOT/fastqc
     check_success
+else
+    echo 'already satisfied'
 fi
 
 # Bpipe
+echo -n 'Downloading bpipe...'
 if [[ ! -e $TOOLS_ROOT/bpipe ]]; then
-    git clone https://github.com/ssadedin/bpipe
-    pushd bpipe
-        ./gradlew dist
+    git clone https://github.com/ssadedin/bpipe\
+    && pushd bpipe\
+        && ./gradlew dist\
     popd
+    check_success
+else
+    echo 'already satisfied'
 fi
 
 #GATK, also pre-compile the .jar file
+echo -n 'Downloading GATK...'
 if [[ ! -e $TOOLS_ROOT/gatk ]]; then
-    echo -n 'Downloading GATK...'\
-    && mkdir -p $TOOLS_ROOT/gatk\
+    mkdir -p $TOOLS_ROOT/gatk\
     && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/$GATK_VERSION $TOOLS_ROOT/gatk
     check_success
 
@@ -199,11 +241,17 @@ if [[ ! -e $TOOLS_ROOT/gatk ]]; then
         && bash -O extglob -c 'rm -rf !(GenomeAnalysisTK.jar)'\
     && popd
     check_success
+else
+    echo 'already satisfied'
 fi
 
+echo -n 'Downloading picard...'
 if [[ ! -e $TOOLS_ROOT/picard ]]; then
     mkdir -p $TOOLS_ROOT/picard\
     && wget -q -P $TOOLS_ROOT/picard https://github.com/broadinstitute/picard/releases/download/2.6.0/picard.jar
+    check_success
+else
+    echo 'already satisfied'
 fi
 
 # Setup Perl variables
@@ -230,12 +278,12 @@ if [[ ! -e $DATA_ROOT/vep_cache ]]; then
 fi
 
 #Unzip cache fasta
-if [[ ! existsExactlyOne $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa ]]; then
-    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
-fi
+#if [[ ! existsExactlyOne $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa ]]; then
+#    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
+#fi
 
+echo 'Downloading GATK bundle...'
 if [[ ! -e $DATA_ROOT/gatk ]]; then
-    echo -n 'Downloading GATK bundle...'
     mkdir $DATA_ROOT/gatk
     GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
     GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
@@ -247,52 +295,75 @@ if [[ ! -e $DATA_ROOT/gatk ]]; then
     ucsc.hg19.fasta.fai.gz"
 
     for f in $GATK_BUNDLE_FILES ;  do
-         URL="$GATK_BUNDLE_ROOT$f";
-         BASE=`basename $f .gz`;
-         echo "Downloading $BASE...";
-         curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE;
-         check_success;
+         URL="$GATK_BUNDLE_ROOT$f"
+         BASE=`basename $f .gz`
+         echo -n "Downloading $BASE..."
+         if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
+
+             curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
+             check_success
+         else
+            echo "already exists"
+         fi
     done
 fi
 
+echo 'Downloading chromosome sizes...'
 if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
     mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from hg19.chromInfo" > $DATA_ROOT/hg19.genome
+    check_success
+else
+    echo "already exists"
 fi
 
 ## Index Reference File ##
+echo -n 'Indexing reference file using bwa...'
 if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.bwt ]] ; then
     $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+    check_success
+else
+    echo "already done"
 fi
 
 ## Index Reference File ##
+echo -n 'Indexing reference file using samtools...'
 if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.fai ]] ; then
     $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/gatk/ucsc.hg19.fasta
+    check_success
+else
+    echo "already done"
 fi
 
 ## Jar Dependencies ##
 pushd $JAVA_LIBS_ROOT
+    echo -n "Downloading and compiling JUnitXmlFormatter"
     if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
-        echo "Compiling JUnitXmlFormatter dependencies"\
-        && git clone https://github.com/barrypitman/JUnitXmlFormatter\
+        git clone https://github.com/barrypitman/JUnitXmlFormatter\
         && pushd JUnitXmlFormatter\
             && mvn install\
             && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
         && popd\
         && rm -rf JUnitXmlFormatter
         check_success
+    else
+        echo "already done"
     fi
 
     # Groovy ngs utils
+    echo -n "Downloading and compiling groovy-ngs-utils"
     if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
-        echo "Compiling groovy-ngs-utils dependencies"\
-        && git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
+        git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
         && pushd groovy-ngs-utils\
         && ./gradlew jar --quiet\
         && popd\
         && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
         && rm -rf groovy-ngs-utils
+        check_success
+    else
+        echo "already done"
     fi
 
+    echo -n "Downloading and compiling takari-cpsuite"
     if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
         echo "Downloading cpsuite"
         mvn --quiet dependency:copy \
@@ -300,6 +371,8 @@ pushd $JAVA_LIBS_ROOT
             -DoutputDirectory=$JAVA_LIBS_ROOT\
             -DstripVersion=true
         check_success
+    else
+        echo "already done"
     fi
 
 popd
