@@ -32,9 +32,6 @@ function download_gz {
     FILE_NAME=`basename $1`\
     && mkdir -p $2\
     && curl -s $1 | tar -xz --strip-components=1 -C $2
-
-    # && echo -n "Downloading $FILE_NAME into $2..."\
-    check_success
 }
 
 function download_zip {
@@ -51,8 +48,6 @@ function download_zip {
       && ZIP_ROOT=$2/`ls $2` `#Work out the root directory inside the zip file`\
       && mv $ZIP_ROOT/* $2 `#Move the contents out of this subdirectory because it doesn\'t have a consistent name`\
       && rm -r $ZIP_ROOT
-
-      check_success
 }
 
 function check_success {
@@ -126,6 +121,7 @@ echo -n 'Downloading perl...'
 if [[ ! -e $PERL_ROOT ]]; then
     download_gz http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz $PERL_ROOT\
       && mv $PERL_ROOT/configure.gnu $PERL_ROOT/configure.sh
+    check_success
 else
     echo 'already satisfied'
 fi
@@ -134,6 +130,7 @@ fi
 echo -n 'Downloading R...'
 if [[ ! -e $R_ROOT ]]; then
     download_gz http://cran.csiro.au/src/base/R-3/R-$R_VERSION.tar.gz $R_ROOT
+    check_success
 else
     echo 'already satisfied'
 fi
@@ -142,6 +139,7 @@ fi
 echo -n 'Downloading groovy...'
 if [[ ! -e $GROOVY_ROOT ]]; then
     download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
+    check_success
 else
     echo 'already satisfied'
 fi
@@ -158,7 +156,7 @@ fi
 #Htslib (requirement for samtools and bcftool)
 echo -n 'Downloading Htslib...'
 if [[ ! -e $TOOLS_ROOT/htslib ]]; then
-    download_gz https://codeload.github.com/samtools/htslib/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/htslib
+    download_gz https://codeload.github.com/samtools/htslib/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/htslib
     check_success
 else
     echo 'already satisfied'
@@ -167,7 +165,7 @@ fi
 #Samtools
 echo -n 'Downloading Samtools...'
 if [[ ! -e $TOOLS_ROOT/samtools ]]; then
-    download_gz https://codeload.github.com/samtools/samtools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/samtools
+    download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools
     check_success
 else
     echo 'already satisfied'
@@ -176,7 +174,7 @@ fi
 #Bcftools
 echo -n 'Downloading Bcftools...'
 if [[ ! -e $TOOLS_ROOT/bwa ]]; then
-    download_gz https://codeload.github.com/samtools/bcftools/tar.gz/HTSLIB_VERSION $TOOLS_ROOT/bcftools
+    download_gz https://codeload.github.com/samtools/bcftools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/bcftools
     check_success
 else
     echo 'already satisfied'
@@ -218,7 +216,7 @@ if [[ ! -e $TOOLS_ROOT/bpipe ]]; then
     git clone https://github.com/ssadedin/bpipe\
     && pushd bpipe\
         && ./gradlew dist\
-    popd
+    && popd
     check_success
 else
     echo 'already satisfied'
@@ -339,7 +337,7 @@ pushd $JAVA_LIBS_ROOT
     if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
         git clone https://github.com/barrypitman/JUnitXmlFormatter\
         && pushd JUnitXmlFormatter\
-            && mvn install\
+            && mvn --quiet install\
             && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
         && popd\
         && rm -rf JUnitXmlFormatter
@@ -353,7 +351,7 @@ pushd $JAVA_LIBS_ROOT
     if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
         git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
         && pushd groovy-ngs-utils\
-        && ./gradlew jar --quiet\
+        && ./gradlew jar > /dev/null\
         && popd\
         && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
         && rm -rf groovy-ngs-utils
