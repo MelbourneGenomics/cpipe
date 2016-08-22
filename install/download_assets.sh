@@ -195,7 +195,7 @@ function command_exists {
 
         #Bcftools
         echo -n 'Downloading Bcftools...'
-        if [[ ! -e $TOOLS_ROOT/bwa ]]; then
+        if [[ ! -e $TOOLS_ROOT/bcftools ]]; then
             download_gz https://codeload.github.com/samtools/bcftools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/bcftools
             check_success
         else
@@ -278,22 +278,36 @@ function command_exists {
         PATH=$TOOLSROOT/htslib:$PATH
 
         #&& { [[ -e $TOOLS_ROOT/vep/cpanfile ]] || mv $ROOT/cpanfile $TOOLS_ROOT/vep ;}\
-        echo -n 'Installing VEP perl dependencies...'\
-        && pushd $ROOT/install\
-            && sudo cpanm --installdeps . >> $LOG_FILE\
-        && popd
-        check_success
+        echo -n 'Installing general perl dependencies...'
+         if [[ ! -e $TOOLS_ROOT/perl_lib ]] ; then
+            mkdir -p $TOOLS_ROOT/perl_lib\
+            && pushd $ROOT/install\
+                && sudo cpanm --installdeps --local-lib-contained $TOOLS_ROOT/perl_lib . >> $LOG_FILE\
+            && popd
+            check_success
+        else
+             echo 'already done'
+        fi
+
+        echo -n 'Installing VEP dependencies ...'
+        if [[ ! -e $TOOLS_ROOT/Bio ]]; then
+            # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
+            pushd $TOOLS_ROOT/vep\
+                && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE\
+            && popd
+            check_success
+        fi
 
         ## Data Files ##
-
+        echo -n 'Installing VEP cache, reference file...'
         if [[ ! -e $DATA_ROOT/vep_cache ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
-
-            echo -n 'Installing VEP databases...'\
-            && VEP_CACHE=$DATA_ROOT/vep_cache\
+            VEP_CACHE=$DATA_ROOT/vep_cache\
             && mkdir $VEP_CACHE\
-            && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE
+            && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE
             check_success
+        else
+             echo 'already done'
         fi
 
         #Unzip cache fasta

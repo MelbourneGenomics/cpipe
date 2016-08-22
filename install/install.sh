@@ -30,8 +30,9 @@ for DIRECTORY in $TOOLS/*/; do
 done
 
 # Add all tool directories and bin folders to PATH
-export PATH=`join ':' $TOOLS_ROOT/*/`:`join ':' $TOOLS_ROOT/*/bin/`:$PATH
-export HTSLIB_DIR=$TOOLS_ROOT/htslib
+export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
+export HTSLIB_DIR=$TOOLS/htslib
+export PERL5LIB=$TOOLS/perl_lib
 
 # Get HTSlib module
 cpanm Bio::DB::HTS
