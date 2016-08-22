@@ -152,7 +152,7 @@ function command_exists {
         #Groovy
         echo -n 'Downloading groovy...'
         if [[ ! -e $GROOVY_ROOT ]]; then
-            download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
+            download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy
             check_success
         else
             echo 'already satisfied'
@@ -161,7 +161,7 @@ function command_exists {
         #BWA. Also compile in order to perform indexing
         echo -n 'Downloading BWA...'
         if [[ ! -e $TOOLS_ROOT/bwa ]]; then
-            download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa\
+            download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
             check_success
 
              echo -n 'Compiling BWA...'
@@ -183,7 +183,7 @@ function command_exists {
         #Samtools. Also compile in order to perform indexing
         echo -n 'Downloading Samtools...'
         if [[ ! -e $TOOLS_ROOT/samtools ]]; then
-            download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools\
+            download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools
             check_success
 
              echo -n 'Compiling Samtools...'
