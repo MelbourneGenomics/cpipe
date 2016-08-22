@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-FILENAME=$1
-CONFIG=`sed 's/\/\/.*$//' $FILENAME`
+CONFIG_FILE=$(readlink -f $(dirname $BASH_SOURCE)/../config.groovy)
+CONFIG=`sed 's/\/\/.*$//' $CONFIG_FILE`
 eval "$CONFIG"
