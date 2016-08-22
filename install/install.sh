@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 ### Logging ####
-LOG_FILE=$(readlink -f $(dirname $0)/install.log)
+CURRENT_DIR=$(readlink -f $(dirname $BASH_SOURCE))
+LOG_FILE=$CURRENT_DIR/install.log
 echo "## Running installer on `date` ##" > $LOG_FILE
 echo "## Logging to $LOG_FILE ##"
 
-source `dirname $0`/common/compile.sh
-ROOT=`readlink -f $(dirname $0)/..`
-TOOLS_ROOT=`readlink -f $(dirname $0)/..`
+source $CURRENT_DIR/common/compile.sh #Load compile function
+ROOT=$CURRENT_DIR/..
 
 # Load config variables
 source $ROOT/pipeline/scripts/load_config_groovy.sh
