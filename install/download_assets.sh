@@ -299,7 +299,7 @@ function command_exists {
         fi
 
         ## Data Files ##
-        echo -n 'Installing VEP cache, reference file...'
+        echo -n 'Installing VEP cache and reference file...'
         if [[ ! -e $DATA_ROOT/vep_cache ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             VEP_CACHE=$DATA_ROOT/vep_cache\
@@ -315,7 +315,7 @@ function command_exists {
         #    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
         #fi
 
-        echo -n 'Downloading GATK bundle...'
+        echo 'Downloading GATK bundle...'
         if [[ ! -e $DATA_ROOT/gatk ]]; then
             mkdir $DATA_ROOT/gatk
             GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
@@ -330,7 +330,7 @@ function command_exists {
             for f in $GATK_BUNDLE_FILES ;  do
                  URL="$GATK_BUNDLE_ROOT$f"
                  BASE=`basename $f .gz`
-                 echo -n "Downloading $BASE..."
+                 echo -e -n "\tDownloading $BASE..."
                  if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
 
                      curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
