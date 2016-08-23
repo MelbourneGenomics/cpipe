@@ -322,7 +322,7 @@ function command_exists {
             GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
             dbsnp_138.hg19.vcf.idx.gz\
             Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
-            Mills_and_1000G_gold_standard.indels.hg19.vcf.idx.gz\
+            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz\
             ucsc.hg19.dict.gz\
             ucsc.hg19.fasta.gz\
             ucsc.hg19.fasta.fai.gz"
