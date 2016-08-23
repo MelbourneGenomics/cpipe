@@ -290,7 +290,7 @@ function command_exists {
         fi
 
         echo -n 'Installing VEP dependencies ...'
-        if [[ ! -e $TOOLS_ROOT/Bio ]]; then
+        if [[ ! -e $TOOLS_ROOT/vep/Bio ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             pushd $TOOLS_ROOT/vep\
                 && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE\
@@ -315,33 +315,32 @@ function command_exists {
         #    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
         #fi
 
-        echo -n 'Downloading GATK bundle...'
+        echo 'Downloading GATK bundle...'
         if [[ ! -e $DATA_ROOT/gatk ]]; then
             mkdir $DATA_ROOT/gatk
-            GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-            GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
-            dbsnp_138.hg19.vcf.idx.gz\
-            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
-            Mills_and_1000G_gold_standard.indels.hg19.vcf.idx.gz\
-            ucsc.hg19.dict.gz\
-            ucsc.hg19.fasta.gz\
-            ucsc.hg19.fasta.fai.gz"
-
-            for f in $GATK_BUNDLE_FILES ;  do
-                 URL="$GATK_BUNDLE_ROOT$f"
-                 BASE=`basename $f .gz`
-                 echo -n "Downloading $BASE..."
-                 if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-
-                     curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
-                     check_success
-                 else
-                    echo "already exists"
-                 fi
-            done
-        else
-            echo "already satisfied"
         fi
+
+        GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
+        GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
+        dbsnp_138.hg19.vcf.idx.gz\
+        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
+        Mills_and_1000G_gold_standard.indels.hg19.vcf.idx.gz\
+        ucsc.hg19.dict.gz\
+        ucsc.hg19.fasta.gz\
+        ucsc.hg19.fasta.fai.gz"
+
+        for f in $GATK_BUNDLE_FILES ;  do
+             URL="$GATK_BUNDLE_ROOT$f"
+             BASE=`basename $f .gz`
+             echo -n -e "\tDownloading $BASE..."
+             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
+
+                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
+                 check_success
+             else
+                echo "already exists"
+             fi
+        done
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
