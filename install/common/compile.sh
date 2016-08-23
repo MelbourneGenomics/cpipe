@@ -6,6 +6,7 @@ function compile {
     # If there's already a makefile, just run make
     if [[ -f Makefile ]]; then
         make
+        popd
         return 0
     fi
 
@@ -22,6 +23,7 @@ function compile {
     if [[ -f Makefile ]]; then
         make
     else
+        popd
         return 1
     fi
 

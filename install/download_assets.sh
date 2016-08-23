@@ -134,7 +134,7 @@ function command_exists {
         echo -n 'Downloading perl...'
         if [[ ! -e $PERL_ROOT ]]; then
             download_gz http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz $PERL_ROOT\
-              && mv $PERL_ROOT/configure.gnu $PERL_ROOT/configure.sh
+            && mv $PERL_ROOT/configure.gnu $PERL_ROOT/configure.sh
             check_success
         else
             echo 'already satisfied'
@@ -164,9 +164,9 @@ function command_exists {
             download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
             check_success
 
-             echo -n 'Compiling BWA...'
-             compile $TOOLS_ROOT/bwa >> $LOG_FILE
-             check_success
+            echo -n 'Compiling BWA...'
+            compile $TOOLS_ROOT/bwa >> $LOG_FILE
+            check_success
         else
             echo 'already satisfied'
         fi
