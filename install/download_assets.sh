@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 ### Imports ###
-source `dirname $0`/common/compile.sh
+source `dirname ${BASH_SOURCE[0]}`/common/compile.sh
 
 ### Logging ####
-LOG_FILE=$(readlink -f $(dirname $0)/download.log)
+LOG_FILE=$(readlink -f $(dirname ${BASH_SOURCE[0]})/download.log)
 echo "## Running downloader on `date` ##" > $LOG_FILE
 echo "## Logging to $LOG_FILE ##"
 
@@ -22,7 +22,7 @@ CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 PICARD_VERSION="2.6.0"
 
-ROOT=$(readlink -f $(dirname $0)/..) #The cpipe root directory
+ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
 DATA_ROOT=$ROOT/data
 PYTHON_ROOT=$TOOLS_ROOT/python
@@ -152,7 +152,7 @@ function command_exists {
         #Groovy
         echo -n 'Downloading groovy...'
         if [[ ! -e $GROOVY_ROOT ]]; then
-            download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy
+            download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy\
             check_success
         else
             echo 'already satisfied'
@@ -161,7 +161,7 @@ function command_exists {
         #BWA. Also compile in order to perform indexing
         echo -n 'Downloading BWA...'
         if [[ ! -e $TOOLS_ROOT/bwa ]]; then
-            download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
+            download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa\
             check_success
 
              echo -n 'Compiling BWA...'
@@ -183,7 +183,7 @@ function command_exists {
         #Samtools. Also compile in order to perform indexing
         echo -n 'Downloading Samtools...'
         if [[ ! -e $TOOLS_ROOT/samtools ]]; then
-            download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools
+            download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools\
             check_success
 
              echo -n 'Compiling Samtools...'
@@ -214,10 +214,10 @@ function command_exists {
         #VEP, including assets. Involves downloading ensembl-tools and deleting everything that isn't the VEP script
         echo -n 'Downloading VEP...'
         if [[ ! -e $TOOLS_ROOT/vep ]]; then
-                wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
-                && unzip vep.zip >> $LOG_FILE\
-                && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
-                && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
+            wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
+            && unzip vep.zip\
+            && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
+            && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
             check_success
         else
             echo 'already satisfied'
@@ -253,7 +253,7 @@ function command_exists {
 
             echo -n 'Compiling GATK...'
             pushd $TOOLS_ROOT/gatk\
-                && mvn verify >> $LOG_FILE\
+                && mvn verify -P\!queue >> $LOG_FILE\
                 && GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
                 && unlink target/GenomeAnalysisTK.jar\
                 && mv $GATK_JAR ./GenomeAnalysisTK.jar\
@@ -274,8 +274,8 @@ function command_exists {
         fi
 
         # Setup Perl variables
-        PERL5LIB=$TOOLS_ROOT:$PERL5LIB
-        PATH=$TOOLSROOT/htslib:$PATH
+        export PERL5LIB=$TOOLS_ROOT/perl_lib/lib/perl5:$PERL5LIB
+        export PATH=$TOOLSROOT/htslib:$PATH
 
         #&& { [[ -e $TOOLS_ROOT/vep/cpanfile ]] || mv $ROOT/cpanfile $TOOLS_ROOT/vep ;}\
         echo -n 'Installing general perl dependencies...'
