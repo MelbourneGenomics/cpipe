@@ -214,8 +214,8 @@ function command_exists {
         #VEP, including assets. Involves downloading ensembl-tools and deleting everything that isn't the VEP script
         echo -n 'Downloading VEP...'
         if [[ ! -e $TOOLS_ROOT/vep ]]; then
-            wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -q -O vep.zip\
-            && unzip vep.zip\
+            wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -O vep.zip >> $LOG_FILE\
+            && unzip vep.zip >> $LOG_FILE\
             && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
             && rm -rf ensembl-tools-release-$VEP_VERSION vep.zip
             check_success
