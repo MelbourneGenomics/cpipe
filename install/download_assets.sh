@@ -345,7 +345,7 @@ function command_exists {
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
-            mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from hg19.chromInfo" > $DATA_ROOT/hg19.genome
+            mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from hg19.chromInfo" > $DATA_ROOT/chromosomes/hg19.genome
             check_success
         else
             echo "already exists"

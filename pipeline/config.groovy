@@ -191,7 +191,7 @@ JAVA="java"
 SNPEFF="$TOOLS/snpeff"
 
 // Genome needed for expanded splice regions
-HG19_CHROM_INFO="$BASE/data/hg19.genome"
+HG19_CHROM_INFO="$BASE/data/chromosomes/hg19.genome"
 
 // Trimmomatic location
 TRIMMOMATIC="$TOOLS/trimmomatic"
