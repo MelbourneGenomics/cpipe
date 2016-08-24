@@ -375,7 +375,7 @@ function command_exists {
             if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
                 git clone https://github.com/barrypitman/JUnitXmlFormatter\
                 && pushd JUnitXmlFormatter\
-                    && mvn --quiet install\
+                    && mvn install >> $LOG_FILE\
                     && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
                 && popd\
                 && rm -rf JUnitXmlFormatter
@@ -389,7 +389,7 @@ function command_exists {
             if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
                 git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
                 && pushd groovy-ngs-utils\
-                && ./gradlew jar > /dev/null\
+                && ./gradlew jar >> $LOG_FILE\
                 && popd\
                 && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
                 && rm -rf groovy-ngs-utils
@@ -401,10 +401,10 @@ function command_exists {
             echo -n "Downloading and compiling takari-cpsuite..."
             if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
                 echo "Downloading cpsuite"
-                mvn --quiet dependency:copy \
+                mvn dependency:copy \
                     -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
                     -DoutputDirectory=$JAVA_LIBS_ROOT\
-                    -DstripVersion=true
+                    -DstripVersion=true >> $LOG_FILE
                 check_success
             else
                 echo "already done"
