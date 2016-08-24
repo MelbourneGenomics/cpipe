@@ -2,6 +2,10 @@
 
 # Installs all dependencies for the installer and pipeline on Ubuntu
 
+#Fix for docker apt-get 
+apt-get update
+apt-get install software-properties-common
+
 #Fix docker issues
 mkdir -p /etc/systemd/system/docker.service.d/
 echo '[Service]
