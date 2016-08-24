@@ -1,7 +1,7 @@
 FROM ubuntu
 SHELL ["/bin/bash"]
-ADD .
+ADD . /cpipe
 RUN install/dependencies/ubuntu_16.04.sh
 RUN install/download_assets.sh
 RUN install/install.sh
-ENTRYPOINT docker/entrypoint.sh
+ENTRYPOINT /cpipe/docker/entrypoint.sh
