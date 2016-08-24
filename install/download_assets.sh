@@ -299,7 +299,7 @@ function command_exists {
         fi
 
         ## Data Files ##
-        echo -n 'Installing VEP cache, reference file...'
+        echo -n 'Installing VEP cache and reference file...'
         if [[ ! -e $DATA_ROOT/vep_cache ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             VEP_CACHE=$DATA_ROOT/vep_cache\
@@ -320,27 +320,26 @@ function command_exists {
             mkdir $DATA_ROOT/gatk
         fi
 
-        GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-        GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
-        dbsnp_138.hg19.vcf.idx.gz\
-        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
-        Mills_and_1000G_gold_standard.indels.hg19.vcf.idx.gz\
-        ucsc.hg19.dict.gz\
-        ucsc.hg19.fasta.gz\
-        ucsc.hg19.fasta.fai.gz"
+            GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
+            GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
+            dbsnp_138.hg19.vcf.idx.gz\
+            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
+            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz\
+            ucsc.hg19.dict.gz\
+            ucsc.hg19.fasta.gz\
+            ucsc.hg19.fasta.fai.gz"
 
-        for f in $GATK_BUNDLE_FILES ;  do
-             URL="$GATK_BUNDLE_ROOT$f"
-             BASE=`basename $f .gz`
-             echo -n -e "\tDownloading $BASE..."
-             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-
-                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
-                 check_success
-             else
-                echo "already exists"
-             fi
-        done
+            for f in $GATK_BUNDLE_FILES ;  do
+                 URL="$GATK_BUNDLE_ROOT$f"
+                 BASE=`basename $f .gz`
+                 echo -e -n "\tDownloading $BASE..."
+                 if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
+                     curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
+                     check_success
+                 else
+                    echo "already exists"
+                 fi
+            done
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
@@ -374,7 +373,7 @@ function command_exists {
             if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
                 git clone https://github.com/barrypitman/JUnitXmlFormatter\
                 && pushd JUnitXmlFormatter\
-                    && mvn --quiet install\
+                    && mvn install >> $LOG_FILE\
                     && mv target/JUnitXmlFormatter* $JAVA_LIBS_ROOT\
                 && popd\
                 && rm -rf JUnitXmlFormatter
@@ -388,7 +387,7 @@ function command_exists {
             if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
                 git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
                 && pushd groovy-ngs-utils\
-                && ./gradlew jar > /dev/null\
+                && ./gradlew jar >> $LOG_FILE\
                 && popd\
                 && mv $JAVA_LIBS_ROOT/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar $JAVA_LIBS_ROOT\
                 && rm -rf groovy-ngs-utils
@@ -400,10 +399,10 @@ function command_exists {
             echo -n "Downloading and compiling takari-cpsuite..."
             if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
                 echo "Downloading cpsuite"
-                mvn --quiet dependency:copy \
+                mvn dependency:copy \
                     -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\
                     -DoutputDirectory=$JAVA_LIBS_ROOT\
-                    -DstripVersion=true
+                    -DstripVersion=true >> $LOG_FILE
                 check_success
             else
                 echo "already done"
