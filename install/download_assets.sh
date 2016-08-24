@@ -290,7 +290,7 @@ function command_exists {
         fi
 
         echo -n 'Installing VEP dependencies ...'
-        if [[ ! -e $TOOLS_ROOT/Bio ]]; then
+        if [[ ! -e $TOOLS_ROOT/vep/Bio ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             pushd $TOOLS_ROOT/vep\
                 && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE\
@@ -318,6 +318,8 @@ function command_exists {
         echo 'Downloading GATK bundle...'
         if [[ ! -e $DATA_ROOT/gatk ]]; then
             mkdir $DATA_ROOT/gatk
+        fi
+
             GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
             GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
             dbsnp_138.hg19.vcf.idx.gz\
@@ -332,16 +334,12 @@ function command_exists {
                  BASE=`basename $f .gz`
                  echo -e -n "\tDownloading $BASE..."
                  if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-
                      curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
                      check_success
                  else
                     echo "already exists"
                  fi
             done
-        else
-            echo "already satisfied"
-        fi
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/hg19.genome ]]; then
