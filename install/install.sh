@@ -10,7 +10,8 @@ source $CURRENT_DIR/common/compile.sh #Load compile function
 ROOT=$CURRENT_DIR/..
 
 # Load config variables
-source $ROOT/pipeline/scripts/load_config_groovy.sh
+source $ROOT/pipeline/scripts/config_groovy_util.sh
+set_config_variable BASE $(readlink -f $ROOT)
 
 function join() {
     local IFS=$1
