@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Set useful variables
+CURRENT_DIR=$(readlink -f $(dirname $BASH_SOURCE))
+ROOT=$CURRENT_DIR/..
+
+# Load config groovy
+source $ROOT/pipeline/scripts/config_groovy_util.sh
+load_config
+
+# Load environment, e.g. tools like python, R
+source "$BASE/install/environment.sh"
+
 ARGS=$(getopt -o e:c:g: --long "ensembl-release:,cache-type:l,usage,help,genome-build" -n $(basename $0) -- "$@")
 eval set -- "$ARGS"
 

@@ -30,12 +30,8 @@ for DIRECTORY in $TOOLS/*/; do
     fi
 done
 
+#Fastqc is a perl script so needs to be chmod +x'd
 chmod +x $TOOLS/fastqc/fastqc
-
-# Add all tool directories and bin folders to PATH
-export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
-export HTSLIB_DIR=$TOOLS/htslib
-export PERL5LIB=$TOOLS/perl_lib/lib/perl5
 
 # Get HTSlib module
 cpanm Bio::DB::HTS
