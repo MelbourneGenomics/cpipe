@@ -111,13 +111,13 @@ function command_exists {
     pushd $TOOLS_ROOT
 
         ## General Dependencies ##
-        echo -n 'Installing cpanm...'
-        if command_exists cpanm; then
-            echo 'already satisfied.'
-        else
-            sudo cpan App::cpanminus >> $LOG_FILE
-            check_success
-        fi
+        #echo -n 'Installing cpanm...'
+        #if command_exists cpanm; then
+        #    echo 'already satisfied.'
+        #else
+        #    sudo cpan App::cpanminus >> $LOG_FILE
+        #    check_success
+        #fi
 
         ##Language installations##
         #Python
