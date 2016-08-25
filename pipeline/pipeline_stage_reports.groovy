@@ -389,6 +389,7 @@ filtered_on_exons = {
     stage_status("filtered_on_exons", "enter", sample)
     // bedtools exons.bed + padding100bp - incidentalome
     // TODO this might be faster if we sorted the bam and used -sorted
+    // note that a redundant final samtools view has been added to deal with a problem on centos 6.2 (pif-5)
     // configuration options:
     // - exons
     // - design profile
@@ -414,7 +415,8 @@ filtered_on_exons = {
                $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
                $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
                sort -k1,1 -k2,2n |
-               $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin > $output.bam
+               $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin |
+               $SAMTOOLS view -h -b - > $output.bam
     
                $SAMTOOLS/samtools index $output.bam
 
