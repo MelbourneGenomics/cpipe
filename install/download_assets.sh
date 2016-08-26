@@ -111,13 +111,13 @@ function command_exists {
     pushd $TOOLS_ROOT
 
         ## General Dependencies ##
-        echo -n 'Installing cpanm...'
-        if command_exists cpanm; then
-            echo 'already satisfied.'
-        else
-            sudo cpan App::cpanminus >> $LOG_FILE
-            check_success
-        fi
+        #echo -n 'Installing cpanm...'
+        #if command_exists cpanm; then
+        #    echo 'already satisfied.'
+        #else
+        #    sudo cpan App::cpanminus >> $LOG_FILE
+        #    check_success
+        #fi
 
         ##Language installations##
         #Python
@@ -290,8 +290,7 @@ function command_exists {
         fi
 
         echo -n 'Installing VEP dependencies ...'
-        if [[ ! -e $TOOLS_ROOT/vep/Bio ]]; then
-            # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
+        if [[ ! -e $TOOLS_ROOT/perl_lib/lib/perl5/Bio/EnsEMBL ]]; then
             pushd $TOOLS_ROOT/vep\
                 && yes | perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR $TOOLS_ROOT/perl_lib/lib/perl5  >> $LOG_FILE\
             && popd

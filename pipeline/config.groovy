@@ -17,7 +17,7 @@
 // The base of everything - set this to the absolute path of the 
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="/mnt/cpipe"
+BASE="/opt/cpipe_installer/cpipe"
 
 DATA="$BASE/data"
 
