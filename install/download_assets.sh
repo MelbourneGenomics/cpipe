@@ -290,10 +290,9 @@ function command_exists {
         fi
 
         echo -n 'Installing VEP dependencies ...'
-        if [[ ! -e $TOOLS_ROOT/vep/Bio ]]; then
-            # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
+        if [[ ! -e $TOOLS_ROOT/perl_lib/lib/perl5/Bio/EnsEMBL ]]; then
             pushd $TOOLS_ROOT/vep\
-                && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE\
+                && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR $TOOLS_ROOT/perl_lib/lib/perl5  >> $LOG_FILE\
             && popd
             check_success
         fi
