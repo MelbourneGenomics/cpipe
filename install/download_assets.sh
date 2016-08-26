@@ -282,7 +282,7 @@ function command_exists {
          if [[ ! -e $TOOLS_ROOT/perl_lib ]] ; then
             mkdir -p $TOOLS_ROOT/perl_lib\
             && pushd $ROOT/install\
-                && sudo cpanm --installdeps --local-lib-contained $TOOLS_ROOT/perl_lib . >> $LOG_FILE\
+                && cpanm --installdeps --local-lib-contained $TOOLS_ROOT/perl_lib . >> $LOG_FILE\
             && popd
             check_success
         else
@@ -293,7 +293,7 @@ function command_exists {
         if [[ ! -e $TOOLS_ROOT/vep/Bio ]]; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             pushd $TOOLS_ROOT/vep\
-                && perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --CACHEDIR $VEP_CACHE --AUTO cf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37  >> $LOG_FILE\
+                && yes | perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR $TOOLS_ROOT/perl_lib/lib/perl5  >> $LOG_FILE\
             && popd
             check_success
         fi
@@ -309,11 +309,6 @@ function command_exists {
         else
              echo 'already done'
         fi
-
-        #Unzip cache fasta
-        #if [[ ! existsExactlyOne $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa ]]; then
-        #    gunzip $DATA_ROOT/vep_cache/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
-        #fi
 
         echo 'Downloading GATK bundle...'
         if [[ ! -e $DATA_ROOT/gatk ]]; then
@@ -410,13 +405,6 @@ function command_exists {
             fi
 
         popd
-
-    # Note: this has been commented out as tabix format does not seem to store frequency information
-    #echo -n 'Converting cache to tabix format...'
-    #perl convert_cache.pl -species homo_sapiens -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || echo "Failed to run VEP tabix for homo_sapiens"\
-    #    && perl convert_cache.pl -species homo_sapiens_refseq -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || echo "Failed to run VEP tabix for homo_sapiens_refseq"\
-    #    && perl convert_cache.pl -species homo_sapiens_merged -version ${VEP_VERSION}_GRCh37 --dir $VEP_CACHE || echo "Failed to run VEP tabix for homo_sapiens_merged"\
-    #check_success
     popd
 } 2>> $LOG_FILE # Redirect all errors to the log file
 

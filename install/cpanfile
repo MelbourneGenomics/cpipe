@@ -5,5 +5,4 @@ requires 'DBI';
 requires 'LWP::Protocol::https';
 requires 'File::Copy::Recursive';
 requires 'Archive::Extract';
-requires 'Bio::Root::Version';
 requires 'CGI';
