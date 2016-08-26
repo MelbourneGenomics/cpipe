@@ -27,5 +27,16 @@ done
 #Fastqc is a perl script so needs to be chmod +x'd
 chmod +x $TOOLS/fastqc/fastqc
 
-# Get HTSlib module
-cpanm Bio::DB::HTS
+#Load environment for things like $HTSLIB
+source $CURRENT_DIR/environment.sh
+
+echo -n "Fixing perl modules..."
+# Reinstall modules e.g. that require compilation
+pushd $BASE/install\
+    && cpanm --installdeps --local-lib-contained $TOOLS_ROOT/perl_lib .\
+&& popd
+if [[ $? -ne 0 ]] ; then
+    echo "Failed!"
+else
+    echo "Done."
+fi
