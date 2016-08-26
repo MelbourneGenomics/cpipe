@@ -1,0 +1,162 @@
+// Defaults
+executor="slurm"
+account="VR0002"
+walltime="08:00:00"
+memory="8"
+jobtype="single"
+queue="terri"
+
+// Include ngs utils to make them available to pipeline
+// libs="../tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar"
+libs="../tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:../tools/groovy-ngs-utils/1.0/groovy-ngs-utils.jar"
+
+// To lower contention on the variant database,
+// restrict the concurrency on updating it down to 1
+limits {
+    variantdb = 1
+}
+
+// Command specific configuration
+commands {
+
+	local {
+		executor="local"
+	}
+
+        // For really quick jobs
+	small {
+		walltime="0:45:00"
+                memory="4"
+	}
+	smallish {
+		walltime="3:00:00"
+                memory="4"
+	}
+
+	medium {
+		walltime="48:00:00"
+                memory="8"
+	}
+
+	fastqc {
+		walltime="01:30:00"
+                memory="4"
+	}
+
+        bwamem {
+                walltime="24:00:00"
+                jobtype="single"
+                procs=8
+        }
+
+	merge {
+		// walltime="12:00:00"
+		// memory="16"
+		walltime="12:00:00"
+		memory="8"
+        }
+
+	mergevcf {
+		walltime="8:00:00"
+		memory="8"
+	}
+
+	MarkDuplicates {
+		walltime="36:00:00"
+		memory="24"
+	}
+
+	index_bam {
+		memory="4"
+	}
+
+	ReorderSam {
+		memory="12"
+		walltime="24:00:00"
+	}
+	count_covariates {
+		walltime="24:00:00"
+		memory="8"
+	}
+	recalibrate_bam {
+		walltime="36:00:00"
+		memory="12"
+	}
+	realign_target_creator {
+		memory="8"
+		walltime="24:00:00"
+	}
+
+        gatk_doc {
+		walltime="48:00:00"
+        }
+
+	local_realign {
+		memory="12"
+		walltime="48:00:00"
+                queue="terri"
+	}
+
+	gatk_call_variants {
+		walltime="36:00:00"
+		memory="12"
+                procs=4
+	}
+
+        gatk_genotype {
+                walltime="36:00:00"
+                memory="28"
+                procs=4
+        }
+
+        calc_coverage_stats {
+            walltime="4:00:00"
+            memory="16"
+            queue="terri"
+        }
+
+        coverageBed {
+            walltime="24:00:00"
+            memory="4"
+            queue="terri"
+        }
+
+        vep {
+            walltime="24:00:00"
+            memory="12"
+        }
+
+        genome_refinement {
+            walltime="12:00:00"
+            memory="12"
+        }
+
+        vcf_to_excel {
+            walltime="24:00:00"
+            memory="20"
+            jobtype="smp" // to get exclusive node
+        }
+
+        qc_excel_report {
+            memory="48"
+            walltime="14:00:00"
+            jobtype="smp" // to get exclusive node
+        }
+
+        validate_batch {
+            executor="local" // pdftotext requirement
+        }
+        update_sample_database {
+            executor="local"
+        }
+}
+
+/*
+reports {
+    // Customise the report format to include the date
+    index {
+        fileName="report_${new Date().format("yyyy_M_d_hh_mm")}.html"
+        notification=true
+    }
+}
+*/

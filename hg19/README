@@ -1,0 +1,36 @@
+====================== Melbourne Genomics Variant Calling Pipeline =======================
+
+This is the directory where the pipeline expects to find reference data.
+
+Most reference data is downloaded from the GATK resource bundle. For more information on
+the GATK resource bundle, see this post:
+
+http://gatkforums.broadinstitute.org/discussion/1213/what-s-in-the-resource-bundle-and-how-can-i-get-it
+
+To actually download the files, simply paste the following URL into your browser:
+
+  ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19
+
+In fact, we only rely on small parts of the resource bundle so you should only download specific files:
+
+    dbsnp_138.hg19.vcf
+    dbsnp_138.hg19.vcf.idx
+    Mills_and_1000G_gold_standard.indels.hg19.vcf
+    Mills_and_1000G_gold_standard.indels.hg19.vcf.idx
+    ucsc.hg19.dict
+    ucsc.hg19.fasta
+    ucsc.hg19.fasta.fai
+
+These will be zipped on FTP site, so you need to unzip them (tar -xzf <file>) after downloading.
+
+Finally, the reference FASTA needs to be indexed:
+
+    bwa index -a bwtsw ucsc.hg19.fasta
+
+(Expect this to take anywhere from 10 minutes to an hour depending on your computer)
+        
+
+NOTE: for genome in a bottle comparisons, the file na12878_na12877_bwa_gatk3.vcf 
+may be downloaded on 17 Feb 2015 from 
+
+ftp://ussd-ftp.illumina.com/IlluminaPlatinumGenomes_v7.0/individual_callsets/
