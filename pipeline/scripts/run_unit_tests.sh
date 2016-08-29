@@ -24,10 +24,21 @@
 #
 ########################################################
 
-export GROOVY="$PWD/tools/groovy/2.3.4/bin/groovy"
-export GROOVY_NGS="$PWD/tools/groovy-ngs-utils/1.0.2"
+export GROOVY="$PWD/tools/groovy/2.4.6/bin/groovy"
+export GROOVY_NGS="$PWD/tools/groovy-ngs-utils/1.0.5"
 export EXCEL="$PWD/tools/excel/1.0"
+GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/2.4.6/lib/groovy-2.4.6.jar:$PWD/tools/groovy/2.4.6/lib/hamcrest-core-1.3.jar:$PWD/tools/groovy/2.4.6/lib/junit-4.11.jar:$PWD/pipeline/tests/lib/cpsuite-1.2.6.jar:$EXCEL/excel.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$PWD/pipeline/tests/lib/JUnitXmlFormatter.jar"
+GROOVYC="$PWD/tools/groovy/2.4.6/bin/groovyc"
 
+# python tests
 pushd pipeline/tests
 python -m unittest discover -s . -p '*_test.py' -v
+popd
+
+# groovy tests
+pushd pipeline/tests
+# compile scripts and tests
+mkdir -p tmp
+sh $GROOVYC -cp $GROOVY_TEST_LIBRARIES -d tmp ../scripts/*.groovy ./*.groovy
+java -cp $GROOVY_TEST_LIBRARIES:tmp RunAll
 popd

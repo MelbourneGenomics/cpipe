@@ -27,6 +27,7 @@ about title: "Melbourne Genomics Demonstration Project Pipeline"
 
 // Load the default configuration
 load 'config.groovy'
+load 'pipeline_helpers.groovy'
 
 // Local file can set EXOME_TARGET and ANALYSIS_PROFILES
 if(file("../target_regions.txt").exists())  {
@@ -40,17 +41,14 @@ requires EXOME_TARGET : """
         region here.
     """
 
-// All the core pipeline stages in the pipeline
-load 'pipeline_stages_config.groovy'
-// load 'haloplex.groovy'
-
-sample_metadata_file = correct_sample_metadata_file( args[0] ) // fix syntax issues and update sample_metadata_file
+/////////////////////////////////////////////////////////
+corrected_sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update corrected_sample_metadata_file
 
 try {
-  sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_mg_sample_info(corrected_sample_metadata_file)
 }
 catch (RuntimeException e) {
-  sample_info = SampleInfo.parse_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_sample_info(corrected_sample_metadata_file)
 }
 
 // We are specifying that each analysis takes place inside a fixed file structure
@@ -64,74 +62,154 @@ batch = new File("..").canonicalFile.name
 // Extract the analysis profiles from the sample information
 ANALYSIS_PROFILES = sample_info*.value*.target as Set
 
-samples = sample_info.keySet()
+
+// trio members
+(all_samples, proband_samples, trio_samples, individual_samples) = find_sample_types(sample_info)
+println "all samples: ${all_samples}; proband_samples: ${proband_samples}; trio_samples: ${trio_samples}; individual_samples: ${individual_samples}"
+
+// due to bpipe not allowing empty branch lists https://github.com/ssadedin/bpipe/issues/180
+// we have to explicitly mark a list as empty
+// proband is the only one that could feasibly be empty and is used in a branch list
+EMPTY_MARKER = "** dummy sample **"
+if (proband_samples.size() == 0) {
+    proband_samples.add(EMPTY_MARKER)
+}
+
+// all the core pipeline stages in the pipeline
+load 'pipeline_stage_initialize.groovy' // preparation of a batch
+load 'pipeline_stage_alignment.groovy' // generate a bam
+load 'pipeline_stage_variant_calling.groovy' // find variants
+load 'pipeline_stage_variant_analysis.groovy' // filter, normalize, annotate, post process
+load 'pipeline_stage_reports.groovy'
+
+// specific to type of analysis
+load 'pipeline_stage_germline.groovy'
+load 'pipeline_stage_trio.groovy'
+
+set_sample_name_without_target = {
+    if (branch.name == EMPTY_MARKER) {
+        stage_status('set_sample_name', 'skipping empty branch', branch.name)
+        succeed "This is a dummy branch. Not an error."
+    }
+    else {
+        stage_status('set_sample_name', 'updating sample name', branch.name)
+        branch.sample = branch.name
+    }
+}
+
+set_sample_name = {
+    if (branch.name == EMPTY_MARKER) {
+        stage_status('set_sample_name', 'skipping empty branch', branch.name)
+        succeed "This is a dummy branch. Not an error."
+    }
+    else {
+        branch.sample = branch.name
+    }
+
+    // terminate the branch if the profile doesn't match
+    if(sample_info[branch.sample].target != branch.target_name) {
+        // This is expected because every file is processed for every target/flagship
+        succeed "skipping sample $sample for target $target_name"
+    }
+}
+
+set_analysis_type = {
+    println("updating analysis from ${branch.analysis} to ${new_analysis}")
+    branch.analysis = new_analysis
+}
+
+set_analysis_type_individual = {
+    println("updating analysis from ${branch.analysis} to individual")
+    branch.analysis = "individual"
+}
+
+set_analysis_type_trio = {
+    println("updating analysis from ${branch.analysis} to trio")
+    branch.analysis = "trio"
+}
 
 run {
-    // Check the basic sample information first
-    check_sample_info +  // check that fastq files are present
-    check_tools +
-    update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
-    // Create a single BED that contains all the regions we want to call
-    // variants in
-    create_combined_target + 
+    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID
 
-    generate_pipeline_id + // make a new pipeline run ID file if required
-
-    // For each analysis profile we run the main pipeline in parallel
-    ANALYSIS_PROFILES * [
-
-        set_target_info + 
-
-        init_analysis_profile +
-
-        create_splice_site_bed +
+    // for each analysis profile we run the main pipeline in parallel
+    ANALYSIS_PROFILES * 
+    [
+        initialize_profiles + // setup target regions
         
-        // The first phase is to perform alignment and variant calling for each sample
-        samples * [
-               set_sample_info +
-                   "%.gz" * [ fastqc ] + check_fastqc +
-                   ~"(.*)_R[0-9][_.].*fastq.gz" * [ trim_fastq + align_bwa + index_bam + cleanup_trim_fastq ] +
-                   merge_bams +
-                   dedup + 
-                   cleanup_initial_bams +
-                   realignIntervals + realign + index_bam +
-                   bsqr_recalibration + index_bam +
-				   cleanup_intermediate_bams +
-                       [
-                         call_variants_gatk + call_pgx + merge_pgx +
-                         filter_variants + merge_variants +
-                         annotate_vep + index_vcf +
-                         annovar_table +
-                         [ 
-                             add_to_database, 
-                             augment_condel + annotate_significance
-                         ]  +
-                         calc_coverage_stats + check_ontarget_perc + [ summary_pdf, exon_qc_report ],
-                         gatk_depth_of_coverage,
-                         insert_size_metrics
-                       ]
-                   + check_coverage
-                   + check_karyotype
-        ] + qc_excel_report 
-   ] + 
+        all_samples * // for each sample...
+        [
+            // --- module 1. data pre-processing for each sample: ---
+            // the goal of this module is an analysis ready BAM
+            // alignment, mark duplicates, indel realignment, base recalibration -> analysis ready reads
+            // loosely based on gatk workflow
+            set_sample_name +
+            analysis_ready_reads + // pipeline_stages_alignment
 
-   // The 3rd phase is to produce the output spreadsheet, 1 per analysis profile
-   ANALYSIS_PROFILES * [ set_target_info +  [ vcf_to_excel, family_vcf ] ] +
+            // --- module 2. variant discovery
+            // the goal of this module is a raw VCF
+            // each sample is passed onto each type of enabled analysis and processed if relevant
+            germline_analysis_phase_1 + // haplotypecaller without a ped for all samples (variant_discovery). Result -> all samples have .g.vcf
 
+            // generate reports and do checks based on bam alignment
+            analysis_ready_reports +
+            analysis_ready_checks // reports
+        ] +
+
+        // each type of analysis can do a second phase after all phase 1 stages have finished
+        // i.e. because trio analysis is dependent on germline analysis phase 1
+        // result is individual.genotype.raw.vcf and trio.genotype.raw.vcf
+        [
+            proband_samples *
+            [
+                set_sample_name + set_analysis_type_trio + trio_analysis_phase_2 // generates .trio.genotype.raw.vcf
+            ],
+            individual_samples * // individuals and probands
+            [
+                set_sample_name + set_analysis_type_individual + germline_analysis_phase_2 // generates .individual.combined.genotype.vcf
+            ]
+        ] +
+
+        // --- module 3. fitering and annotation
+        [ 
+            proband_samples *
+            [
+                set_sample_name + set_analysis_type_trio + genotype_refinement_trio + variant_analysis
+            ],
+            individual_samples * // individuals and probands
+            [
+                set_sample_name + set_analysis_type_individual + genotype_refinement_individual + variant_analysis
+            ]
+        ]
+
+        // qc_excel_report deprecated, see analysis_ready_reports
+
+   ] +
+
+   // --- module 4. post-processing
    // Produce a mini bam for each variant to help investigate individual variants
-   samples * [ variant_bams ] +
+   // * mini-bams are no longer produced
 
-   // And then finally write the provenance report (1 per sample)
-   samples * [ provenance_report /* , annovar_to_lovd */ ] +
+   // write the provenance report (1 per sample)
+   all_samples *
+   [ 
+       provenance_report
+   ] +
+
+   // clean up, mark read only, move
+   finish_batch_run +
+
+   // update the central database 
+   [
+       proband_samples *
+       [
+           set_sample_name_without_target + set_analysis_type_trio + update_sample_database
+       ],
+       individual_samples * // individuals and probands
+       [
+           set_sample_name_without_target + set_analysis_type_individual + update_sample_database
+       ]
+   ]
    
-   // And report on similarity between samples
-   sample_similarity_report +
-
-   // check overall quality of results
-   validate_batch +
-
-   // update metadata and pipeline ID
-   create_sample_metadata
-}
+ }
 

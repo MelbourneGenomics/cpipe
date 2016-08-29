@@ -79,16 +79,16 @@ EXOME_TARGET=""
 // the variant database.
 SAMPLE_ID_MASK=".*"
 
-// Filter out variants observed more than 2 times (ie: 3 times or more)
+// Filter out variants observed more than 10 times (ie: 11 times or more)
 // in samples from a different cohort / disease target
-OUT_OF_COHORT_VARIANT_COUNT_FILTER=2
+OUT_OF_COHORT_VARIANT_COUNT_FILTER=10
 
 // This is only used for setting read group information in the
 // BAM files
 PLATFORM="illumina"
 
 // The coverage level below which a sample should be failed
-MEDIAN_COVERAGE_THRESHOLD=50
+MEDIAN_COVERAGE_THRESHOLD=0
 
 // Base location of all the tools that we use
 TOOLS="$BASE/tools"
@@ -97,7 +97,9 @@ TOOLS="$BASE/tools"
 SCRIPTS="$BASE/pipeline/scripts"
 
 // Location of Picard tools here
-PICARD_HOME="$BASE/tools/picard/picard-tools-1.65"
+PICARD_HOME="$BASE/tools/picard/picard-tools-2.2.1"
+
+HTSLIB="$BASE/tools/htslib/1.3"
 
 // Set location of Annovar distribution
 // Due to license restrictions on Annovar, you must download
@@ -113,45 +115,56 @@ ANNOVAR_DB="$TOOLS/annovar/humandb"
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
 GATK="$TOOLS/gatk/2.8-1-g932cd3a"
+
+// gatk < 2.8
 GATK_LEGACY=false
+
+// do not do genotyping, directly call the variants
+// gatk < 3.5
+GATK_VARIANT_ONLY=false
 
 // Utilities for making Excel files 
 EXCEL="$TOOLS/excel/1.0"
 
 // Location of Bedtools distribution
-BEDTOOLS="$TOOLS/bedtools/2.18.2"
+BEDTOOLS="$TOOLS/bedtools/2.25.0"
 
 // Location of Samtools
-SAMTOOLS="$TOOLS/samtools/0.1.19"
+BCFTOOLS="$TOOLS/bcftools/1.3"
+SAMTOOLS="$TOOLS/samtools/1.3"
 
 // FastQC tool
-FASTQC="$TOOLS/fastqc/0.10.1"
+FASTQC="$TOOLS/fastqc/0.11.5"
 
 // Utilties for processing NGS data in Java/Groovy
-GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
+GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.5"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
 // (you can create a symlink to an existing directory with 
 // that name if desired).
 // See tools/vep/README for more information
-VEP_VERSION="74"
+VEP_VERSION="83"
 VEP="$TOOLS/vep/$VEP_VERSION"
 
-IGVTOOLS="$TOOLS/IGVTools/2.3.6"
+IGVTOOLS="$TOOLS/IGVTools/2.3.72"
 
 // IGV location
-IGV="$TOOLS/tools/igv/2.3.15"
+IGV="$TOOLS/tools/igv/2.3.72"
 
 // Location and version of BWA
-BWA="$TOOLS/bwa/0.7.5a/bwa"
+BWA="$TOOLS/bwa/0.7.13/bwa"
 BWA_THREADS="5"
 
-CONDEL="$TOOLS/condel/24-1-2013"
+CONDEL="$TOOLS/vep_plugins/condel/2.4"
+DBNSFP="$TOOLS/vep_plugins/dbNSFP"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
 ID_FILE="$BASE/pipeline_id"
+
+// set this to be a central db of all analyses
+SAMPLE_DB="$BASE/samples.db"
 
 // By default variant counts are annotated from the same database as the
 // one that they were added to in the first place
@@ -160,13 +173,13 @@ UPDATE_VARIANT_DB=VARIANT_DB
 ANNOTATION_VARIANT_DB=VARIANT_DB
 
 // Location of groovy installation
-GROOVY_HOME="$TOOLS/groovy/2.3.4"
+GROOVY_HOME="$TOOLS/groovy/2.4.6"
 
 // GROOVY binary
 GROOVY="$GROOVY_HOME/bin/groovy"
 
 // Whether to fail analysis if FASTQC produces warnings
-CHECK_FASTQC_FAILURES=true
+CHECK_FASTQC_FAILURES=false
 
 // If adapter sequence for exome capture is known, put here
 ADAPTERS_FASTA=false
@@ -178,11 +191,14 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 // Use default Java installed in PATH
 JAVA="java"
 
+// Support custom perl libraries installed in tools/perl5
+PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
+
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
 SNPEFF="$TOOLS/snpeff/3.1"
 
-// Genome needed (currently) only if using expanded splice regions
+// Genome needed for expanded splice regions
 HG19_CHROM_INFO="$REFBASE/hg19.genome"
 
 // Trimmomatic location
@@ -196,6 +212,13 @@ PYTHON="python"
 
 splice_region_window=2
 
+/////////////////////////////////////////////
+// analysis options.
+/////////////////////////////////////////////
+
+// custom annotation for variants in specified bed file
+ANNOTATE_CUSTOM_REGIONS=""
+
 // interval padding to pass to the variant caller
 INTERVAL_PADDING_CALL=25
 
@@ -204,3 +227,58 @@ INTERVAL_PADDING_SNV=10
 
 // interval padding for indels in filter_variants
 INTERVAL_PADDING_INDEL=25
+
+// do not filter synonymous with this range
+ALLOW_SYNONYMOUS_INTRON=0
+ALLOW_SYNONYMOUS_EXON=0
+
+// mark batch directory read only after an analysis completes
+POST_ANALYSIS_READ_ONLY=false
+
+// move batch directory after an analysis completes
+POST_ANALYSIS_MOVE=false
+
+// space separated list of additional beds to search when generating gap report
+GAP_ANNOTATOR_CUSTOM_BEDS=""
+
+/////////////////////////////////////////////
+// filtering options. 
+// if any of these criteria are not met, the variant will be filtered
+// if the variant includes multiple samples (i.e. trio), the average value must meet this criteria
+/////////////////////////////////////////////
+// minimum allele depth
+HARD_FILTER_AD=2
+
+// minimum allele frequency
+HARD_FILTER_AF=0.15
+
+// minimum depth
+HARD_FILTER_DP=5
+
+// minimum quality
+HARD_FILTER_QUAL=5
+
+////////////////////////////////////////////
+// trio related resources
+////////////////////////////////////////////
+// note: only needed for trio pathway
+TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+
+////////////////////////////////////////////
+// output options
+////////////////////////////////////////////
+
+// generate a filtered bam file. options are exons, design, or skip
+FILTERED_ON_EXONS="skip"
+
+////////////////////////////////////////////
+// qc options
+////////////////////////////////////////////
+// what depth is required to contribute to satisfactory coverage
+QC_THRESHOLD=20
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a good rating
+QC_GOOD=95
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a pass rating
+QC_PASS=80
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
+QC_FAIL=0

@@ -1,5 +1,4 @@
 #!/bin/bash
-# vim: ts=4:expandtab:sw=4:cindent
 ############################################################
 #
 # Installation check script for Melbourne Genomics Pipeline
@@ -12,12 +11,16 @@
 #
 ############################################################
 
+CUSTOM_ASSETS_URL="https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-assets-2.3"
+MANIFEST="manifest-2.3"
+
 # Helper functions
 function err() {
+    prefix=`date "+%F %T"`
     echo
     echo "========================= ERROR =================================="
     echo
-    echo "$1" | fmt -w 100
+    echo "$prefix $1" | fmt -w 100
     echo
     echo "=================================================================="
     echo
@@ -25,18 +28,20 @@ function err() {
 }
 
 function warn() {
+    prefix=`date "+%F %T"`
     echo
     echo "================================================================"
-    echo "WARNING: $1" | fmt -w 100
+    echo "$prefix WARNING: $1" | fmt -w 100
     echo "================================================================"
     echo
 }
 
 
 function msg() {
+    prefix=`date "+%F %T"`
     echo
     echo "================================================================"
-    echo "$1"
+    echo "$prefix $1"
     echo "================================================================"
     echo
 }
@@ -95,8 +100,36 @@ function set_config_variable() {
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
     sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    
+    $TOOLS/groovy/2.3.4/bin/groovy -D name="$NAME" -D value="$VALUE" \
+      -pne 'line.startsWith(System.properties.name+"=")?line.replaceAll("=.*",/="/+java.util.regex.Matcher.quoteReplacement(System.properties.value)+/"/): line' \
+      "$BASE/pipeline/config.groovy.tmp" > \
+      "$BASE/pipeline/config.groovy" \
+        || err "Failed to set configuration variable $NAME to value $VALUE"
+        
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
+}
+
+function gatk_prompt() {
+        echo "
+ The recommended version of GATK for Cpipe is 3.5. However license
+ terms prevent Cpipe from including this version with Cpipe. Cpipe
+ includes GATK 2.3.9 which can be used instead. If you wish to use
+ a later version of GATK, please abort this script (Ctrl-c), download
+ that version after separately agreeing to the license terms, and
+ place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
+ you have done that, set the GATK variable in pipeline/config.groovy
+ appropriately and re-run this script.
+    "
+        prompt "Continue with GATK 2.3.9? (y/n)" "y"
+        if [ "$REPLY" == "y" ];
+        then
+            set_config_variable GATK "$TOOLS/gatk/2.3.9"
+            set_config_variable GATK_LEGACY "true"
+        else
+            msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
+        fi
 }
 
 echo '
@@ -158,102 +191,31 @@ compile "$BWA"
 
 compile "$SAMTOOLS/samtools"
 
+compile "$BCFTOOLS/bcftools"
+
+compile "$HTSLIB/tabix"
+
 compile "$BEDTOOLS/bin/bedtools"
 
 msg "Check GATK is downloaded and available"
 [ -e $GATK/GenomeAnalysisTK.jar ] || {
-    echo "
- The recommended version of GATK for Cpipe is 3.3. However license 
- terms prevent Cpipe from including this version with Cpipe. Cpipe
- includes GATK 2.3.9 which can be used instead. If you wish to use
- a later version of GATK, please abort this script (Ctrl-c), download
- that version after separately agreeing to the license terms, and 
- place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
- you have done that, set the GATK variable in pipeline/config.groovy 
- appropriately and re-run this script.
-    "
-    prompt "Continue with GATK 2.3.9? (y/n)" "y"
-    if [ "$REPLY" == "y" ];
-    then
-        set_config_variable GATK "$BASE/tools/gatk/2.3.9"
-        set_config_variable GATK_LEGACY "true"
+    if [ -e $TOOLS/gatk/3.5 ];
+    then    
+       prompt "Found GATK 3.5. Continue with this version? (y/n)" "y"
+       if [ "$REPLY" == "y" ];
+       then
+           set_config_variable GATK '$TOOLS/gatk/3.5'
+       else
+           gatk_prompt
+       fi    
     else
-        msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
+        err "Please install GATK then re-run this script"
     fi
 }
 
-msg "Check Annovar is downloaded and available"
-[ -e $ANNOVAR/annotate_variation.pl ] || {
-
-  pushd $BASE/tools/annovar > /dev/null
-
-  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | head -1`
-
-  if [ ! -e "$ANNOVAR_DOWNLOAD" ];
-  then
-        echo "
-  Due to license restrictions, Annovar cannot be included
-  with Cpipe. If you wish to use Annovar, please download it
-  separately and place the downloaded file (tar.gz) in the 
-  following location: $BASE/tools/annovar
-
-  Once you have done this, press enter to continue.
-      "
-      read  -p "Press enter when you have placed the Annovar tar.gz file in $BASE/tools/annovar ..."
-  fi
-
-  ANNOVAR_DOWNLOAD=`ls -t *.tar.gz | tail -1`
-  if [ -e "$ANNOVAR_DOWNLOAD" ];
-  then
-      tar -xzf $ANNOVAR_DOWNLOAD
-      ANNOVAR_PL=`find . -iname annotate_variation.pl | xargs ls -t | head -1` 
-      ANNOVAR_VERSION=`perl $ANNOVAR_PL | grep Version | grep -o '[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}'`
-      ANNOVAR_DIR=`dirname $ANNOVAR_PL`
-      mv $ANNOVAR_DIR $ANNOVAR_VERSION
-
-      set_config_variable ANNOVAR "$BASE/tools/annovar/$ANNOVAR_VERSION"
-  else
-      err "Could not find tar.gz file in $BASE/tools/annovar"
-  fi
-  popd > /dev/null
-}
-
-msg "Check Annovar database exists"
-MISSING_ANNOVAR=""
-ANNOVAR_DB_FILES="hg19_snp138.txt hg19_esp6500siv2_all.txt hg19_refGene.txt hg19_ALL.sites.2014_10.txt hg19_phastConsElements46way.txt hg19_ljb26_all.txt"
-for i in $ANNOVAR_DB_FILES ;  
-do
-    [ -e $ANNOVAR_DB/$i ] || {
-        MISSING_ANNOVAR="$i $MISSING_ANNOVAR"
-    }
-done
-
-if [ ! -z "$MISSING_ANNOVAR" ];
-then
-    echo "
-    One or more Annovar database files is not present. Do you want to 
-    download Annovar files now using the built in download script?
-    NOTE: downloading may take some time and cause large files to be
-    downloaded. Please try to avoid having this process be interrupted.
-
-    Missing files:
-
-    $MISSING_ANNOVAR
-    "
-
-    prompt "Download Annovar files? (y/n)" "y"
-
-    if [ "$REPLY" == "y" ];
-    then
-        $BASE/pipeline/scripts/download_annovar_db.sh $ANNOVAR $BASE/tools/annovar/humandb \
-            || err "Failed to download Annovar databases"
-    else
-        msg "WARNING: Cpipe will not operate correctly if Annovar database file are not present."
-    fi
-fi
-
+########## vep ##########
 msg "Check VEP database downloaded for version $VEP_VERSION..."
-if [ -e $VEP/../vep_cache/homo_sapiens/$VEP_VERSION/1 ] && [ -e $VEP/Bio ]; then
+if [ -e $VEP/../vep_cache/homo_sapiens/${VEP_VERSION}*/1 ] && [ -e $VEP/Bio ]; then
     msg "VEP installed..."
 else
     echo "
@@ -271,17 +233,87 @@ else
     prompt "Do you want to run the VEP installer now? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        cd $VEP; 
-        perl INSTALL.pl -c ../vep_cache -a acf -s homo_sapiens_vep || err "Failed to run VEP installer"
+        cd $VEP
+        export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
+        # convert ../vep_cache to absolute path
+        VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
+        msg "INFO: VEP is installing homo_sapiens_vep"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        msg "INFO: VEP is installing homo_sapiens_refseq"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        msg "INFO: VEP is installing homo_sapiens_merged"
+        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        # we don't run convert_cache as it (currently) messes up the frequency data (gmaf, etc)
+        cd -
     else
         msg "WARNING: Cpipe will not operate correctly if VEP is not installed"
     fi
+    msg "INFO: VEP has finished"
 fi
 
-msg "Configuring Condel Plugin ..."
+########## condel plugin ##########
+msg "Configuring Condel plugin..."
 cp "$CONDEL/config/condel_SP.conf.template" "$CONDEL/config/condel_SP.conf"
-sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
 
+if [ ! -e $TOOLS/vep_plugins/Condel.pm ]; then
+  ln -s "$CONDEL/Condel.pm" "$TOOLS/vep_plugins"
+else
+  msg "condel symlink already configured"
+fi
+
+# Used to use sed to set this as below, but not all versions of sed
+# support alternate pattern separators (s,foo,bar,g) which makes it tricky to use
+# for file paths - instead use some inline groovy to do it
+unset GROOVY_HOME
+./tools/groovy/2.3.4/bin/groovy -e 'new File(args[0]).text = new File(args[0]).text.replaceAll("do not use", args[1])' \
+           $CONDEL/config/condel_SP.conf $CONDEL\/config \
+           || err "Unable to configure Condel plugin"
+
+########## dbnsfp plugin ##########
+msg "Configuring dbNSFP plugin"
+
+if [ ! -e $TOOLS/vep_plugins/dbNSFP.pm ]; then
+  ln -s "$DBNSFP/dbNSFP.pm" "$TOOLS/vep_plugins"
+else
+  msg "condel symlink already configured"
+fi
+
+# download dbnsfp dataset
+#if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
+if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
+  pushd "$TOOLS/vep_plugins/dbNSFP"
+  #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
+  msg "downloading dbnsfp..."
+  wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+  msg "downloading dbnsfp: done"
+  popd
+else
+  msg "dbnsfp dataset already downloaded"
+fi
+
+# process dbnsfp dataset
+if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
+  pushd "$TOOLS/vep_plugins/dbNSFP"
+  msg "processing dbnsfp..."
+  unzip dbNSFPv2.9.1.zip
+  cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
+  "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
+  msg "processing dbnsfp: done"
+  popd
+else
+  msg "dbnsfp dataset already downloaded"
+fi
+
+# grantham plugin
+msg "Configuring Grantham plugin..."
+if [ ! -e "$TOOLS/vep_plugins/Grantham.pm" ]; then
+  ln -s "$TOOLS/vep_plugins/grantham/20160614/Grantham.pm" "$TOOLS/vep_plugins"
+else
+  msg "grantham symlink already configured"
+fi
+
+##########
 msg "Check that reference FASTA exists"
 [ -e "$REF" ] ||  {
   echo "
@@ -387,6 +419,46 @@ then
         set_config_variable GROOVY_NGS "$TOOLS/groovy-ngs-utils/1.0.1"
     fi
 fi
+
+# Since Mac's don't ship with md5sum 
+: ${MD5SUM:=md5sum}
+type $MD5SUM > /dev/null 2>&1 || {
+  type md5sum-lite > /dev/null 2>&1 || err "Cannot find a suitable md5sum utility. Please set MD5SUM environment variable"
+  MD5SUM=md5sum-lite
+  echo "Using MD5SUM=$MD5SUM"
+}
+
+msg "Checking for custom assets..."
+# download the manifest
+pushd $REFBASE
+[ -f $MANIFEST ] && rm $MANIFEST
+wget $CUSTOM_ASSETS_URL/$MANIFEST
+
+
+while read line; do
+  if [[ "$line" =~ ^#.* ]]; then
+    : #echo "comment"
+  else
+    filename=${line%,*}
+    md5=${line##*,}
+    echo "checking $filename..."
+    if [ -f $filename ]; then
+      # check md5
+      existing=`$MD5SUM $filename | awk '{ print $1; }'`
+      if [ $existing == $md5 ]; then
+        echo "$filename is up to date"
+      else
+        echo "updating $filename"
+        rm $filename
+        wget "$CUSTOM_ASSETS_URL/$filename"
+      fi
+    else # download file
+      echo "downloading $filename"
+      wget "$CUSTOM_ASSETS_URL/$filename"
+    fi
+  fi
+done <"$MANIFEST"
+popd 
 
 msg "Success: all the dependencies I know how to check are OK"
 

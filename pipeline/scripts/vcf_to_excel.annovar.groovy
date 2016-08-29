@@ -165,13 +165,13 @@ OUTPUT_FIELDS = ["Func", "Gene", "ExonicFunc"] +
                 AACHANGE_FIELDS + 
                 ["Gene Category", "Priority_Index", "CADD_raw", "CADD_phred", "Condel", "phastConsElements46way", ESP_FIELD, ONEKG_FIELD, "snp138", EXAC_FIELD] +
                 LJB_FIELDS + 
-                [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#Obs", "RefCount", "AltCount", "PRIORITY_TX"]
+                [ "genomicSuperDups", "Chr", "Start", "End", "Ref", "Alt", "Otherinfo", "Qual", "Depth", "#ObsNotInCohort", "#ObsInCohort", "RefCount", "AltCount", "PRIORITY_TX"]
 
 OUTPUT_CSV_FIELDS = ["Func","Gene","ExonicFunc"] +
                     AACHANGE_FIELDS + 
                     ["phastConsElements46way","genomicSuperDups",ESP_FIELD,ONEKG_FIELD,EXAC_FIELD,"snp138"] +
                     LJB_FIELDS +
-                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","CADD_phred", "Gene Category","Priority_Index","#Obs","RefCount","AltCount","PRIORITY_TX"]
+                    ["Chr","Start","End","Ref","Alt","Otherinfo","Qual","Depth","Condel","Priority_Index","CADD_raw","CADD_phred", "Gene Category", "#ObsNotInCohort","#ObsInCohort","RefCount","AltCount","PRIORITY_TX"]
 
 CENTERED_COLUMNS = ["Gene Category", "Priority_Index", ONEKG_FIELD, ESP_FIELD, "LJB_PhyloP_Pred","LJB_SIFT_Pred","LJB_PolyPhen2","LJB_PolyPhen2_Pred"]
 
@@ -250,7 +250,8 @@ collectOutputValues = { lineIndex, funcGene, variant, sample, variant_counts, av
     outputValues.CADD = av.columns.CADD != null ? av.CADD: ""
 
     if(db) {
-        outputValues["#Obs"] = variant_counts.in_target
+        outputValues["#ObsInCohort"] = variant_counts.in_target
+        outputValues["#ObsNotInCohort"] = variant_counts.other_target
     }
 
     outputValues.RefCount=outputValues.AltCount="";
@@ -306,7 +307,7 @@ try {
                     err "The following samples did not have an Annovar file provided: $sample in Annovar files:\n${opts.as.join('\n')}"
 
                 println "Processing $annovarName ..."
-                def annovar_csv = parseCSV(annovarName,',').grep { it.Priority_Index.toInteger()>0 }.sort { -it.Priority_Index.toInteger() }
+                def annovar_csv = parseCSV(annovarName,',').grep { it.Priority_Index.toInteger()>0 }.sort { -it.Priority_Index.toInteger() } // here we filter on priority < 1 !!
 
                 // Parse the VCF. It is assumed that all the samples to be exported are included in the VCF
                 String vcfName = opts.vcfs.find { new File(it).name.startsWith(samplePrefix) }

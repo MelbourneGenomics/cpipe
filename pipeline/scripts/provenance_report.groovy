@@ -41,7 +41,7 @@ files = [
     finalbam: sampleFiles.grep { it.stageName.endsWith("recal") },
     vcf: sampleFiles.grep { it.stageName.startsWith("call_variants")  && it.outputFile.name.endsWith("vcf") },
     annovarx: sampleFiles.grep { it.stageName == "vcf_to_excel" && it.outputFile.name.endsWith("annovarx.csv") },
-    summary: sampleFiles.grep { it.stageName == "summary_pdf" && it.outputFile.name.endsWith(".pdf") }
+    summary: sampleFiles.grep { it.stageName == "summary_report" && it.outputFile.name.endsWith(".md") }
 ].collectEntries { key, fs -> [ key, fs.unique { it.outputFile.absolutePath }[0] ] }
 
 tools = sampleFiles.grep { it.tools }                   // Only files with tools
@@ -100,29 +100,64 @@ new PDF().document(outputFile.absolutePath) {
 
             // BAM files from alignment
             cell("Raw Alignment")
-            cell(files.rawbam.outputFile.name)
-            cell(files.rawbam.timestamp)
-            cell(files.rawbam.outputFile.length())
+            if (files.rawbam != null) {
+              cell(files.rawbam.outputFile.name)
+              cell(files.rawbam.timestamp)
+              cell(files.rawbam.outputFile.length())
+            }
+            else {
+              cell("n/a")
+              cell("n/a")
+              cell("n/a")
+            }
 
             cell("Final Alignment")
-            cell(files.finalbam.outputFile.name)
-            cell(files.finalbam.timestamp)
-            cell(files.finalbam.outputFile.length())
+            if (files.rawbam != null) {
+              cell(files.finalbam.outputFile.name)
+              cell(files.finalbam.timestamp)
+              cell(files.finalbam.outputFile.length())
+            }
+            else {
+              cell("n/a")
+              cell("n/a")
+              cell("n/a")
+            }
 
             cell("Variant Calls")
-            cell(files.vcf.outputFile.name)
-            cell(files.vcf.timestamp)
-            cell(files.vcf.outputFile.length())
+            if (files.vcf != null) {
+              cell(files.vcf.outputFile.name)
+              cell(files.vcf.timestamp)
+              cell(files.vcf.outputFile.length())
+            }
+            else {
+              cell("n/a")
+              cell("n/a")
+              cell("n/a")
+            }
 
             cell("Annotated Variants")
-            cell(files.annovarx.outputFile.name)
-            cell(files.annovarx.timestamp)
-            cell(files.annovarx.outputFile.length())
+            if (files.annovarx != null) {
+              cell(files.annovarx.outputFile.name)
+              cell(files.annovarx.timestamp)
+              cell(files.annovarx.outputFile.length())
+            }
+            else {
+              cell("n/a")
+              cell("n/a")
+              cell("n/a")
+            }
 
             cell("Summary PDF")
-            cell(files.summary.outputFile.name)
-            cell(files.summary.timestamp)
-            cell(files.summary.outputFile.length())
+            if (files.summary != null) {
+              cell(files.summary.outputFile.name)
+              cell(files.summary.timestamp)
+              cell(files.summary.outputFile.length())
+            }
+            else {
+              cell("n/a")
+              cell("n/a")
+              cell("n/a")
+            }
         }
     }
 }

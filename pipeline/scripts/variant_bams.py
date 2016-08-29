@@ -32,8 +32,8 @@ def parse_args():
         '--bam', type=str, required=True,
         help='Input bam file.')
     parser.add_argument(
-        '--csv', type=str, required=True,
-        help='Variants in csv format. Must have at least the columns AAChange, Chr, Start, End. Sample assumed to be the start of this file name (before the ".").')
+        '--tsv', type=str, required=True,
+        help='Variants in tsv format. Must have at least the columns CHROM, POS, REF, ALT, HGVSc. Sample assumed to be the start of this file name (before the ".").')
     parser.add_argument(
         '--outdir', type=str, default='.',
         help='Output directory for bams. Directory must already exist.')
@@ -57,7 +57,7 @@ def main():
     # Parse command line arguments
     args = parse_args()
     inbam = args.bam
-    variantfile = args.csv
+    variantfile = args.tsv
     outdir = args.outdir
     upstream = args.upstream # Default 100 
     downstream = args.downstream # Default 100
@@ -68,7 +68,7 @@ def main():
 
     # Assume sample name is the first part of the filename before the "."
     #sample = variantfile.split('/')[-1].split('.')[0]
-    variant_filename = variantfile.split('/')[-1] # vlsci_1.0.2_000000017_012345678.annovarx.csv
+    variant_filename = variantfile.split('/')[-1] # vlsci_1.0.2_000000017_012345678.lovd.tsv
     if '_' in variant_filename:
       # take the last part after the _ and the first part before the .
       #sample = variant_filename.split('_')[-1].split('.')[0]
@@ -77,17 +77,23 @@ def main():
       # Assume sample name is the first part of the filename before the "."
       sample = variant_filename.split('.')[0]
 
-    with open(variantfile) as variantcsv:
+    with open(variantfile) as varianttsv:
         var_count = 0 
-        for line in csv.DictReader(variantcsv):
-            NM = line['AAChange'].split(':')[0]
+        for line in csv.DictReader(varianttsv, delimiter='\t'):
+            # annovar NM = line['AAChange'].split(':')[0]
+            nm = line['HGVSc'].split(':')[0].replace('.', '_')
 
-            chr = line['Chr']
-            start = int(line['Start'])
-            end = int(line['End'])
+            chromosome = line['CHROM']
+            start = int(line['POS']) # annovar int(line['Start'])
+            variation_length = len(line['ALT']) - len(line['REF'])
+            if variation_length > 0:
+                end = start + variation_length # annovar int(line['End'])
+            else:
+                end = start
 
-            outbam = '{0}-{1}-{2}-{3}-{4}-IGV.bam'.format(sample, NM, chr, start, end)
-            region = '{0}:{1}-{2}'.format(chr, start - upstream, end + downstream)
+            # annovar outbam = '{0}-{1}-{2}-{3}-{4}-IGV.bam'.format(sample, NM, chr, start, end)
+            outbam = '{0}-{1}-{2}-{3}-{4}-IGV.bam'.format(sample, nm, chromosome, start, end)
+            region = '{0}:{1}-{2}'.format(chromosome, start - upstream, end + downstream)
 
             # create new bam containing reads in the given region
             call([samtools_exec, 'view', '-b', '-o', outdir+'/'+outbam, inbam, region])
