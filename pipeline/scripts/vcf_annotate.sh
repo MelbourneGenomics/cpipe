@@ -42,7 +42,7 @@
 TOOLS="$5"
 VARIANTS=`grep -c -v '^#' < $1`
 
-export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
+export PERL5LIB="$PERL5LIB:$TOOLS/perl5/lib/perl5"
 
 echo "$VARIANTS variant(s) found in $1"
 if [ $VARIANTS -eq 0 ];
@@ -59,7 +59,7 @@ else
         --check_existing \
         --dir $4/../vep_cache \
         --dir_plugins $TOOLS/vep_plugins \
-        --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
+        --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa \
         --force_overwrite \
         --gmaf \
         --hgvs \

@@ -101,15 +101,6 @@ PICARD_HOME="$BASE/tools/picard/picard-tools-2.2.1"
 
 HTSLIB="$BASE/tools/htslib/1.3"
 
-// Set location of Annovar distribution
-// Due to license restrictions on Annovar, you must download
-// it yourself and place it in this location
-// Note also that many databases also need to be downloaded,
-// using annovar's downdb function. See scripts/download_annovar_db.sh for
-// a helper script.
-ANNOVAR="$TOOLS/annovar/2013aug23"
-ANNOVAR_DB="$TOOLS/annovar/humandb"
-
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)
@@ -264,21 +255,7 @@ HARD_FILTER_QUAL=5
 // note: only needed for trio pathway
 TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
 
-////////////////////////////////////////////
-// output options
-////////////////////////////////////////////
+// Support custom perl libraries installed in tools/perl5
+PERL5LIB='$PERL5LIB:$BASE/tools/perl5'
 
-// generate a filtered bam file. options are exons, design, or skip
-FILTERED_ON_EXONS="skip"
-
-////////////////////////////////////////////
-// qc options
-////////////////////////////////////////////
-// what depth is required to contribute to satisfactory coverage
-QC_THRESHOLD=20
-// what percentage of QC_THRESHOLD must be achieved across the gene to get a good rating
-QC_GOOD=95
-// what percentage of QC_THRESHOLD must be achieved across the gene to get a pass rating
-QC_PASS=80
-// what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
-QC_FAIL=0
+>>>>>>> upgrade

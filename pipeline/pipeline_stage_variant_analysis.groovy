@@ -135,24 +135,7 @@ vcf_post_annotation_filter = {
     // first copy input to output, otherwise filter_vep creates an empty file
     // /usr/bin/env bash $SCRIPTS/vcf_post_annotation_filter.sh "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
     exec """
-        VARIANTS=`grep -c -v '^#' < $input.vcf`
-
-        echo "$VARIANTS variant(s) found in $input.vcf"
-
-        if [ $VARIANTS -eq 0 ];
-        then
-          cp $input.vcf $output.vcf;
-        else
-          PERL5LIB="$TOOLS/perl5:$TOOLS/perl5/lib/perl5:$VEP" perl $VEP/filter_vep.pl 
-            --input_file $input.vcf
-            --filter "Consequence not matches stream" 
-            --filter "BIOTYPE match protein_coding"
-            --filter "Feature" 
-            --force_overwrite
-            --format vcf
-            -o $output.vcf
-            --only_matched ;
-        fi
+        /usr/bin/env bash $SCRIPTS/vcf_post_annotation_filter.sh "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
     """
     stage_status("vcf_post_annotation_filter", "exit", "${sample} ${branch.analysis}");
 }

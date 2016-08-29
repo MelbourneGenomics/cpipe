@@ -113,13 +113,13 @@ function set_config_variable() {
 
 function gatk_prompt() {
         echo "
- The recommended version of GATK for Cpipe is 3.5. However license
+ The recommended version of GATK for Cpipe is 3.3. However license 
  terms prevent Cpipe from including this version with Cpipe. Cpipe
  includes GATK 2.3.9 which can be used instead. If you wish to use
  a later version of GATK, please abort this script (Ctrl-c), download
- that version after separately agreeing to the license terms, and
+ that version after separately agreeing to the license terms, and 
  place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
- you have done that, set the GATK variable in pipeline/config.groovy
+ you have done that, set the GATK variable in pipeline/config.groovy 
  appropriately and re-run this script.
     "
         prompt "Continue with GATK 2.3.9? (y/n)" "y"
@@ -198,18 +198,20 @@ compile "$HTSLIB/tabix"
 compile "$BEDTOOLS/bin/bedtools"
 
 msg "Check GATK is downloaded and available"
+
 [ -e $GATK/GenomeAnalysisTK.jar ] || {
-    if [ -e $TOOLS/gatk/3.5 ];
-    then    
-       prompt "Found GATK 3.5. Continue with this version? (y/n)" "y"
-       if [ "$REPLY" == "y" ];
-       then
-           set_config_variable GATK '$TOOLS/gatk/3.5'
-       else
-           gatk_prompt
-       fi    
+    
+    if [ -e $TOOLS/gatk/3.3-0 ];
+    then
+        prompt "Found GATK 3.3-0. Continue with this version? (y/n)" "y"
+        if [ "$REPLY" == "y" ];
+        then
+            set_config_variable GATK '$TOOLS/gatk/3.3-0'
+        else
+            gatk_prompt
+        fi
     else
-        err "Please install GATK then re-run this script"
+        gatk_prompt
     fi
 }
 
@@ -233,8 +235,8 @@ else
     prompt "Do you want to run the VEP installer now? (y/n)" "y"
     if [ "$REPLY" == "y" ];
     then
-        cd $VEP
-        export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
+        cd $VEP; 
+        export PERL5LIB="$PERL5LIB:$TOOLS/perl5"
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         msg "INFO: VEP is installing homo_sapiens_vep"
