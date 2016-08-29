@@ -277,7 +277,6 @@ function command_exists {
         export PERL5LIB=$TOOLS_ROOT/perl_lib/lib/perl5:$PERL5LIB
         export PATH=$TOOLSROOT/htslib:$PATH
 
-        #&& { [[ -e $TOOLS_ROOT/vep/cpanfile ]] || mv $ROOT/cpanfile $TOOLS_ROOT/vep ;}\
         echo -n 'Installing general perl dependencies...'
          if [[ ! -e $TOOLS_ROOT/perl_lib ]] ; then
             mkdir -p $TOOLS_ROOT/perl_lib\
@@ -295,6 +294,18 @@ function command_exists {
                 && yes | perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR $TOOLS_ROOT/perl_lib/lib/perl5  >> $LOG_FILE\
             && popd
             check_success
+        else
+             echo 'already done'
+        fi
+
+        echo -n 'Installing VEP plugins...'
+        if [[ ! -f $TOOLS_ROOT/perl_lib/lib/perl5/Condel.pm ]] ; then
+            git clone https://github.com/Ensembl/VEP_plugins\
+            && mv VEP_plugins/*.pm $TOOLS_ROOT/perl_lib/lib/perl5\
+            && rm -rf VEP_plugins
+            check_success
+        else
+             echo 'already done'
         fi
 
         ## Data Files ##
@@ -314,26 +325,26 @@ function command_exists {
             mkdir $DATA_ROOT/gatk
         fi
 
-            GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-            GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
-            dbsnp_138.hg19.vcf.idx.gz\
-            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
-            Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz\
-            ucsc.hg19.dict.gz\
-            ucsc.hg19.fasta.gz\
-            ucsc.hg19.fasta.fai.gz"
+        GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
+        GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
+        dbsnp_138.hg19.vcf.idx.gz\
+        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
+        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz\
+        ucsc.hg19.dict.gz\
+        ucsc.hg19.fasta.gz\
+        ucsc.hg19.fasta.fai.gz"
 
-            for f in $GATK_BUNDLE_FILES ;  do
-                 URL="$GATK_BUNDLE_ROOT$f"
-                 BASE=`basename $f .gz`
-                 echo -e -n "\tDownloading $BASE..."
-                 if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-                     curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
-                     check_success
-                 else
-                    echo "already exists"
-                 fi
-            done
+        for f in $GATK_BUNDLE_FILES ;  do
+             URL="$GATK_BUNDLE_ROOT$f"
+             BASE=`basename $f .gz`
+             echo -e -n "\tDownloading $BASE..."
+             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
+                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
+                 check_success
+             else
+                echo "already exists"
+             fi
+        done
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/chromosomes/hg19.genome ]]; then
