@@ -21,6 +21,7 @@ GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 PICARD_VERSION="2.6.0"
+DBNSFP_VERSION="3.2c"
 
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -101,6 +102,27 @@ function popd {
 
 function command_exists {
     type $1 > /dev/null 2>&1
+}
+
+function download_list {
+    BASE_URL=$1
+    USER=$2
+    FILES=$3
+    TARGET_DIR=$4
+    echo "Downloading `basename $TARGET_DIR` files..."
+    for FILE in $FILES ;  do
+         FULL_URL="$BASE_URL/$FILE"
+#         echo $FULL_URL
+         BASE=`basename $FILE .gz`
+         echo -e -n "\tDownloading $BASE..."
+         if [[ ! -e $TARGET_DIR ]]; then
+             mkdir -p $TARGET_DIR\
+             && curl -q --user $USER $FULL_URL | gunzip > $TARGET_DIR/$FILE
+             check_success
+         else
+            echo "already exists"
+         fi
+    done
 }
 
 ### Start of script ###
@@ -299,10 +321,19 @@ function command_exists {
         fi
 
         echo -n 'Installing VEP plugins...'
-        if [[ ! -f $TOOLS_ROOT/perl_lib/lib/perl5/Condel.pm ]] ; then
-            git clone https://github.com/Ensembl/VEP_plugins\
-            && mv VEP_plugins/*.pm $TOOLS_ROOT/perl_lib/lib/perl5\
-            && rm -rf VEP_plugins
+        if [[ ! -f $TOOLS_ROOT/vep_plugins/Condel.pm ]] ; then
+            git clone https://github.com/Ensembl/VEP_plugins vep_plugins
+            check_success
+        else
+             echo 'already done'
+        fi
+
+        echo -n 'Installing dbNSFP dependencies...'
+        if [[ ! -f $TOOLS_ROOT/vep_plugins/dbNSFP.gz ]] ; then
+            wget ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip\
+            && unzip dbNSFPv${DBNSFP_VERSION}.zip\
+            && sort dbNSFP*chr* -k 1,2 | bgzip -c > dbNSFP.gz\
+            && tabix -s 1 -b 2 -e 2 dbNSFP.gz
             check_success
         else
              echo 'already done'
@@ -320,31 +351,46 @@ function command_exists {
              echo 'already done'
         fi
 
-        echo 'Downloading GATK bundle...'
-        if [[ ! -e $DATA_ROOT/gatk ]]; then
-            mkdir $DATA_ROOT/gatk
-        fi
-
         GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
-        GATK_BUNDLE_FILES="dbsnp_138.hg19.vcf.gz\
-        dbsnp_138.hg19.vcf.idx.gz\
-        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz\
-        Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz\
-        ucsc.hg19.dict.gz\
-        ucsc.hg19.fasta.gz\
-        ucsc.hg19.fasta.fai.gz"
 
-        for f in $GATK_BUNDLE_FILES ;  do
-             URL="$GATK_BUNDLE_ROOT$f"
-             BASE=`basename $f .gz`
-             echo -e -n "\tDownloading $BASE..."
-             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
-                 check_success
-             else
-                echo "already exists"
-             fi
-        done
+        echo 'Downloading ucsc files...'
+        download_list \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
+        $GATK_BUNDLE_ROOT \
+        "ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz" \
+        $DATA_ROOT/ucsc
+
+        echo 'Downloading Mills_and_1000G_gold_standard files...'
+        download_list \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
+        $GATK_BUNDLE_ROOT \
+        "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz" \
+        $DATA_ROOT/mills_and_1000g
+
+        echo 'Downloading dbsnp files...'
+        download_list \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
+        $GATK_BUNDLE_ROOT \
+        "dbsnp_138.hg19.vcf.gz dbsnp_138.hg19.vcf.idx.gz" \
+        $DATA_ROOT/dbsnp
+
+#        GATK_BUNDLE_FILES="\
+#       \
+#        ucsc.hg19.dict.gz\
+#        ucsc.hg19.fasta.gz\
+#        ucsc.hg19.fasta.fai.gz"
+#
+#        for f in $GATK_BUNDLE_FILES ;  do
+#             URL="$GATK_BUNDLE_ROOT$f"
+#             BASE=`basename $f .gz`
+#             echo -e -n "\tDownloading $BASE..."
+#             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
+#                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
+#                 check_success
+#             else
+#                echo "already exists"
+#             fi
+#        done
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/chromosomes/hg19.genome ]]; then
