@@ -41,8 +41,7 @@ call_variants_ug = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.txt
@@ -72,8 +71,7 @@ call_variants_hc = {
                    --dbsnp $DBSNP 
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -106,12 +104,11 @@ call_variants_individual_vcf = {
                     -A StrandBiasBySample 
                     -A VariantType 
                     -I $input.bam
-                    -L $COMBINED_TARGET 
+                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                     -o $output.hc.vcf 
                     --bamOutput $output.hc.bam 
                     --logging_level INFO
                     --dbsnp $DBSNP 
-                    --interval_padding $INTERVAL_PADDING_CALL
                     -stand_call_conf $call_conf 
                     -stand_emit_conf $emit_conf
             """, "gatk_call_variants"
@@ -146,12 +143,11 @@ call_variants_individual_gvcf = {
                     -A StrandBiasBySample 
                     -A VariantType 
                     -I $input.bam
-                    -L $COMBINED_TARGET 
+                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                     -o $output.hc.g.vcf 
                     --bamOutput $output.hc.bam 
                     --logging_level INFO
                     --dbsnp $DBSNP 
-                    --interval_padding $INTERVAL_PADDING_CALL
             """, "gatk_call_variants"
         }
     }
@@ -182,13 +178,12 @@ call_variants_trio_gvcf = {
                 -A StrandBiasBySample 
                 -A VariantType 
                 -I $input.bam
-                -L $COMBINED_TARGET 
+                -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                 -o $output.hc.g.vcf 
                 --bamOutput $output.hc.bam 
                 --logging_level INFO
                 -ped $input.ped 
                 --dbsnp $DBSNP
-                --interval_padding $INTERVAL_PADDING_CALL
         """, "gatk_call_variants"
     }
 }
@@ -222,8 +217,7 @@ call_pgx = {
                    --output_mode EMIT_ALL_SITES
                    -dcov 1600 
                    -l INFO 
-                   -L ../design/${target_name}.pgx.vcf
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L ../design/${target_name}.pgx.vcf --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics
