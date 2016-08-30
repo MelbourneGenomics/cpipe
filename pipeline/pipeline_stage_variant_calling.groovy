@@ -41,7 +41,7 @@ call_variants_ug = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
+                   -L $COMBINED_TARGET 
                    --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
@@ -72,7 +72,7 @@ call_variants_hc = {
                    --dbsnp $DBSNP 
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
+                   -L $COMBINED_TARGET 
                    --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
