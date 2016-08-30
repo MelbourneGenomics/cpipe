@@ -236,6 +236,8 @@ set_target_info = {
     }
 
     println "Checking for target bed file: $target_bed_file"
+    // if the bed file already exists, generate the target bed file by merging this with any additional genes that were specified in the G4 gene list.
+    // if the bed file does not already exist, generate the target bed file using the exons.bed regions built from target gene file.
     produce(target_bed_file) {
         exec """
             if [ -e $BASE/designs/$target_name/${target_name}.bed ];

@@ -103,8 +103,7 @@ filter_variants = {
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
-             -L $target_bed_file.${sample}.bed $pgx_flag
-             --interval_padding $INTERVAL_PADDING_SNV
+             -L $target_bed_file.${sample}.bed $pgx_flag --interval_padding $INTERVAL_PADDING_SNV
              --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
              -o $output.snv
     """
@@ -115,8 +114,7 @@ filter_variants = {
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
-             -L $target_bed_file.${sample}.bed $pgx_flag
-             --interval_padding $INTERVAL_PADDING_INDEL
+             -L $target_bed_file.${sample}.bed $pgx_flag --interval_padding $INTERVAL_PADDING_INDEL
              --selectTypeToInclude INDEL
              -o $output.indel
     """
