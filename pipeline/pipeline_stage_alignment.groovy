@@ -47,13 +47,17 @@ set_sample_info = {
     }
 
     def files = sample_info[sample].files.fastq
-
+    
     // generate a custom bed file that only includes the incidentalome for this sample
-    exec """
-        python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $target_bed_file.${sample}.bed
-    """
+    def sample_bed_file = "$target_bed_file.${sample}.bed"
+    produce(sample_bed_file) {
+        exec """
+            python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
+        """
+    }
  
-    println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
+    println "Processing input files ${files} for target region $sample_bed_file"
+
     forward files
 }
 
