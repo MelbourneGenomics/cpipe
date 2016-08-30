@@ -258,3 +258,13 @@ TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
 // Support custom perl libraries installed in tools/perl5
 PERL5LIB='$PERL5LIB:$BASE/tools/perl5'
 
+////////////////////////////////////////////
+// qc options
+////////////////////////////////////////////
+// what depth is required to contribute to satisfactory coverage
+QC_THRESHOLD=20
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a good rating
+QC_GOOD=95
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a pass rating
+QC_PASS=80
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
