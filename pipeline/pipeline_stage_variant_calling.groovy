@@ -72,6 +72,7 @@ call_variants_hc = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -l INFO 
                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+                   --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
