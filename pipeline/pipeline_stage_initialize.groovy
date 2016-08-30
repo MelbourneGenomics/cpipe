@@ -97,7 +97,7 @@ check_tools = {
     }
 
     if(file(GROOVY_NGS).name != "1.0.5")
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5 (current = ${file(GROOVY_NGS).name}). Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
 
     if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.6") 
         fail "This version of Cpipe requires GROOVY >= 2.4.6. Please edit config.groovy to set the latest version of GROOVY"
@@ -236,6 +236,8 @@ set_target_info = {
     }
 
     println "Checking for target bed file: $target_bed_file"
+    // if the bed file already exists, generate the target bed file by merging this with any additional genes that were specified in the G4 gene list.
+    // if the bed file does not already exist, generate the target bed file using the exons.bed regions built from target gene file.
     produce(target_bed_file) {
         exec """
             if [ -e $BASE/designs/$target_name/${target_name}.bed ];

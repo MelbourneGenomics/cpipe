@@ -47,13 +47,17 @@ set_sample_info = {
     }
 
     def files = sample_info[sample].files.fastq
-
+    
     // generate a custom bed file that only includes the incidentalome for this sample
-    exec """
-        python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $target_bed_file.${sample}.bed
-    """
+    def sample_bed_file = "$target_bed_file.${sample}.bed"
+    produce(sample_bed_file) {
+        exec """
+            python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
+        """
+    }
  
-    println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
+    println "Processing input files ${files} for target region $sample_bed_file"
+
     forward files
 }
 
@@ -288,7 +292,7 @@ realignIntervals = {
             -T RealignerTargetCreator 
             -R $REF 
             -I $input.bam 
-            -L $COMBINED_TARGET $splice_region_bed_flag
+            -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
             --known $GOLD_STANDARD_INDELS 
             -o $output.intervals
     """, "realign_target_creator"
@@ -302,7 +306,7 @@ realign = {
              -T IndelRealigner 
              -R $REF 
              -I $input.bam 
-             -L $COMBINED_TARGET $splice_region_bed_flag
+             -L $COMBINED_TARGET
              -targetIntervals $input.intervals 
              -o $output.bam
     ""","local_realign"
@@ -319,7 +323,7 @@ recal_count = {
              -T BaseRecalibrator 
              -I $input.bam 
              -R $REF 
-             -L $COMBINED_TARGET $splice_region_bed_flag
+             -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
              --knownSites $DBSNP $INDEL_QUALS
              -l INFO 
              -cov ReadGroupCovariate -cov QualityScoreCovariate -cov CycleCovariate -cov ContextCovariate 
@@ -336,7 +340,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
-               -L $COMBINED_TARGET $splice_region_bed_flag
+               -L $COMBINED_TARGET 
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -363,7 +367,7 @@ legacy_recal_count = {
             -T BaseRecalibrator
             -R $REF
             -l INFO
-            -L $COMBINED_TARGET $splice_region_bed_flag
+            -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
             -I $input.bam
             --disable_indel_quals
             -knownSites $DBSNP
@@ -380,7 +384,7 @@ legacy_recal = {
             exec """
                 $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
-                    -L $COMBINED_TARGET $splice_region_bed_flag
+                    -L $COMBINED_TARGET
                     -R $REF
                     -I $input.bam
                     -T PrintReads
