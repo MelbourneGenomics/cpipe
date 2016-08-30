@@ -258,4 +258,3 @@ TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
 // Support custom perl libraries installed in tools/perl5
 PERL5LIB='$PERL5LIB:$BASE/tools/perl5'
 
->>>>>>> upgrade
