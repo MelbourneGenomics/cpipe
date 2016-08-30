@@ -340,7 +340,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
-               -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+               -L $COMBINED_TARGET 
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -384,7 +384,7 @@ legacy_recal = {
             exec """
                 $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
-                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+                    -L $COMBINED_TARGET
                     -R $REF
                     -I $input.bam
                     -T PrintReads
