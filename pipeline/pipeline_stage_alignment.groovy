@@ -299,7 +299,7 @@ realign = {
              -T IndelRealigner 
              -R $REF 
              -I $input.bam 
-             -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+             -L $COMBINED_TARGET
              -targetIntervals $input.intervals 
              -o $output.bam
     ""","local_realign"
@@ -333,7 +333,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
-               -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+               -L $COMBINED_TARGET 
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -377,7 +377,7 @@ legacy_recal = {
             exec """
                 java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
-                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
+                    -L $COMBINED_TARGET
                     -R $REF
                     -I $input.bam
                     -T PrintReads
