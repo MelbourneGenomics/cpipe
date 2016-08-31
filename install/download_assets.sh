@@ -329,11 +329,13 @@ function download_list {
         fi
 
         echo -n 'Installing dbNSFP dependencies...'
-        if [[ ! -f $TOOLS_ROOT/vep_plugins/dbNSFP.gz ]] ; then
-            wget ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip\
-            && unzip dbNSFPv${DBNSFP_VERSION}.zip\
-            && sort dbNSFP*chr* -k 1,2 | bgzip -c > dbNSFP.gz\
-            && tabix -s 1 -b 2 -e 2 dbNSFP.gz
+        if [[ ! -f $DATA_ROOT/dbnsfp/dbNSFP.gz ]] ; then
+            mkdir -p dbnsfp\
+            && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbNSFP\
+            && pushd $DATA_ROOT/dbnsfp\
+                && sort dbNSFP*chr* -k 1,2 | bgzip -c > dbNSFP.gz\
+                && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
+            && popd
             check_success
         else
              echo 'already done'
