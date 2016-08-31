@@ -42,7 +42,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,100,102,0,0,0.0,0.0,2,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A'
+        assert lines[1] == 'chr1,100,102,A,0,0,0.0,0.0,2,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -54,7 +54,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,100,102,0,0,0.0,0.0,2,NM_033083,+,15469185,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
+        assert lines[1] == 'chr1,100,102,A,0,0,0.0,0.0,2,NM_033083,+,15469185,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -67,7 +67,7 @@ class GapAnnotatorTest(unittest.TestCase):
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
         # Chr,Gene,Start,End,Min Cov,Max Cov,Median Cov,Mean Cov,Width,Tx Name,Strand,CDS Distance,CDS Overlap Start,CDS Overlap End,AA Overlap Start,AA Overlap End,Exon Number,Exon Rank
-        assert lines[1] == 'chr1,A,15471419,15471421,0,0,0.0,0.0,2,NM_033083,+,0,1,2,104,105,1,1,2,2'
+        assert lines[1] == 'chr1,15471419,15471421,A,0,0,0.0,0.0,2,NM_033083,+,0,104,105,1,2,35,35,2,2'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -80,7 +80,7 @@ class GapAnnotatorTest(unittest.TestCase):
         gap_annotator.find_gaps(cov, 0, 1, target, ds, log)
         lines = target.getvalue().split('\n')
         # Chr,Gene,Start,End,Min Cov,Max Cov,Median Cov,Mean Cov,Width,Tx Name,Strand,CDS Distance,CDS Overlap Start,CDS Overlap End,AA Overlap Start,AA Overlap End,Exon Number,Exon Rank
-        assert lines[1] == 'chr1,A,15471419,15471422,0,1,0,0.3,3,NM_033083,+,0,1,3,104,106,1,1,2,2'
+        assert lines[1] == 'chr1,15471419,15471422,A,0,1,0,0.3,3,NM_033083,+,0,104,106,1,3,35,36,2,2'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -96,8 +96,8 @@ class GapAnnotatorTest(unittest.TestCase):
         lines = target.getvalue().split('\n')
         # Chr,Gene,Start,End,Min Cov,Max Cov,Median Cov,Mean Cov,Width,Tx Name,Strand,CDS Distance,CDS Overlap Start,CDS Overlap End,AA Overlap Start,AA Overlap End,Exon Number,Exon Rank
         # can arrive in either order
-        assert 'chr1,A,15471419,15471421,0,0,0.0,0.0,2,NM_033083,+,0,1,2,104,105,1,1,2,2' in lines
-        assert 'chr1,A,15471419,15471421,0,0,0.0,0.0,2,dummy,+,0,8,9,111,112,3,3,2,2' in lines
+        assert 'chr1,15471419,15471421,A,0,0,0.0,0.0,2,NM_033083,+,0,104,105,1,2,35,35,2,2' in lines
+        assert 'chr1,15471419,15471421,A,0,0,0.0,0.0,2,dummy,+,0,111,112,8,9,37,38,2,2' in lines
         assert len(lines) == 4
         assert lines[3] == ''
 
@@ -113,7 +113,7 @@ class GapAnnotatorTest(unittest.TestCase):
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
         # Chr,Gene,Start,End,Min Cov,Max Cov,Median Cov,Mean Cov,Width,Tx Name,Strand,CDS Distance,CDS Overlap Start,CDS Overlap End,AA Overlap Start,AA Overlap End,Exon Number,Exon Rank
-        assert lines[1] == 'chr1,A,15471419,15471421,0,0,0.0,0.0,2,dummy,+,0,8,9,111,112,3,3,2,2'
+        assert lines[1] == 'chr1,15471419,15471421,A,0,0,0.0,0.0,2,dummy,+,0,111,112,8,9,37,38,2,2'
         assert len(lines) == 3
         assert lines[2] == ''
 
@@ -126,7 +126,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,100,102,0,0,0.0,0.0,2,NM_033083,+,4,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
+        assert lines[1] == 'chr1,100,102,A,0,0,0.0,0.0,2,NM_033083,+,4,N/A,N/A,N/A,N/A,N/A,N/A,1,1'
  
     def test_neg_distance(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
@@ -137,7 +137,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,925,927,0,0,0.0,0.0,2,NM_033083,+,-6,N/A,N/A,N/A,N/A,N/A,N/A,2,2'
+        assert lines[1] == 'chr1,925,927,A,0,0,0.0,0.0,2,NM_033083,+,-6,N/A,N/A,N/A,N/A,N/A,N/A,2,2'
  
     def test_neg_strand(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
@@ -148,7 +148,7 @@ class GapAnnotatorTest(unittest.TestCase):
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
-        assert lines[1] == 'chr1,A,925,927,0,0,0.0,0.0,2,NM_033083,-,6,N/A,N/A,N/A,N/A,N/A,N/A,2,1'
+        assert lines[1] == 'chr1,925,927,A,0,0,0.0,0.0,2,NM_033083,-,6,N/A,N/A,N/A,N/A,N/A,N/A,2,1'
 
     def test_cds_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
@@ -160,7 +160,7 @@ class GapAnnotatorTest(unittest.TestCase):
         gap_annotator.find_gaps(cov, 0, 1, target, ds, log)
         lines = target.getvalue().split('\n')
         # Chr,Gene,Start,End,Min Cov,Max Cov,Median Cov,Mean Cov,Width,Tx Name,Strand,CDS Distance,CDS Overlap Start,CDS Overlap End,CDS Segment Start, CDS Segment End, AA Overlap Start,AA Overlap End,Exon Number,Exon Rank
-        assert lines[1] == 'chr1,A,120,122,0,0,0.0,0.0,2,NM_033083,-,0,59,60,479,480,20,20,1,2' #chr1,A,120,121,0,1,0,0.3,3,NM_033083,+,0,1,3,436,437,1,1,2,2'
+        assert lines[1] == 'chr1,120,122,A,0,0,0.0,0.0,2,NM_033083,-,0,479,480,59,60,160,160,1,2'
         assert len(lines) == 3
         assert lines[2] == ''
 
