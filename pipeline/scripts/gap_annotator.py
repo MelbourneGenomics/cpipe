@@ -28,10 +28,11 @@
 # History:
 #   1.0 20-jun-2016 PG initial release
 #   1.1 01-jul-2016 PG use bed co-ordinates
+#   1.2 31-aug-2016 PG change column ordering, column names, AA calculation
 ###########################################################################
 '''
 
-__version__ = '1.1'
+__version__ = '1.2'
 
 import collections
 import datetime
