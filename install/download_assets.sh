@@ -55,8 +55,9 @@ function download_zip {
         && ZIP_FILE=$2/$FILE_NAME `# ZIP_FILE is the full path to the downloaded zip file`\
         && wget $1 -P $2 `#Perform the download`\
         && unzip -d $2 $ZIP_FILE `#Unzip the file`\
-        && rm $ZIP_FILE `#Delete the zip file`\
-        && ZIP_ROOT=$2/`ls $2` `#Work out the root directory inside the zip file`\
+        && rm $ZIP_FILE `#Delete the zip file`
+        if (( `ls -1 | wc -l` > 1 )); then return 0; fi # If there are already multiple files, there is no root directory to remove
+        ZIP_ROOT=$2/`ls $2` `#Work out the root directory inside the zip file`\
         && mv $ZIP_ROOT/* $2 `#Move the contents out of this subdirectory because it doesn\'t have a consistent name`\
         && rm -r $ZIP_ROOT
     } >> $LOG_FILE
@@ -331,9 +332,9 @@ function download_list {
         echo -n 'Installing dbNSFP dependencies...'
         if [[ ! -f $DATA_ROOT/dbnsfp/dbNSFP.gz ]] ; then
             mkdir -p dbnsfp\
-            && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbNSFP\
+            && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbnsfp\
             && pushd $DATA_ROOT/dbnsfp\
-                && sort dbNSFP*chr* -k 1,2 | bgzip -c > dbNSFP.gz\
+                && cat dbNSFP*chr* | sort -k 1,2 | bgzip -c > dbNSFP.gz\
                 && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
             && popd
             check_success
