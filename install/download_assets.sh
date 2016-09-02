@@ -333,13 +333,11 @@ function download_list {
         if [[ ! -f $DATA_ROOT/dbnsfp/dbNSFP.gz ]] ; then
             mkdir -p dbnsfp\
             && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbnsfp\
-            && pushd $DATA_ROOT/dbnsfp
-            for file in dbNSFP*chr* ; do
-                tail -n +2 "$file" > "${file}.short"\
-                && sort -m -k 1,2 *.short | bgzip -c > dbNSFP.gz\
-                && tabix -s 1 -b 2 -e 2 dbNSFP.gz
-            done
-            popd
+            && pushd $DATA_ROOT/dbnsfp\
+                && head -n1 dbNSFP*chr1 > h\
+                && cat dbNSFP3.2a_variant.chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
+                && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
+            && popd
             check_success
         else
              echo 'already done'
