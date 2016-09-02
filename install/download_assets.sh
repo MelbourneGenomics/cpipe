@@ -335,7 +335,7 @@ function download_list {
             && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbnsfp\
             && pushd $DATA_ROOT/dbnsfp\
                 && head -n1 dbNSFP*chr1 > h\
-                && cat dbNSFP3.2a_variant.chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
+                && cat dbNSFP*chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
                 && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
             && popd
             check_success
