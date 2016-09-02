@@ -26,6 +26,7 @@ DBNSFP_VERSION="3.2c"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
 DATA_ROOT=$ROOT/data
+INSTALL_ROOT=$ROOT/install
 PYTHON_ROOT=$TOOLS_ROOT/python
 PERL_ROOT=$TOOLS_ROOT/perl
 R_ROOT=$TOOLS_ROOT/r
@@ -199,6 +200,10 @@ function download_list {
         if [[ ! -e $TOOLS_ROOT/htslib ]]; then
             download_gz https://codeload.github.com/samtools/htslib/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/htslib
             check_success
+
+            echo -n 'Compiling Htslib...'
+            compile $TOOLS_ROOT/htslib >> $LOG_FILE
+            check_success
         else
             echo 'already satisfied'
         fi
@@ -331,7 +336,8 @@ function download_list {
 
         echo -n 'Installing dbNSFP dependencies...'
         if [[ ! -f $DATA_ROOT/dbnsfp/dbNSFP.gz ]] ; then
-            mkdir -p dbnsfp\
+            source $INSTALL_ROOT/environment.sh\
+            && mkdir -p dbnsfp\
             && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbnsfp\
             && pushd $DATA_ROOT/dbnsfp\
                 && head -n1 dbNSFP*chr1 > h\
