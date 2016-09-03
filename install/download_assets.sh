@@ -343,7 +343,7 @@ function download_list {
                 && head -n1 dbNSFP*chr1 > h\
                 && cat dbNSFP*chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
                 && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
-                && rm -rf !(dbNSFP.gz*)\
+                && bash -O extglob -c 'rm -rf !(dbNSFP.gz*)'\
             && popd
             check_success
         else
