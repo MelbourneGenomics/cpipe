@@ -22,5 +22,5 @@ export JAVA_HOME=/usr
 
 # Install apt-getable things
 apt-get install -y git make poppler-utils zlib1g-dev ncurses-dev gcc g++ gfortran patch libssl-dev unzip maven\
- gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma-dev\
- libpcre3-dev libsqlite3-dev cpanminus wget
+ gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python3-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma-dev\
+ libpcre3-dev libsqlite3-dev cpanminus wget python3
