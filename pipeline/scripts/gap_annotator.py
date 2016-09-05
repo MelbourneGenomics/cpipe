@@ -278,7 +278,8 @@ def annotate_gap_from_ref(gap, data_source, log):
                     'distance': 0,
                     'coding_intersect': coding_intersect,
                     'exon_codon_positions': exon_codon_positions,
-                    'rank': exon_rank})
+                    'rank': exon_rank
+                })
 
             #write_log(log, "annotate_gap: coding region intersect: {0} codons: {1}".format(coding_intersect, codon_positions))
             return results
