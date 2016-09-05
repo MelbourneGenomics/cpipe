@@ -117,9 +117,9 @@ function download_list {
 #         echo $FULL_URL
          BASE=`basename $FILE .gz`
          echo -e -n "\tDownloading $BASE..."
-         if [[ ! -e $TARGET_DIR ]]; then
+         if [[ ! -f "$TARGET_DIR/$FILE" ]]; then
              mkdir -p $TARGET_DIR\
-             && curl -q --user $USER $FULL_URL | gunzip > $TARGET_DIR/$FILE
+             && curl --user $USER $FULL_URL | gunzip > "${TARGET_DIR}/${FILE%.gz}"
              check_success
          else
             echo "already exists"
@@ -364,44 +364,23 @@ function download_list {
 
         GATK_BUNDLE_ROOT=ftp://ftp.broadinstitute.org/bundle/2.8/hg19/
 
-        echo 'Downloading ucsc files...'
         download_list \
-        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         $GATK_BUNDLE_ROOT \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         "ucsc.hg19.dict.gz ucsc.hg19.fasta.gz ucsc.hg19.fasta.fai.gz" \
         $DATA_ROOT/ucsc
 
-        echo 'Downloading Mills_and_1000G_gold_standard files...'
         download_list \
-        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         $GATK_BUNDLE_ROOT \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz" \
         $DATA_ROOT/mills_and_1000g
 
-        echo 'Downloading dbsnp files...'
         download_list \
-        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         $GATK_BUNDLE_ROOT \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
         "dbsnp_138.hg19.vcf.gz dbsnp_138.hg19.vcf.idx.gz" \
         $DATA_ROOT/dbsnp
-
-#        GATK_BUNDLE_FILES="\
-#       \
-#        ucsc.hg19.dict.gz\
-#        ucsc.hg19.fasta.gz\
-#        ucsc.hg19.fasta.fai.gz"
-#
-#        for f in $GATK_BUNDLE_FILES ;  do
-#             URL="$GATK_BUNDLE_ROOT$f"
-#             BASE=`basename $f .gz`
-#             echo -e -n "\tDownloading $BASE..."
-#             if [[ ! -e $DATA_ROOT/gatk/$BASE ]]; then
-#                 curl --user gsapubftp-anonymous:cpipe.user@cpipeline.org $URL | gunzip > $DATA_ROOT/gatk/$BASE
-#                 check_success
-#             else
-#                echo "already exists"
-#             fi
-#        done
 
         echo -n 'Downloading chromosome sizes...'
         if [[ ! -f $DATA_ROOT/chromosomes/hg19.genome ]]; then
