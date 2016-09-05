@@ -1,6 +1,6 @@
 # Cpipe Style Guide
 ## Python
-### Other Style Guides
+### PEP 8
 By default Cpipe uses the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide for all python code, except
 where the two contradict, in which case the Cpipe style guide takes priority.
 
