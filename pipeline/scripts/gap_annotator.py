@@ -335,13 +335,15 @@ def median(items):
         mid = (len(items)- 1) / 2
         return sorted_list[mid]
 
-HEADLINE = ['Chr', 'Start', 'End', 'Gene',
+HEADLINE = [
+            'Chr', 'Start', 'End', 'Gene',
             'Min Cov', 'Max Cov', 'Median Cov', 'Mean Cov', 'Width', 'Tx Name', 'Strand',
             'CDS Distance',
             'CDS Overlap Start', 'CDS Overlap End',
             'Exon Overlap Start', 'Exon Overlap End',
             'AA Overlap Start', 'AA Overlap End',
-            'Exon Number', 'Exon Rank']
+            'Exon Number', 'Exon Rank'
+            ]
 DEFAULT_NA = 'N/A'
 
 def write_line(target, items):
@@ -366,18 +368,21 @@ def write_gap(gap, target, data_source, log, beds):
     # annotate from data source
     annotations = annotate_gap_from_ref(gap, data_source, log)
     if annotations is None: # shouldn't happen unless things are really wrong
-        write_line(target, [
-            gap['chr'],
-            gap['start'] + gap['start_offset'] - 1,
-            gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END,
-            gap['gene'],
-            min(gap['coverage']),
-            max(gap['coverage']),
-            median(gap['coverage']),
-            round(mean(gap['coverage']), 1),
-            gap['length'],
-            DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA] +
-                   additional_data)
+        write_line(
+                target, [
+                    gap['chr'],
+                    gap['start'] + gap['start_offset'] - 1,
+                    gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END,
+                    gap['gene'],
+                    min(gap['coverage']),
+                    max(gap['coverage']),
+                    median(gap['coverage']),
+                    round(mean(gap['coverage']), 1),
+                    gap['length'],
+                    DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA
+                    ] +
+                    additional_data
+        )
     else:
         for annotation in annotations: # write a line for each overlap found
             if annotation['distance'] == 0: # gap overlapping coding sequence
@@ -393,20 +398,23 @@ def write_gap(gap, target, data_source, log, beds):
                 cds_codon_positions = [int(math.ceil(x / 3.0)) for x in (cds_overlap_start, cds_overlap_end)]
 
                 write_line(target, [
-                    gap['chr'],
-                    gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END, gap['gene'],
-                    min(gap['coverage']),
-                    max(gap['coverage']),
-                    median(gap['coverage']),
-                    round(mean(gap['coverage']), 1),
-                    gap['length'],
-                    annotation['interval'].other['name'],
-                    annotation['interval'].other['strand'],
-                    annotation['distance'],
-                    cds_overlap_start, cds_overlap_end,
-                    exon_overlap_start, exon_overlap_end,
-                    cds_codon_positions[0], cds_codon_positions[1],
-                    annotation['interval'].other['number'], annotation['rank']] + additional_data)
+                        gap['chr'],
+                        gap['start'] + gap['start_offset'] - 1, gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END, gap['gene'],
+                        min(gap['coverage']),
+                        max(gap['coverage']),
+                        median(gap['coverage']),
+                        round(mean(gap['coverage']), 1),
+                        gap['length'],
+                        annotation['interval'].other['name'],
+                        annotation['interval'].other['strand'],
+                        annotation['distance'],
+                        cds_overlap_start, cds_overlap_end,
+                        exon_overlap_start, exon_overlap_end,
+                        cds_codon_positions[0], cds_codon_positions[1],
+                        annotation['interval'].other['number'], annotation['rank']
+                    ] + 
+                    additional_data
+                )
             else: # nearest distance
                 if annotation['direction'] == 1 and annotation['interval'].other['strand'] == '-' or annotation['direction'] == -1 and annotation['interval'].other['strand'] == '+':
                     distance = -annotation['distance']
@@ -414,21 +422,24 @@ def write_gap(gap, target, data_source, log, beds):
                     distance = annotation['distance']
 
                 write_line(target, [
-                    gap['chr'],
-                    gap['start'] + gap['start_offset'] - 1,
-                    gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END,
-                    gap['gene'],
-                    min(gap['coverage']),
-                    max(gap['coverage']),
-                    median(gap['coverage']),
-                    round(mean(gap['coverage']), 1),
-                    gap['length'],
-                    annotation['interval'].other['name'],
-                    annotation['interval'].other['strand'],
-                    distance,
-                    DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA,
-                    annotation['interval'].other['number'],
-                    annotation['rank']] + additional_data)
+                        gap['chr'],
+                        gap['start'] + gap['start_offset'] - 1,
+                        gap['start'] + gap['start_offset'] - 1 + gap['length'] - INCLUDE_END,
+                        gap['gene'],
+                        min(gap['coverage']),
+                        max(gap['coverage']),
+                        median(gap['coverage']),
+                        round(mean(gap['coverage']), 1),
+                        gap['length'],
+                        annotation['interval'].other['name'],
+                        annotation['interval'].other['strand'],
+                        distance,
+                        DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA,
+                        annotation['interval'].other['number'],
+                        annotation['rank']
+                    ] + 
+                    additional_data
+                )
 
 def find_gaps(coverage, min_width, max_coverage, target, data_source, log, beds=None):
     '''
@@ -463,7 +474,8 @@ def find_gaps(coverage, min_width, max_coverage, target, data_source, log, beds=
                             'length': 1,
                             'chr': fields[0],
                             'gene': fields[3],
-                            'coverage': [coverage]}
+                            'coverage': [coverage]
+                        }
                     else:
                         current = None
         else:
@@ -532,7 +544,8 @@ def init_db(target, log, exclusions=None):
                             'strand': strand,
                             'number': exon_number,
                             'count': int(fields[8]),
-                            'previous': exon_sum}
+                            'previous': exon_sum
+                        }
                         to_add.append({'item': item, 'other': other}) # previous contains sum of exons before this one
                         sizes.append(intersect_range[1] - intersect_range[0])
                         exon_sum += sizes[-1]
