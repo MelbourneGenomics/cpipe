@@ -344,7 +344,7 @@ HEADLINE = [
             'Exon Overlap Start', 'Exon Overlap End',
             'AA Overlap Start', 'AA Overlap End',
             'Exon Number', 'Exon Rank'
-            ]
+]
 DEFAULT_NA = 'N/A'
 
 def write_line(target, items):
@@ -413,7 +413,7 @@ def write_gap(gap, target, data_source, log, beds):
                         exon_overlap_start, exon_overlap_end,
                         cds_codon_positions[0], cds_codon_positions[1],
                         annotation['interval'].other['number'], annotation['rank']
-                    ] + 
+                    ] +
                     additional_data
                 )
             else: # nearest distance
@@ -438,7 +438,7 @@ def write_gap(gap, target, data_source, log, beds):
                         DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA, DEFAULT_NA,
                         annotation['interval'].other['number'],
                         annotation['rank']
-                    ] + 
+                    ] +
                     additional_data
                 )
 
