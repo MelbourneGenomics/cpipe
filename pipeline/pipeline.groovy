@@ -130,12 +130,12 @@ set_analysis_type_trio = {
 
 run {
 
-    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID
+    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID (pipeline_stage_initialize)
 
     // for each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * 
     [
-        initialize_profiles + // setup target regions
+        initialize_profiles + // setup target regions (pipeline_stage_initialize)
         
         all_samples * // for each sample...
         [

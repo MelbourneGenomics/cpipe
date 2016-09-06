@@ -285,7 +285,7 @@ realignIntervals = {
             -T RealignerTargetCreator 
             -R $REF 
             -I $input.bam 
-            -L $COMBINED_TARGET $splice_region_bed_flag
+            -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
             --known $GOLD_STANDARD_INDELS 
             -o $output.intervals
     """, "realign_target_creator"
@@ -299,7 +299,7 @@ realign = {
              -T IndelRealigner 
              -R $REF 
              -I $input.bam 
-             -L $COMBINED_TARGET $splice_region_bed_flag
+             -L $COMBINED_TARGET
              -targetIntervals $input.intervals 
              -o $output.bam
     ""","local_realign"
@@ -316,7 +316,7 @@ recal_count = {
              -T BaseRecalibrator 
              -I $input.bam 
              -R $REF 
-             -L $COMBINED_TARGET $splice_region_bed_flag
+             -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
              --knownSites $DBSNP $INDEL_QUALS
              -l INFO 
              -cov ReadGroupCovariate -cov QualityScoreCovariate -cov CycleCovariate -cov ContextCovariate 
@@ -333,7 +333,7 @@ recal = {
                -T PrintReads 
                -I $input.bam 
                -BQSR $input.counts 
-               -L $COMBINED_TARGET $splice_region_bed_flag
+               -L $COMBINED_TARGET 
                -R $REF 
                -l INFO 
                -o $output.bam
@@ -360,7 +360,7 @@ legacy_recal_count = {
             -T BaseRecalibrator
             -R $REF
             -l INFO
-            -L $COMBINED_TARGET $splice_region_bed_flag
+            -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
             -I $input.bam
             --disable_indel_quals
             -knownSites $DBSNP
@@ -377,7 +377,7 @@ legacy_recal = {
             exec """
                 java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
-                    -L $COMBINED_TARGET $splice_region_bed_flag
+                    -L $COMBINED_TARGET
                     -R $REF
                     -I $input.bam
                     -T PrintReads

@@ -78,7 +78,7 @@ def combine_target_regions(genefiles, genefiles_required, bedfiles, exons, targe
                 write_log(log, 'adding bed file {0} to target'.format(filename))
                 beds.add(os.path.basename(filename).split('.')[0])
                 for line in open(filename, 'r'):
-                    target_fh.write(line)
+                    target_fh.write(line) # write each line verbatim
             else:
                 write_log(log, 'WARNING: {0} not found'.format(filename))
     # build combined gene list
