@@ -17,7 +17,7 @@
 // The base of everything - set this to the absolute path of the 
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="/opt/cpipe_installer/cpipe"
+BASE="/home/michael/Programming/cpipe_installer/cpipe"
 
 DATA="$BASE/data"
 
@@ -43,18 +43,18 @@ EMAILS=""
 ////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/data/gatk" 
+REFBASE="$BASE/data"
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
 // at ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19
-REF="$REFBASE/ucsc.hg19.fasta"
+REF="$REFBASE/ucsc/ucsc.hg19.fasta"
 
 // Set to a VCF file containing DBSNP entries (or leave it if you are downloading the default)
-DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
+DBSNP="$REFBASE/dbsnp/dbsnp_138.hg19.vcf"
 
 // Set to a VCF file containing known indels here
-GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
+GOLD_STANDARD_INDELS="$REFBASE/mills_and_1000g/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
 
 // For self tests and other default features to work, you should
 // set a "default" exome target here. Note that you can specify a different
