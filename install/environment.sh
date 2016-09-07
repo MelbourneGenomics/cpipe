@@ -19,4 +19,4 @@ load_config
 # Add all tool directories and bin folders to PATH
 export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
 export HTSLIB_DIR=$TOOLS/htslib
-export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib
+export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins
