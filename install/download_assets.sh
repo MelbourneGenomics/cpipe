@@ -393,8 +393,8 @@ function download_list {
 
         ## Index Reference File ##
         echo -n 'Indexing reference file using bwa...'
-        if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.bwt ]] ; then
-            $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+        if [[ ! -f $DATA_ROOT/ucsc/ucsc.hg19.fasta.bwt ]] ; then
+            $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/ucsc/ucsc.hg19.fasta
             check_success
         else
             echo "already done"
@@ -402,8 +402,8 @@ function download_list {
 
         ## Index Reference File ##
         echo -n 'Indexing reference file using samtools...'
-        if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.fai ]] ; then
-            $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/gatk/ucsc.hg19.fasta
+        if [[ ! -f $DATA_ROOT/ucsc/ucsc.hg19.fasta.fai ]] ; then
+            $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/ucsc/ucsc.hg19.fasta
             check_success
         else
             echo "already done"
