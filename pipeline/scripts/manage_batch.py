@@ -110,7 +110,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         target_region = os.path.abspath(target_region)
 
     # write this to the batch
-    target_file = os.path.join(batch_directory, "target_regions.txt")
+    target_file = os.path.join(batch_directory, "config.batch.groovy")
     write_log(log, 'writing {0}...'.format(target_file))
     with open(target_file, 'w') as target_fh:
         target_fh.write('EXOME_TARGET="{0}"\n'.format(target_region))

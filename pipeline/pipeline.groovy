@@ -30,8 +30,8 @@ load 'config.groovy'
 load 'pipeline_helpers.groovy'
 
 // Local file can set EXOME_TARGET and ANALYSIS_PROFILES
-if(file("../target_regions.txt").exists())  {
-    load '../target_regions.txt'
+if(file("../config.batch.groovy").exists())  {
+    load '../config.batch.groovy'
 }
 
 requires EXOME_TARGET : """

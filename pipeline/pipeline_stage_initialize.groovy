@@ -115,8 +115,11 @@ update_gene_lists = {
             exec """
                 mkdir -p "../design"
 
+                //This updates the local design's gene list with any genes in the prioritised genes that were missing from it
                 python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
 
+                // This script transfers this updated gene list to the global design, which is shared amongst all batches using it
+                // This could be disabled because this might cause unpredictable behaviour
                 python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
 
                 touch update_gene_lists.log
