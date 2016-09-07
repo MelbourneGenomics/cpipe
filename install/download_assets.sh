@@ -114,12 +114,12 @@ function download_list {
     echo "Downloading `basename $TARGET_DIR` files..."
     for FILE in $FILES ;  do
          FULL_URL="$BASE_URL/$FILE"
-#         echo $FULL_URL
          BASE=`basename $FILE .gz`
+         UNZIPPED="${TARGET_DIR}/${FILE%.gz}"
          echo -e -n "\tDownloading $BASE..."
-         if [[ ! -f "$TARGET_DIR/$FILE" ]]; then
+         if [[ ! -f $UNZIPPED ]]; then
              mkdir -p $TARGET_DIR\
-             && curl --user $USER $FULL_URL | gunzip > "${TARGET_DIR}/${FILE%.gz}"
+             && curl --user $USER $FULL_URL | gunzip > $UNZIPPED
              check_success
          else
             echo "already exists"
