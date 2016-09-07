@@ -17,7 +17,7 @@
 // The base of everything - set this to the absolute path of the 
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="/home/michael/Programming/cpipe_installer/cpipe"
+BASE="/opt/cpipe_installer/cpipe"
 
 DATA="$BASE/data"
 
@@ -152,7 +152,7 @@ BWA="$TOOLS/bwa/bwa"
 BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/config/Condel"
-DBNSFP="$REFBASE/dbnsfp/dbNSFP.gz"
+DBNSFP="$REFBASE/dbnsfp"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
