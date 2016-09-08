@@ -21,7 +21,7 @@ GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 PICARD_VERSION="2.6.0"
-DBNSFP_VERSION="3.2c"
+DBNSFP_VERSION="2.9.1" # Use the latest v2 version. v3 of dbNSFP uses HG38
 
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
