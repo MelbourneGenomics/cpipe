@@ -138,7 +138,7 @@ cd "batches/$BATCH_ID"
 
 echo '
 EXOME_TARGET="'$EXOME_TARGET'"
-' > target_regions.txt
+' > config.batch.groovy
 
 [ -e samples.txt ] && {
     read -p """

@@ -90,7 +90,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     # - if no exome specified, look for target.bed
     # - look in designs for specified exome
     # - if not there, make one from the design gene list and write to initial-design.bed
-    # - write exome_target to target_regions.txt
+    # - write exome_target to config.batch.groovy
 
     if exome_name is None:
         exome_name = '{0}.bed'.format(profile_name)
