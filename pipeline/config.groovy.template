@@ -158,6 +158,7 @@ BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/condel/2.4"
 DBNSFP="$TOOLS/vep_plugins/dbNSFP"
+ENABLE_DBNSFP=true
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"

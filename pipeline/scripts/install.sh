@@ -111,6 +111,15 @@ function set_config_variable() {
     load_config
 }
 
+function set_config_variable_bool() {
+    NAME="$1"
+    VALUE="$2"
+    cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    rm "$BASE/pipeline/config.groovy.tmp"
+    load_config
+}
+
 function gatk_prompt() {
         echo "
  The recommended version of GATK for Cpipe is 3.5. However license
@@ -280,29 +289,39 @@ fi
 
 # download dbnsfp dataset
 #if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
-  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
-  msg "downloading dbnsfp..."
-  wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
-  msg "downloading dbnsfp: done"
-  popd
+prompt "Do you want to include dbNSFP annotations in your analyses? This requires a download of approximately 8Gb (y/n)." "y"
+if [ "$REPLY" == "y" ]; then
+  set_config_variable_bool ENABLE_DBNSFP true
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+    DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
+    msg "downloading dbnsfp..."
+    wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+    msg "downloading dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  set_config_variable_bool ENABLE_DBNSFP false
 fi
 
 # process dbnsfp dataset
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  msg "processing dbnsfp..."
-  unzip dbNSFPv2.9.1.zip
-  cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
-  "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
-  msg "processing dbnsfp: done"
-  popd
+if [ "$REPLY" == "y" ]; then
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    msg "processing dbnsfp..."
+    unzip dbNSFPv2.9.1.zip
+    cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
+    "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
+    msg "processing dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  msg "dbnsfp: skipping..."
 fi
 
 # grantham plugin
