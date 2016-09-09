@@ -22,6 +22,7 @@ CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 PICARD_VERSION="2.6.0"
 DBNSFP_VERSION="2.9.1" # Use the latest v2 version. v3 of dbNSFP uses HG38
+VEP_PLUGIN_COMMIT="caa2008"
 
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -332,7 +333,10 @@ function download_list {
 
         echo -n 'Installing VEP plugins...'
         if ! fileExists $TOOLS_ROOT/vep_plugins/Condel.pm ; then
-            git clone https://github.com/Ensembl/VEP_plugins vep_plugins
+            git clone https://github.com/Ensembl/VEP_plugins -b master vep_plugins\
+            && push vep_plugins\
+                && git reset --hard $VEP_PLUGIN_COMMIT\
+            && popd
             check_success
         else
              echo 'already done'
