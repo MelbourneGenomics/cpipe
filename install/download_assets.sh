@@ -333,9 +333,15 @@ function download_list {
 
         echo -n 'Installing VEP plugins...'
         if ! fileExists $TOOLS_ROOT/vep_plugins/Condel.pm ; then
-            git clone https://github.com/Ensembl/VEP_plugins -b master vep_plugins\
-            && push vep_plugins\
-                && git reset --hard $VEP_PLUGIN_COMMIT\
+            pushd vep_plugins\
+                && {
+                    git init\
+                    && git remote add origin https://github.com/Ensembl/VEP_plugins\
+                    && git fetch\
+                    && git checkout -t origin/master\
+                    && git reset --hard $VEP_PLUGIN_COMMIT\
+                    && rm -rf .git
+                } >> $LOG_FILE \
             && popd
             check_success
         else
