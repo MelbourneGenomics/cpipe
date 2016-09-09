@@ -282,7 +282,7 @@ unset GROOVY_HOME
 msg "Configuring dbNSFP plugin"
 
 if [ ! -e $TOOLS/vep_plugins/dbNSFP.pm ]; then
-  ln -s "$DBNSFP/dbNSFP.pm" "$TOOLS/vep_plugins"
+  ln -s "$DBNSFP/2016-01-13/dbNSFP.pm" "$TOOLS/vep_plugins"
 else
   msg "condel symlink already configured"
 fi
