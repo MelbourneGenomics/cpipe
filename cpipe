@@ -39,11 +39,12 @@ case "$1" in
     # e.g. docker run cpipe genelist show_bed --profile profile_name
     ;;
     pipeline)
+        shift 1
         cd batches/batch/analysis
         ../../../bpipe run ../../../pipeline/pipeline.groovy ../samples.txt "$@" < /dev/stdin
     ;;
     test)
-        pipeline/scripts/run_unit_tests.sh
-        pipeline/scripts/run_tests.sh detect_mutations_test
+        shift 1
+        pipeline/scripts/run_unit_tests.sh && pipeline/scripts/run_tests.sh detect_mutations_test
     ;;
 esac
