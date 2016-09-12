@@ -17,7 +17,9 @@
 // The base of everything - set this to the absolute path of the 
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="<EDIT THIS>" 
+BASE="<ROOT DIR>"
+
+DATA="$BASE/data"
 
 // Set a good location for storing large temp files here (probably not /tmp)
 TMPDIR="$BASE/tmpdata"
@@ -25,15 +27,15 @@ TMPDIR="$BASE/tmpdata"
 // Enter email here to get notified by email about failures
 EMAILS=""
 
-// If you are using the default reference data, download it now in 
+// If you are using the default reference data, download it now in
 // the hg19 folder (see hg19/README)
 //
-// NEXT: run ./pipeline/scripts/install.sh from 
+// NEXT: run ./pipeline/scripts/install.sh from
 // the root of the distribution
 
 //////////////////// REFERENCE FILES ////////////////////////////////////
 //
-// You do not need to edit below here if you are using the default 
+// You do not need to edit below here if you are using the default
 // HG19 reference files. These can be downloaded by the installer script.
 // However if you want to avoid downloading those or use your own reference
 // files then you should enter correct paths below.
@@ -41,7 +43,7 @@ EMAILS=""
 ////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/data/gatk" 
+REFBASE="$BASE/data/gatk"
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
@@ -61,11 +63,11 @@ EXOME_TARGET=""
 
 //////////////////// OPTIONAL PARAMTERS ////////////////////////////////
 //
-// You probably do NOT need to set anything under here! 
-// 
+// You probably do NOT need to set anything under here!
+//
 // However you may wish to customise the locations of some tools such
 // as java, python and perl installations.
-// 
+//
 ///////////////////////////////////////////////////////////////////////
 
 // The variant database requires every sample id to map to a different
@@ -114,7 +116,7 @@ GATK_LEGACY=false
 // gatk < 3.5
 GATK_VARIANT_ONLY=false
 
-// Utilities for making Excel files 
+// Utilities for making Excel files
 EXCEL="$TOOLS/excel"
 
 // Location of Bedtools distribution
@@ -132,11 +134,13 @@ GROOVY_NGS="$TOOLS/java_libs"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
-// (you can create a symlink to an existing directory with 
+// (you can create a symlink to an existing directory with
 // that name if desired).
 // See tools/vep/README for more information
 VEP_VERSION="83"
 VEP="$TOOLS/vep"
+
+VEP_CACHE="$DATA/vep_cache"
 
 IGVTOOLS="$TOOLS/IGVTools"
 
@@ -144,7 +148,7 @@ IGVTOOLS="$TOOLS/IGVTools"
 IGV="$TOOLS/tools/igv"
 
 // Location and version of BWA
-BWA="$TOOLS/bwa"
+BWA="$TOOLS/bwa/bwa"
 BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/condel"
@@ -230,7 +234,7 @@ POST_ANALYSIS_MOVE=false
 GAP_ANNOTATOR_CUSTOM_BEDS=""
 
 /////////////////////////////////////////////
-// filtering options. 
+// filtering options.
 // if any of these criteria are not met, the variant will be filtered
 // if the variant includes multiple samples (i.e. trio), the average value must meet this criteria
 /////////////////////////////////////////////
@@ -251,6 +255,11 @@ HARD_FILTER_QUAL=5
 ////////////////////////////////////////////
 // note: only needed for trio pathway
 TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+
+////////////////////////////////////////////
+// check related resources
+////////////////////////////////////////////
+READ_PERCENTAGE_THRESHOLD=50
 
 ////////////////////////////////////////////
 // output options
