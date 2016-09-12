@@ -39,8 +39,18 @@ case "$1" in
     # e.g. docker run cpipe genelist show_bed --profile profile_name
     ;;
     pipeline)
-        shift 1
-        cd batches/batch/analysis
+
+        # The batch directory can be specified by the user, but it defaults to 'batch'
+        if [[ -n $1 ]]; then
+            BATCH=$1
+            shift 2
+        else
+            BATCH='batch'
+            shift 1
+        fi
+
+        mkdir -p batches/${BATCH}/analysis
+        cd batches/${BATCH}/analysis
         ../../../bpipe run "$@" ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
     ;;
     test)
