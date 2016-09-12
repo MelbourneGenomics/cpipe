@@ -41,7 +41,7 @@ case "$1" in
     pipeline)
         shift 1
         cd batches/batch/analysis
-        ../../../bpipe run ../../../pipeline/pipeline.groovy ../samples.txt "$@" < /dev/stdin
+        ../../../bpipe run "$@" ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
     ;;
     test)
         shift 1
