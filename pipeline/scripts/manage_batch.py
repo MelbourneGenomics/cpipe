@@ -65,11 +65,11 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
 
     # make batch directory
     if not os.path.isdir(batch_directory):
-        write_log(log, "Creating directory: {0}...")
+        write_log(log, "Creating directory: {0}...".format(batch_directory))
         os.mkdir(batch_directory)
-        write_log(log, "Creating directory: {0}: done")
+        write_log(log, "Creating directory: {0}: done".format(batch_directory))
     else:
-        write_log(log, "Batch directory {0} exists")
+        write_log(log, "Batch directory {0} exists".format(batch_directory))
         if os.path.exists(os.path.join(batch_directory, "samples.txt")):
             if force:
                 write_log(log, "WARNING: samples.txt will be overwritten")
@@ -90,7 +90,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     # - if no exome specified, look for target.bed
     # - look in designs for specified exome
     # - if not there, make one from the design gene list and write to initial-design.bed
-    # - write exome_target to target_regions.txt
+    # - write exome_target to config.batch.groovy
 
     if exome_name is None:
         exome_name = '{0}.bed'.format(profile_name)
@@ -110,7 +110,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         target_region = os.path.abspath(target_region)
 
     # write this to the batch
-    target_file = os.path.join(batch_directory, "target_regions.txt")
+    target_file = os.path.join(batch_directory, "config.batch.groovy")
     write_log(log, 'writing {0}...'.format(target_file))
     with open(target_file, 'w') as target_fh:
         target_fh.write('EXOME_TARGET="{0}"\n'.format(target_region))
@@ -202,10 +202,10 @@ def main():
             show_batch(args.batch, out=sys.stdout)
         elif args.command == 'add_batch': # add a new batch
             if not args.profile:
-                write_log(sys.stderr, "ERROR: please provide a profile")
-                parser.print_help()
-                sys.exit(1)
-            add_batch(args.batch, args.profile, args.exome, args.data, args.force, log=sys.stderr)
+                write_log(sys.stderr, "No profile specified; defaulting to ALL (entire human exome)")
+                add_batch(args.batch, 'ALL', args.exome, args.data, args.force, log=sys.stderr)
+            else:
+                add_batch(args.batch, args.profile, args.exome, args.data, args.force, log=sys.stderr)
         elif args.command == 'add_sample': # add additional samples to batch
             add_sample(args.batch, args.profile, args.data, log=sys.stderr)
 

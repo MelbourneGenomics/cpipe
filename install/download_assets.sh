@@ -21,7 +21,8 @@ GROOVY_VERSION="2.4.7"
 CPSUITE_VERSION="1.2.7"
 FASTQC_VERSION="0.11.5"
 PICARD_VERSION="2.6.0"
-DBNSFP_VERSION="3.2c"
+DBNSFP_VERSION="2.9.1" # Use the latest v2 version. v3 of dbNSFP uses HG38
+VEP_PLUGIN_COMMIT="3be3889"
 
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]})/..) #The cpipe root directory
 TOOLS_ROOT=$ROOT/tools
@@ -74,14 +75,18 @@ function check_success {
     fi
 }
 
-function existsExactlyOne {
+function fileExists {
 # Fails unless there is exactly one argument which is a filename to an existing file
-    [[ $# -eq 1 && -f $1 ]];
+    [[ -s $1 ]];
+}
+
+function dirExists {
+    [[ -d $1 && -n `ls -A "$1"` ]]
 }
 
 ### Preliminary checks ###
 ## Check Java ##
-if [ -f $JAVA_HOME/bin/java ] ; then
+if fileExists $JAVA_HOME/bin/java ; then
     JAVA_VER=`$JAVA_HOME/bin/java -version 2>&1 | sed -nr 's/.*version "([0-9]+\.[0-9]+).*/\1/p'`
     VALID_JAVA=`awk -v ver=$JAVA_VER 'BEGIN{ print (ver < 1.8) ? "FAILED" : "PASSED" }'`
 else
@@ -89,7 +94,7 @@ else
     VALID_JAVA=FAILED
 fi
 
-if [ $VALID_JAVA != 'PASSED' ]; then
+if [[ $VALID_JAVA != 'PASSED' ]]; then
     echo 'Your java version according to JAVA_HOME is' $JAVA_VER'. Please install Java 1.8 or greater to compile GATK'
     exit 1
 fi
@@ -114,12 +119,12 @@ function download_list {
     echo "Downloading `basename $TARGET_DIR` files..."
     for FILE in $FILES ;  do
          FULL_URL="$BASE_URL/$FILE"
-#         echo $FULL_URL
          BASE=`basename $FILE .gz`
+         UNZIPPED="${TARGET_DIR}/${FILE%.gz}"
          echo -e -n "\tDownloading $BASE..."
-         if [[ ! -f "$TARGET_DIR/$FILE" ]]; then
+         if ! fileExists $UNZIPPED ; then
              mkdir -p $TARGET_DIR\
-             && curl --user $USER $FULL_URL | gunzip > "${TARGET_DIR}/${FILE%.gz}"
+             && curl --user $USER $FULL_URL | gunzip > $UNZIPPED
              check_success
          else
             echo "already exists"
@@ -146,7 +151,7 @@ function download_list {
         ##Language installations##
         #Python
         echo -n 'Downloading python...'
-        if [[ ! -e $PYTHON_ROOT ]]; then
+        if ! dirExists $PYTHON_ROOT ; then
             download_gz https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz $PYTHON_ROOT
             check_success
         else
@@ -156,7 +161,7 @@ function download_list {
 
         #Perl
         echo -n 'Downloading perl...'
-        if [[ ! -e $PERL_ROOT ]]; then
+        if ! dirExists $PERL_ROOT ; then
             download_gz http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz $PERL_ROOT\
             && mv $PERL_ROOT/configure.gnu $PERL_ROOT/configure.sh
             check_success
@@ -166,7 +171,7 @@ function download_list {
 
         #R
         echo -n 'Downloading R...'
-        if [[ ! -e $R_ROOT ]]; then
+        if ! dirExists $R_ROOT ; then
             download_gz http://cran.csiro.au/src/base/R-3/R-$R_VERSION.tar.gz $R_ROOT
             check_success
         else
@@ -175,7 +180,7 @@ function download_list {
 
         #Groovy
         echo -n 'Downloading groovy...'
-        if [[ ! -e $GROOVY_ROOT ]]; then
+        if ! dirExists $GROOVY_ROOT ; then
             download_zip https://dl.bintray.com/groovy/maven/apache-groovy-binary-$GROOVY_VERSION.zip $TOOLS_ROOT/groovy
             check_success
         else
@@ -184,7 +189,7 @@ function download_list {
 
         #BWA. Also compile in order to perform indexing
         echo -n 'Downloading BWA...'
-        if [[ ! -e $TOOLS_ROOT/bwa ]]; then
+        if ! dirExists $TOOLS_ROOT/bwa ; then
             download_gz https://codeload.github.com/lh3/bwa/tar.gz/v$BWA_VERSION $TOOLS_ROOT/bwa
             check_success
 
@@ -197,7 +202,7 @@ function download_list {
 
         #Htslib (requirement for samtools and bcftool)
         echo -n 'Downloading Htslib...'
-        if [[ ! -e $TOOLS_ROOT/htslib ]]; then
+        if ! dirExists $TOOLS_ROOT/htslib ; then
             download_gz https://codeload.github.com/samtools/htslib/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/htslib
             check_success
 
@@ -210,7 +215,7 @@ function download_list {
 
         #Samtools. Also compile in order to perform indexing
         echo -n 'Downloading Samtools...'
-        if [[ ! -e $TOOLS_ROOT/samtools ]]; then
+        if ! dirExists $TOOLS_ROOT/samtools ; then
             download_gz https://codeload.github.com/samtools/samtools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/samtools
             check_success
 
@@ -223,7 +228,7 @@ function download_list {
 
         #Bcftools
         echo -n 'Downloading Bcftools...'
-        if [[ ! -e $TOOLS_ROOT/bcftools ]]; then
+        if ! dirExists $TOOLS_ROOT/bcftools ; then
             download_gz https://codeload.github.com/samtools/bcftools/tar.gz/$HTSLIB_VERSION $TOOLS_ROOT/bcftools
             check_success
         else
@@ -232,7 +237,7 @@ function download_list {
 
         #Bedtools
         echo -n 'Downloading Bedtools...'
-        if [[ ! -e $TOOLS_ROOT/bedtools ]]; then
+        if ! dirExists $TOOLS_ROOT/bedtools ; then
             download_gz https://codeload.github.com/arq5x/bedtools2/tar.gz/v$BEDTOOLS_VERSION $TOOLS_ROOT/bedtools
             check_success
         else
@@ -241,7 +246,7 @@ function download_list {
 
         #VEP, including assets. Involves downloading ensembl-tools and deleting everything that isn't the VEP script
         echo -n 'Downloading VEP...'
-        if [[ ! -e $TOOLS_ROOT/vep ]]; then
+        if ! dirExists $TOOLS_ROOT/vep ; then
             wget https://github.com/Ensembl/ensembl-tools/archive/release/$VEP_VERSION.zip -O vep.zip >> $LOG_FILE\
             && unzip vep.zip >> $LOG_FILE\
             && mv ensembl-tools-release-$VEP_VERSION/scripts/variant_effect_predictor vep\
@@ -253,7 +258,7 @@ function download_list {
 
         # Fastqc
         echo -n 'Downloading fastqc...'
-        if [[ ! -e $TOOLS_ROOT/fastqc ]]; then
+        if ! dirExists $TOOLS_ROOT/fastqc ; then
             download_zip "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip" $TOOLS_ROOT/fastqc
             check_success
         else
@@ -262,7 +267,7 @@ function download_list {
 
         # Bpipe
         echo -n 'Downloading bpipe...'
-        if [[ ! -e $TOOLS_ROOT/bpipe ]]; then
+        if ! dirExists $TOOLS_ROOT/bpipe ; then
             git clone https://github.com/ssadedin/bpipe\
             && pushd bpipe\
                 && ./gradlew dist >> $LOG_FILE\
@@ -274,7 +279,7 @@ function download_list {
 
         #GATK, also pre-compile the .jar file
         echo -n 'Downloading GATK...'
-        if [[ ! -e $TOOLS_ROOT/gatk ]]; then
+        if ! dirExists $TOOLS_ROOT/gatk ; then
             mkdir -p $TOOLS_ROOT/gatk\
             && download_gz https://codeload.github.com/broadgsa/gatk-protected/tar.gz/$GATK_VERSION $TOOLS_ROOT/gatk
             check_success
@@ -293,7 +298,7 @@ function download_list {
         fi
 
         echo -n 'Downloading picard...'
-        if [[ ! -e $TOOLS_ROOT/picard ]]; then
+        if ! dirExists $TOOLS_ROOT/picard ; then
             mkdir -p $TOOLS_ROOT/picard\
             && wget -P $TOOLS_ROOT/picard https://github.com/broadinstitute/picard/releases/download/2.6.0/picard.jar >> $LOG_FILE
             check_success
@@ -306,7 +311,7 @@ function download_list {
         export PATH=$TOOLSROOT/htslib:$PATH
 
         echo -n 'Installing general perl dependencies...'
-         if [[ ! -e $TOOLS_ROOT/perl_lib ]] ; then
+         if ! dirExists $TOOLS_ROOT/perl_lib ; then
             mkdir -p $TOOLS_ROOT/perl_lib\
             && pushd $ROOT/install\
                 && cpanm --installdeps --local-lib-contained $TOOLS_ROOT/perl_lib . >> $LOG_FILE\
@@ -317,7 +322,7 @@ function download_list {
         fi
 
         echo -n 'Installing VEP dependencies ...'
-        if [[ ! -e $TOOLS_ROOT/perl_lib/lib/perl5/Bio/EnsEMBL ]]; then
+        if ! dirExists $TOOLS_ROOT/perl_lib/lib/perl5/Bio/EnsEMBL ; then
             pushd $TOOLS_ROOT/vep\
                 && yes | perl $TOOLS_ROOT/vep/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR $TOOLS_ROOT/perl_lib/lib/perl5  >> $LOG_FILE\
             && popd
@@ -327,15 +332,24 @@ function download_list {
         fi
 
         echo -n 'Installing VEP plugins...'
-        if [[ ! -f $TOOLS_ROOT/vep_plugins/Condel.pm ]] ; then
-            git clone https://github.com/Ensembl/VEP_plugins vep_plugins
+        if ! fileExists $TOOLS_ROOT/vep_plugins/Condel.pm ; then
+            pushd vep_plugins\
+                && {
+                    git init\
+                    && git remote add origin https://github.com/Ensembl/VEP_plugins\
+                    && git fetch\
+                    && git checkout -t origin/master\
+                    && git reset --hard $VEP_PLUGIN_COMMIT\
+                    && rm -rf .git
+                } >> $LOG_FILE \
+            && popd
             check_success
         else
              echo 'already done'
         fi
 
         echo -n 'Installing dbNSFP dependencies...'
-        if [[ ! -f $DATA_ROOT/dbnsfp/dbNSFP.gz ]] ; then
+        if ! fileExists $DATA_ROOT/dbnsfp/dbNSFP.gz ; then
             source $INSTALL_ROOT/environment.sh\
             && mkdir -p dbnsfp\
             && download_zip ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv${DBNSFP_VERSION}.zip $DATA_ROOT/dbnsfp\
@@ -352,7 +366,7 @@ function download_list {
 
         ## Data Files ##
         echo -n 'Installing VEP cache and reference file...'
-        if [[ ! -e $DATA_ROOT/vep_cache ]]; then
+        if ! dirExists $DATA_ROOT/vep_cache ; then
             # Note that if you include more than 1 species then the assembly fasta file will only be installed into the last
             VEP_CACHE=$DATA_ROOT/vep_cache\
             && mkdir $VEP_CACHE\
@@ -383,7 +397,7 @@ function download_list {
         $DATA_ROOT/dbsnp
 
         echo -n 'Downloading chromosome sizes...'
-        if [[ ! -f $DATA_ROOT/chromosomes/hg19.genome ]]; then
+        if ! fileExists $DATA_ROOT/chromosomes/hg19.genome ; then
             mkdir -p $DATA_ROOT/chromosomes\
             && mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from hg19.chromInfo" > $DATA_ROOT/chromosomes/hg19.genome
             check_success
@@ -393,8 +407,8 @@ function download_list {
 
         ## Index Reference File ##
         echo -n 'Indexing reference file using bwa...'
-        if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.bwt ]] ; then
-            $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/gatk/ucsc.hg19.fasta
+        if ! fileExists $DATA_ROOT/ucsc/ucsc.hg19.fasta.bwt ; then
+            $TOOLS_ROOT/bwa/bwa index -a bwtsw $DATA_ROOT/ucsc/ucsc.hg19.fasta
             check_success
         else
             echo "already done"
@@ -402,8 +416,8 @@ function download_list {
 
         ## Index Reference File ##
         echo -n 'Indexing reference file using samtools...'
-        if [[ ! -f $DATA_ROOT/gatk/ucsc.hg19.fasta.fai ]] ; then
-            $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/gatk/ucsc.hg19.fasta
+        if ! fileExists $DATA_ROOT/ucsc/ucsc.hg19.fasta.fai ; then
+            $TOOLS_ROOT/samtools/samtools faidx $DATA_ROOT/ucsc/ucsc.hg19.fasta
             check_success
         else
             echo "already done"
@@ -412,7 +426,7 @@ function download_list {
         ## Jar Dependencies ##
         pushd $JAVA_LIBS_ROOT
             echo -n "Downloading and compiling JUnitXmlFormatter..."
-            if ! existsExactlyOne $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
+            if ! fileExists $JAVA_LIBS_ROOT/JUnitXmlFormatter*.jar ; then
                 git clone https://github.com/barrypitman/JUnitXmlFormatter\
                 && pushd JUnitXmlFormatter\
                     && mvn install >> $LOG_FILE\
@@ -426,7 +440,7 @@ function download_list {
 
             # Groovy ngs utils
             echo -n "Downloading and compiling groovy-ngs-utils..."
-            if ! existsExactlyOne $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
+            if ! fileExists $JAVA_LIBS_ROOT/groovy-ngs-utils.jar ; then
                 git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
                 && pushd groovy-ngs-utils\
                 && ./gradlew jar >> $LOG_FILE\
@@ -439,7 +453,7 @@ function download_list {
             fi
 
             echo -n "Downloading and compiling takari-cpsuite..."
-            if ! existsExactlyOne $JAVA_LIBS_ROOT/takari-cpsuite* ; then
+            if ! fileExists $JAVA_LIBS_ROOT/takari-cpsuite* ; then
                 echo "Downloading cpsuite"
                 mvn dependency:copy \
                     -Dartifact=io.takari.junit:takari-cpsuite:$CPSUITE_VERSION\

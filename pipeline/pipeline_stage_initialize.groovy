@@ -112,6 +112,10 @@ update_gene_lists = {
     // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
     produce ('update_gene_lists.log') {
         from(sample_metadata_file) {
+
+            // find_new_genes updates the local design's gene list with any genes in the prioritised genes that were missing from it
+            // update_gene_lists transfers this updated gene list to the global design, which is shared amongst all batches using it
+            // This could be disabled because this might cause unpredictable behaviour
             exec """
                 mkdir -p "../design"
 
