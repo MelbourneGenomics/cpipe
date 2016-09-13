@@ -39,19 +39,36 @@ case "$1" in
     # e.g. docker run cpipe genelist show_bed --profile profile_name
     ;;
     pipeline)
+        
+        # Parse args
+        shift 1
+        ARGS=$(getopt -o b:p: --long "batch:,bpipe-options:" -n $(basename $BASH_SOURCE) -- "$@")
+        eval set -- "$ARGS"
 
-        # The batch directory can be specified by the user, but it defaults to 'batch'
-        if [[ -n $1 ]]; then
-            BATCH=$1
-            shift 2
-        else
-            BATCH='batch'
-            shift 1
-        fi
+        # Default args
+        BATCH='batch'
+
+        # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
+	while true ; do
+    		case "$1" in
+        	    -b|--batch)
+          	    	BATCH=$2
+          	    	shift 2
+                    ;;
+                    -p|--bpipe-options)
+                    	BPIPE_OPTIONS=$2
+                    	shift 2
+                    ;;
+                    --)
+                        shift
+                        break
+                    ;;
+    		esac
+	done
 
         mkdir -p batches/${BATCH}/analysis
         cd batches/${BATCH}/analysis
-        ../../../bpipe run "$@" ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
+        ../../../bpipe run ${BPIPE_OPTIONS} ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
     ;;
     test)
         shift 1
