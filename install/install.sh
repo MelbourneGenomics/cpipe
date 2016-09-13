@@ -24,8 +24,10 @@ for DIRECTORY in $TOOLS/*/; do
     fi
 done
 
-#Fastqc is a perl script so needs to be chmod +x'd
+# Fastqc is a perl script so needs to be chmod +x'd
+# Also chmod the entrypoint script
 chmod +x $TOOLS/fastqc/fastqc
+chmod +x $ROOT/cpipe
 
 #Load environment for things like $HTSLIB
 source $CURRENT_DIR/environment.sh
