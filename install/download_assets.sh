@@ -10,6 +10,7 @@ echo "## Logging to $LOG_FILE ##"
 
 ### Version constants ###
 BWA_VERSION="0.7.13"
+BPIPE_VERSION="0.9.9.2"
 HTSLIB_VERSION="1.3" # Samtools and Bcftools also use this
 BEDTOOLS_VERSION="2.25.0"
 GATK_VERSION="3.6"
