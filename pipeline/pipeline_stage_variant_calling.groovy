@@ -41,8 +41,7 @@ call_variants_ug = {
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -dcov 1600 
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A FisherStrand 
                    -glm BOTH
                    -metrics $output.txt
@@ -72,8 +71,7 @@ call_variants_hc = {
                    --dbsnp $DBSNP 
                    -stand_call_conf $call_conf -stand_emit_conf $emit_conf
                    -l INFO 
-                   -L $COMBINED_TARGET $splice_region_bed_flag
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -o $output.vcf
             ""","gatk_call_variants"
@@ -96,7 +94,7 @@ call_variants_individual_vcf = {
     produce("${sample}.hc.vcf", "${sample}.hc.bam") {
         from("bam") {
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                     -R $REF 
                     --num_cpu_threads_per_data_thread 1 
                     -A AlleleBalance 
@@ -106,12 +104,11 @@ call_variants_individual_vcf = {
                     -A StrandBiasBySample 
                     -A VariantType 
                     -I $input.bam
-                    -L $COMBINED_TARGET 
+                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                     -o $output.hc.vcf 
                     --bamOutput $output.hc.bam 
                     --logging_level INFO
                     --dbsnp $DBSNP 
-                    --interval_padding $INTERVAL_PADDING_CALL
                     -stand_call_conf $call_conf 
                     -stand_emit_conf $emit_conf
             """, "gatk_call_variants"
@@ -135,7 +132,7 @@ call_variants_individual_gvcf = {
     produce("${sample}.hc.g.vcf", "${sample}.hc.bam") {
         from("bam") {
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                     -R $REF 
                     --emitRefConfidence GVCF 
                     --num_cpu_threads_per_data_thread 1 
@@ -146,12 +143,11 @@ call_variants_individual_gvcf = {
                     -A StrandBiasBySample 
                     -A VariantType 
                     -I $input.bam
-                    -L $COMBINED_TARGET 
+                    -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                     -o $output.hc.g.vcf 
                     --bamOutput $output.hc.bam 
                     --logging_level INFO
                     --dbsnp $DBSNP 
-                    --interval_padding $INTERVAL_PADDING_CALL
             """, "gatk_call_variants"
         }
     }
@@ -171,7 +167,7 @@ call_variants_trio_gvcf = {
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -A AlleleBalance -A GCContent -A GenotypeSummaries -A LikelihoodRankSumTest -A StrandBiasBySample -A VariantType -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.g.vcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
     transform("bam", "ped") to ("hc.g.vcf", "hc.bam") {
         exec """
-            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+            $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                 -R $REF 
                 --emitRefConfidence GVCF 
                 --num_cpu_threads_per_data_thread 1 
@@ -182,13 +178,12 @@ call_variants_trio_gvcf = {
                 -A StrandBiasBySample 
                 -A VariantType 
                 -I $input.bam
-                -L $COMBINED_TARGET 
+                -L $COMBINED_TARGET --interval_padding $INTERVAL_PADDING_CALL
                 -o $output.hc.g.vcf 
                 --bamOutput $output.hc.bam 
                 --logging_level INFO
                 -ped $input.ped 
                 --dbsnp $DBSNP
-                --interval_padding $INTERVAL_PADDING_CALL
         """, "gatk_call_variants"
     }
 }
@@ -222,8 +217,7 @@ call_pgx = {
                    --output_mode EMIT_ALL_SITES
                    -dcov 1600 
                    -l INFO 
-                   -L ../design/${target_name}.pgx.vcf
-                   --interval_padding $INTERVAL_PADDING_CALL
+                   -L ../design/${target_name}.pgx.vcf --interval_padding $INTERVAL_PADDING_CALL
                    -A AlleleBalance -A Coverage -A FisherStrand 
                    -glm BOTH
                    -metrics $output.metrics

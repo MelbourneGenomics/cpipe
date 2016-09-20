@@ -40,7 +40,11 @@
 # --vcf 
 # --vcf_info_field ANN 
 
+TOOLS="$5"
 VARIANTS=`grep -c -v '^#' < $1`
+
+export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
+
 echo "$VARIANTS variant(s) found in $1"
 if [ $VARIANTS -eq 0 ];
 then

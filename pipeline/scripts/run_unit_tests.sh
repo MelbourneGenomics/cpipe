@@ -27,7 +27,6 @@
 source $PWD/pipeline/scripts/load_config_groovy.sh $PWD/pipeline/config.groovy
 export GROOVY="$PWD/tools/groovy/$GROOVY_VERSION/bin/groovy"
 export GROOVY_NGS="$PWD/tools/groovy-ngs-utils"
-# Note: using echo here for glob expansion
 GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/lib/*:$PWD/tools/java_libs/*"
 GROOVYC="$PWD/tools/groovy/bin/groovyc"
 

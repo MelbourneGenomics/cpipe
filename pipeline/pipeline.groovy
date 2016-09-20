@@ -42,13 +42,13 @@ requires EXOME_TARGET : """
     """
 
 /////////////////////////////////////////////////////////
-sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update sample_metadata_file
+corrected_sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update corrected_sample_metadata_file
 
 try {
-  sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_mg_sample_info(corrected_sample_metadata_file)
 }
 catch (RuntimeException e) {
-  sample_info = SampleInfo.parse_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_sample_info(corrected_sample_metadata_file)
 }
 
 // We are specifying that each analysis takes place inside a fixed file structure
@@ -130,12 +130,12 @@ set_analysis_type_trio = {
 
 run {
 
-    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID
+    initialize_batch_run + // some overall checks, overall target region, ped files, pipeline run ID (pipeline_stage_initialize)
 
     // for each analysis profile we run the main pipeline in parallel
     ANALYSIS_PROFILES * 
     [
-        initialize_profiles + // setup target regions
+        initialize_profiles + // setup target regions (pipeline_stage_initialize)
         
         all_samples * // for each sample...
         [
