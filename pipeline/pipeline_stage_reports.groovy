@@ -416,7 +416,7 @@ filtered_on_exons = {
                $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
                sort -k1,1 -k2,2n |
                $BEDTOOLS/bin/bedtools intersect -a $input.recal.bam -b stdin |
-               $SAMTOOLS view -h -b - > $output.bam
+               $SAMTOOLS/samtools view -h -b - > $output.bam
     
                $SAMTOOLS/samtools index $output.bam
 

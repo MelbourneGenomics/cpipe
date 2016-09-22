@@ -60,7 +60,7 @@ List find_sample_types(sample_info) {
     // proband samples
     trio_samples = []
     proband_samples = all_samples.findAll { 
-        if (sample_info[it].pedigree != "") {
+        if (sample_info[it].pedigree != "" && sample_info[it].pedigree != "exclude" && sample_info[it].pedigree != "import") {
             new_members = sample_info[it].pedigree.tokenize(';')[0].tokenize('=')[1].tokenize(','); // fid=na12877,na12878
             trio_samples.addAll(new_members); // add to members
             return true;
@@ -70,8 +70,19 @@ List find_sample_types(sample_info) {
         }
     }
 
-    individual_samples = all_samples.collect()
-    individual_samples.removeAll(trio_samples) // includes probands
+    // only analyze non-trio
+    // individual_samples = all_samples.collect()
+    // individual_samples.removeAll(trio_samples) // includes probands
+
+    // analyze unless exclude
+    individual_samples = all_samples.findAll { 
+        if (sample_info[it].pedigree == "exclude") {
+            return false; // exclude
+        }
+        else {
+            return true; // include
+        }
+    }
     println "done finding samples"
     return [ all_samples, proband_samples, trio_samples, individual_samples ]
 }
