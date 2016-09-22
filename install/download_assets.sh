@@ -397,6 +397,13 @@ function download_list {
         "dbsnp_138.hg19.vcf.gz dbsnp_138.hg19.vcf.idx.gz" \
         $DATA_ROOT/dbsnp
 
+        download_list \
+        ftp://ftp.broadinstitute.org/bundle/2.8/b37/ \
+        gsapubftp-anonymous:cpipe.user@cpipeline.org \
+        "1000G_phase3_v4_20130502.sites.vcf.gz 1000G_phase3_v4_20130502.sites.vcf.gz.tbi" \
+        $DATA_ROOT/1000G_phase3
+
+
         echo -n 'Downloading chromosome sizes...'
         if ! fileExists $DATA_ROOT/chromosomes/hg19.genome ; then
             mkdir -p $DATA_ROOT/chromosomes\
