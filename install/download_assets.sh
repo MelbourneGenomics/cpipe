@@ -401,7 +401,7 @@ function download_list {
         "dbsnp_138.hg19.vcf.gz dbsnp_138.hg19.vcf.idx.gz" \
         $DATA_ROOT/dbsnp
 
-        echo -n 'Obtaining the trio refinement reference...'
+        echo 'Obtaining the trio refinement reference...'
         if ! fileExists ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz ; then
             echo $'\tDownloading...'
             if ! fileExists ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf; then
