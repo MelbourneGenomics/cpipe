@@ -401,34 +401,55 @@ function download_list {
         "dbsnp_138.hg19.vcf.gz dbsnp_138.hg19.vcf.idx.gz" \
         $DATA_ROOT/dbsnp
 
+        echo -n 'Obtaining the trio refinement reference...'
         if ! fileExists ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz ; then
-            echo -n 'Downloading the trio refinement reference...' \
-            mkdir -p ${DATA_ROOT}/1000G_phase3\
-            && curl \
-                --user gsapubftp-anonymous:cpipe.user@cpipeline.org \
-                 ftp://ftp.broadinstitute.org/bundle/2.8/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
-                 | gunzip > ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf
-            check_success
+            echo $'\tDownloading...'
+            if ! fileExists ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf; then
+                mkdir -p ${DATA_ROOT}/1000G_phase3\
+                && curl \
+                    --user gsapubftp-anonymous:cpipe.user@cpipeline.org \
+                     ftp://ftp.broadinstitute.org/bundle/2.8/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
+                     | gunzip > ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf
+                check_success
+            else
+                echo "already exists"
+            fi
 
-            echo -n 'Downloading the trio refinement liftover file...' \
-            mkdir -p ${DATA_ROOT}/1000G_phase3\
-            && wget
-                --user gsapubftp-anonymous:cpipe.user@cpipeline.org
-                 -P ${DATA_ROOT}/1000G_phase3 \
-                 ftp://gsapubftp-anonymous@ftp.broadinstitute.org/Liftover_Chain_Files/b37tohg19.chain \
-            check_success
 
-            echo -n 'Converting and indexing the trio refinement reference...' \
-            && java -jar $TOOLS_ROOT/picard/picard.jar LiftoverVcf \
-                I=${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf \
-                O=${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf \
-                CHAIN=${DATA_ROOT}/1000G_phase3/b37tohg19.chain \
-                REJECT=${DATA_ROOT}/1000G_phase3/liftover.rejected_variants.vcf \
-                R=${DATA_ROOT}/ucsc/ucsc.hg19.fasta\
-            && bgzip ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf \
-            && tabix -p vcf ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz
-            check_success
+            echo $'\nDownloading the b37->hg19 liftover file...'
+            if ! fileExists {$DATA_ROOT}/b37tohg19.chain; then
+                wget \
+                    --user gsapubftp-anonymous:cpipe.user@cpipeline.org \
+                     -P ${DATA_ROOT}/1000G_phase3 \
+                     ftp://gsapubftp-anonymous@ftp.broadinstitute.org/Liftover_Chain_Files/b37tohg19.chain \
+                check_success
+            else
+                echo "already exists"
+            fi
+
+
+            echo $'\tConverting and indexing the trio refinement reference...'
+            if ! fileExists {DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz; then
+                java -jar $TOOLS_ROOT/picard/picard.jar LiftoverVcf \
+                    I=${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf \
+                    O=${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf \
+                    CHAIN=${DATA_ROOT}/1000G_phase3/b37tohg19.chain \
+                    REJECT=${DATA_ROOT}/1000G_phase3/liftover.rejected_variants.vcf \
+                    R=${DATA_ROOT}/ucsc/ucsc.hg19.fasta\
+                && bgzip ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf \
+                && tabix -p vcf ${DATA_ROOT}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz
+                check_success
+            else
+                echo "already done"
+            fi
+
+            echo $'\tDeleting temporary files...'
+            bash -O extglob -c "rm -rf ${DATA_ROOT}/1000G_phase3/!(1000G_phase3_v4_20130502.sites.hg19.vcf.gz*)"
+
+        else
+            echo "already exists"
         fi
+
 
         echo -n 'Downloading chromosome sizes...'
         if ! fileExists $DATA_ROOT/chromosomes/hg19.genome ; then
