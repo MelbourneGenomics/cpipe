@@ -258,7 +258,7 @@ HARD_FILTER_QUAL=5
 // trio related resources
 ////////////////////////////////////////////
 // note: only needed for trio pathway
-TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
 
 ////////////////////////////////////////////
 // check related resources
