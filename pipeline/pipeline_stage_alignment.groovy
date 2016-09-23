@@ -47,13 +47,17 @@ set_sample_info = {
     }
 
     def files = sample_info[sample].files.fastq
-
+    
     // generate a custom bed file that only includes the incidentalome for this sample
-    exec """
-        python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $target_bed_file.${sample}.bed
-    """
+    def sample_bed_file = "$target_bed_file.${sample}.bed"
+    produce(sample_bed_file) {
+        exec """
+            python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
+        """
+    }
  
-    println "Processing input files ${files} for target region ${target_bed_file}.${sample}.bed"
+    println "Processing input files ${files} for target region $sample_bed_file"
+
     forward files
 }
 
@@ -158,22 +162,25 @@ align_bwa = {
 
     stage_status("align_bwa", "output file is ${outputFile}", sample);
     produce(outputFile) {
-        //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
-        //    secondary alignments for each read, which upsets downstream tools such as 
-        //    GATK and Picard.
-        def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
-        exec """
-                set -o pipefail
-
-                mkdir "$safe_tmp_dir"
-
-                $BWA mem -M -t $BWA_THREADS -k $seed_length 
-                         -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
-                         $REF $input1.gz $input2.gz | 
-                         $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -T "$safe_tmp_dir/bamsort"
-
-                rm -r "$safe_tmp_dir"
-        ""","bwamem"
+        
+        uses(threads:BWA_THREADS) {
+            //    Note: the results are filtered with flag 0x100 because bwa mem includes multiple 
+            //    secondary alignments for each read, which upsets downstream tools such as 
+            //    GATK and Picard.
+            def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
+            exec """
+                    set -o pipefail
+    
+                    mkdir "$safe_tmp_dir"
+    
+                    $BWA mem -M -t $threads -k $seed_length 
+                             -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
+                             $REF $input1.gz $input2.gz | 
+                             $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -T "$safe_tmp_dir/bamsort"
+    
+                    rm -r "$safe_tmp_dir"
+            ""","bwamem"
+        }
     }
     stage_status("align_bwa", "exit", sample);
 }
@@ -356,7 +363,7 @@ legacy_recal_count = {
 
     transform("recal.csv") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T BaseRecalibrator
             -R $REF
             -l INFO
@@ -375,7 +382,7 @@ legacy_recal = {
     from("csv","bam") {
         transform('bam') {
             exec """
-                java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+                $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
                     -l INFO
                     -L $COMBINED_TARGET
                     -R $REF

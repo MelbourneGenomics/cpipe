@@ -42,7 +42,7 @@ germline_genotype_gvcfs = {
     produce("${sample}.individual.genotype.raw.vcf") {
         from("variants/${sample}.hc.g.vcf") {
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs
                     -R $REF
                     --disable_auto_index_creation_and_locking_when_reading_rods
                     --num_threads $threads

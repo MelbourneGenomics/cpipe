@@ -39,7 +39,11 @@
 # --vcf 
 # --vcf_info_field ANN 
 
+TOOLS="$5"
 VARIANTS=`grep -c -v '^#' < $1`
+
+export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
+
 echo "$VARIANTS variant(s) found in $1"
 if [ $VARIANTS -eq 0 ];
 then
@@ -54,7 +58,7 @@ else
         --check_alleles \
         --check_existing \
         --dir $4/../vep_cache \
-        --dir_plugins $5/vep_plugins \
+        --dir_plugins $TOOLS/vep_plugins \
         --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
         --force_overwrite \
         --gmaf \

@@ -94,7 +94,7 @@ call_variants_individual_vcf = {
     produce("${sample}.hc.vcf", "${sample}.hc.bam") {
         from("bam") {
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                     -R $REF 
                     --num_cpu_threads_per_data_thread 1 
                     -A AlleleBalance 
@@ -132,7 +132,7 @@ call_variants_individual_gvcf = {
     produce("${sample}.hc.g.vcf", "${sample}.hc.bam") {
         from("bam") {
             exec """
-                java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+                $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                     -R $REF 
                     --emitRefConfidence GVCF 
                     --num_cpu_threads_per_data_thread 1 
@@ -167,7 +167,7 @@ call_variants_trio_gvcf = {
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T HaplotypeCaller -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --emitRefConfidence GVCF --num_cpu_threads_per_data_thread 1 -A AlleleBalance -A GCContent -A GenotypeSummaries -A LikelihoodRankSumTest -A StrandBiasBySample -A VariantType -I $sample\.merge.dedup.realign.recal.bam -L /vlsci/VR0320/shared/production/1.0.4/designs/nextera_rapid_capture_exome_1.2/target_regions.bed -o $sample\.hap.raw.g.vcf --bamOutput $sample\.HC.bam -log $sample\.log -ped txxxx.ped --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf
     transform("bam", "ped") to ("hc.g.vcf", "hc.bam") {
         exec """
-            java -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
+            $JAVA -Xmx24g -jar $GATK/GenomeAnalysisTK.jar -T HaplotypeCaller 
                 -R $REF 
                 --emitRefConfidence GVCF 
                 --num_cpu_threads_per_data_thread 1 

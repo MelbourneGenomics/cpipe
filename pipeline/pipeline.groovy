@@ -42,13 +42,13 @@ requires EXOME_TARGET : """
     """
 
 /////////////////////////////////////////////////////////
-sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update sample_metadata_file
+corrected_sample_metadata_file = correct_sample_metadata_file(args[0]) // fix syntax issues and update corrected_sample_metadata_file
 
 try {
-  sample_info = SampleInfo.parse_mg_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_mg_sample_info(corrected_sample_metadata_file)
 }
 catch (RuntimeException e) {
-  sample_info = SampleInfo.parse_sample_info(sample_metadata_file)
+  sample_info = SampleInfo.parse_sample_info(corrected_sample_metadata_file)
 }
 
 // We are specifying that each analysis takes place inside a fixed file structure

@@ -40,3 +40,11 @@ class GeneratePedsTest(unittest.TestCase):
         #print 'log', log.getvalue()
         #print 'result', result
         assert result['C'] == ['#FID\tIID\tPID\tMID\tSex\tPhenotype\n', 'fid\tP\t0\t0\t1\t1\n', 'fid\tM\t0\t0\t2\t1\n', 'fid\tC\tP\tM\t1\t2\n']
+
+    def test_unknown(self):
+        metadata = ['Sample_ID\tPedigree_File\tSex\n', 'P\t\tUnknown\n', 'M\t\tUnknown\n', 'C\tfid=P,M\tM\n']
+        log = StringIO.StringIO()
+        result = generate_peds.generate_peds(metadata, log)
+        #print 'log', log.getvalue()
+        #print 'result', result
+        assert result['C'] == None

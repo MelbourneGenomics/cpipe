@@ -24,13 +24,26 @@
 
 // remove spaces from gene lists and point to a new sample metadata file
 // note that this isn't run through bpipe
-correct_sample_metadata_file = {
+
+correct_sample_meta_data_command = { input, output ->
+   "python $SCRIPTS/correct_sample_metadata_file.py < $input > $output"  
+}
+
+correct_sample_metadata_file = { 
     def target = new File('results')
     if( !target.exists() ) {
         target.mkdirs()
     }
-    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
+    [ "sh", "-c", correct_sample_meta_data_command(it,'results/samples.corrected')].execute().waitFor()
     return "results/samples.corrected"
+}
+
+correct_sample_metadata_stage = {
+    output.dir='results'
+    filter('corrected') {
+        exec correct_sample_meta_data_command(input.txt, output.txt)
+    }
+    branch.sample_metadata_file = output.txt
 }
 
 /////////////////////////////////////////////////////////
@@ -97,7 +110,7 @@ filter_variants = {
 
     msg "Filtering variants - finding INDELs"
     exec """
-        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+        $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
@@ -108,7 +121,7 @@ filter_variants = {
 
     msg "Filtering variants - finding SNVs"
     exec """
-        java -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
+        $JAVA -Xmx2g -jar $GATK/GenomeAnalysisTK.jar 
              -R $REF
              -T SelectVariants 
              --variant $input.vcf 
@@ -126,7 +139,7 @@ merge_variants_gvcf = {
 
     produce("${sample}.combined.g.vcf") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineGVCFs
             -R $REF
             --variant:indel $input.indel
@@ -146,7 +159,7 @@ merge_variants = {
     msg "Merging SNVs and INDELs"
     produce("${sample}.${analysis}.combined.genotype.vcf") {
         exec """
-            java -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
+            $JAVA -Xmx3g -jar $GATK/GenomeAnalysisTK.jar
             -T CombineVariants
             -R $REF
             --variant:indel $input.indel

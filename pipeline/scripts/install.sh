@@ -100,8 +100,45 @@ function set_config_variable() {
     VALUE="$2"
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
     sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    
+    $TOOLS/groovy/2.4.6/bin/groovy -D name="$NAME" -D value="$VALUE" \
+      -pne 'line.startsWith(System.properties.name+"=")?line.replaceAll("=.*",/="/+java.util.regex.Matcher.quoteReplacement(System.properties.value)+/"/): line' \
+      "$BASE/pipeline/config.groovy.tmp" > \
+      "$BASE/pipeline/config.groovy" \
+        || err "Failed to set configuration variable $NAME to value $VALUE"
+        
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
+}
+
+function set_config_variable_bool() {
+    NAME="$1"
+    VALUE="$2"
+    cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
+    rm "$BASE/pipeline/config.groovy.tmp"
+    load_config
+}
+
+function gatk_prompt() {
+        echo "
+ The recommended version of GATK for Cpipe is 3.5. However license
+ terms prevent Cpipe from including this version with Cpipe. Cpipe
+ includes GATK 2.3.9 which can be used instead. If you wish to use
+ a later version of GATK, please abort this script (Ctrl-c), download
+ that version after separately agreeing to the license terms, and
+ place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
+ you have done that, set the GATK variable in pipeline/config.groovy
+ appropriately and re-run this script.
+    "
+        prompt "Continue with GATK 2.3.9? (y/n)" "y"
+        if [ "$REPLY" == "y" ];
+        then
+            set_config_variable GATK "$TOOLS/gatk/2.3.9"
+            set_config_variable GATK_LEGACY "true"
+        else
+            msg "WARNING: your installation will not work unless you set GATK manually youself in pipeline/config.groovy"
+        fi
 }
 
 echo '
@@ -171,18 +208,15 @@ compile "$BEDTOOLS/bin/bedtools"
 
 msg "Check GATK is downloaded and available"
 [ -e $GATK/GenomeAnalysisTK.jar ] || {
-    echo "
- The recommended version of GATK for Cpipe is 3.6, but license 
- terms prevent Cpipe from including this version with Cpipe. 
- Please download GATK separately agreeing to the license terms, and 
- place the jar file in tools/gatk/<version>/GenomeAnalysisTK.jar. Once
- you have done that, set the GATK variable in pipeline/config.groovy 
- appropriately and re-run this script.
-    "
-    prompt "Continue without GATK? (y/n)" "y"
-    if [ "$REPLY" == "y" ];
-    then
-        msg "WARNING: your installation will not work unless you configure GATK manually youself in pipeline/config.groovy"
+    if [ -e $TOOLS/gatk/3.5 ];
+    then    
+       prompt "Found GATK 3.5. Continue with this version? (y/n)" "y"
+       if [ "$REPLY" == "y" ];
+       then
+           set_config_variable GATK '$TOOLS/gatk/3.5'
+       else
+           gatk_prompt
+       fi    
     else
         err "Please install GATK then re-run this script"
     fi
@@ -209,6 +243,7 @@ else
     if [ "$REPLY" == "y" ];
     then
         cd $VEP
+        export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5"
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         msg "INFO: VEP is installing homo_sapiens_vep"
@@ -235,42 +270,58 @@ else
   msg "condel symlink already configured"
 fi
 
-sed -i 's,do not use,'$CONDEL/config',' $CONDEL/config/condel_SP.conf || err "Unable to configure Condel plugin"
+# Used to use sed to set this as below, but not all versions of sed
+# support alternate pattern separators (s,foo,bar,g) which makes it tricky to use
+# for file paths - instead use some inline groovy to do it
+unset GROOVY_HOME
+./tools/groovy/2.4.6/bin/groovy -e 'new File(args[0]).text = new File(args[0]).text.replaceAll("do not use", args[1])' \
+           $CONDEL/config/condel_SP.conf $CONDEL\/config \
+           || err "Unable to configure Condel plugin"
 
 ########## dbnsfp plugin ##########
 msg "Configuring dbNSFP plugin"
 
 if [ ! -e $TOOLS/vep_plugins/dbNSFP.pm ]; then
-  ln -s "$DBNSFP/dbNSFP.pm" "$TOOLS/vep_plugins"
+  ln -s "$DBNSFP/2016-01-13/dbNSFP.pm" "$TOOLS/vep_plugins"
 else
   msg "condel symlink already configured"
 fi
 
 # download dbnsfp dataset
 #if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
-  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
-  msg "downloading dbnsfp..."
-  wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
-  msg "downloading dbnsfp: done"
-  popd
+prompt "Do you want to include dbNSFP annotations in your analyses? This requires a download of approximately 8Gb (y/n)." "y"
+if [ "$REPLY" == "y" ]; then
+  set_config_variable_bool ENABLE_DBNSFP true
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+    DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
+    msg "downloading dbnsfp..."
+    wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+    msg "downloading dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  set_config_variable_bool ENABLE_DBNSFP false
 fi
 
 # process dbnsfp dataset
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  msg "processing dbnsfp..."
-  unzip dbNSFPv2.9.1.zip
-  cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
-  "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
-  msg "processing dbnsfp: done"
-  popd
+if [ "$REPLY" == "y" ]; then
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    msg "processing dbnsfp..."
+    unzip dbNSFPv2.9.1.zip
+    cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
+    "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
+    msg "processing dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  msg "dbnsfp: skipping..."
 fi
 
 # grantham plugin
@@ -388,11 +439,20 @@ then
     fi
 fi
 
+# Since Mac's don't ship with md5sum 
+: ${MD5SUM:=md5sum}
+type $MD5SUM > /dev/null 2>&1 || {
+  type md5sum-lite > /dev/null 2>&1 || err "Cannot find a suitable md5sum utility. Please set MD5SUM environment variable"
+  MD5SUM=md5sum-lite
+  echo "Using MD5SUM=$MD5SUM"
+}
+
 msg "Checking for custom assets..."
 # download the manifest
 pushd $REFBASE
 [ -f $MANIFEST ] && rm $MANIFEST
 wget $CUSTOM_ASSETS_URL/$MANIFEST
+
 
 while read line; do
   if [[ "$line" =~ ^#.* ]]; then
@@ -403,7 +463,7 @@ while read line; do
     echo "checking $filename..."
     if [ -f $filename ]; then
       # check md5
-      existing=`md5sum $filename | awk '{ print $1; }'`
+      existing=`$MD5SUM $filename | awk '{ print $1; }'`
       if [ $existing == $md5 ]; then
         echo "$filename is up to date"
       else

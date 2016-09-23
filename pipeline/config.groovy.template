@@ -137,7 +137,7 @@ SAMTOOLS="$TOOLS/samtools/1.3"
 FASTQC="$TOOLS/fastqc/0.11.5"
 
 // Utilties for processing NGS data in Java/Groovy
-GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.2"
+GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.5"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
@@ -158,6 +158,7 @@ BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/condel/2.4"
 DBNSFP="$TOOLS/vep_plugins/dbNSFP"
+ENABLE_DBNSFP=true
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
@@ -173,7 +174,7 @@ UPDATE_VARIANT_DB=VARIANT_DB
 ANNOTATION_VARIANT_DB=VARIANT_DB
 
 // Location of groovy installation
-GROOVY_HOME="$TOOLS/groovy/2.3.4"
+GROOVY_HOME="$TOOLS/groovy/2.4.6"
 
 // GROOVY binary
 GROOVY="$GROOVY_HOME/bin/groovy"
@@ -190,6 +191,9 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 
 // Use default Java installed in PATH
 JAVA="java"
+
+// Support custom perl libraries installed in tools/perl5
+PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline

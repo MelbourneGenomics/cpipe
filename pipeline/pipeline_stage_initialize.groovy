@@ -96,8 +96,11 @@ check_tools = {
         """
     }
 
-    if(file(GROOVY_NGS).name in ["1.0.1","1.0"])
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.2. Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+    if(file(GROOVY_NGS).name != "1.0.5")
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5 (current = ${file(GROOVY_NGS).name}). Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+
+    if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.6") 
+        fail "This version of Cpipe requires GROOVY >= 2.4.6. Please edit config.groovy to set the latest version of GROOVY"
 
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
@@ -115,11 +118,11 @@ update_gene_lists = {
             exec """
                 mkdir -p "../design"
 
-                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $sample_metadata_file
+                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $input1
 
                 python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
 
-                touch update_gene_lists.log
+                touch $output1
             """
         }
     }
@@ -209,8 +212,8 @@ set_target_info = {
 
     var HG19_CHROM_INFO : false
 
-    exec """
-        echo "set_target_info: combined target is $COMBINED_TARGET"
+    msg """
+        set_target_info: combined target is $COMBINED_TARGET
     """
 
     branch.splice_region_window=false
@@ -327,7 +330,7 @@ sample_similarity_report = {
     // noverify has been added as a workaround to this stage failing with a java verification error
     produce("similarity_report.txt") {
         exec """
-            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.3.4.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -noverify -cp $GROOVY_HOME/embeddable/groovy-all-2.4.6.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }
@@ -439,6 +442,7 @@ initialize_batch_run = segment {
     // ANALYSIS_PROFILES = sample_info*.value*.target as Set
     // Check the basic sample information first
     check_sample_info +  // check that fastq files are present
+    correct_sample_metadata_stage +
     check_tools +
     update_gene_lists + // build new gene lists by adding sample specific genes to cohort
 
