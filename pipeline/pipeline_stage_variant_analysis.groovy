@@ -104,7 +104,6 @@ vcf_annotate = {
                 --maf_exac 
                 -o $output.vcf
                 --offline
-                --per_gene
                 --plugin Condel,$CONDEL/config,s ${DBNSFP_OPTS}
                 --plugin Grantham
                 --polyphen b
