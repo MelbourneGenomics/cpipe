@@ -215,8 +215,8 @@ else
         perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         msg "INFO: VEP is installing homo_sapiens_refseq"
         perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
-        msg "INFO: VEP is installing homo_sapiens_merged"
-        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        #msg "INFO: VEP is installing homo_sapiens_merged"
+        #perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         # we don't run convert_cache as it (currently) messes up the frequency data (gmaf, etc)
         cd -
     else
