@@ -75,46 +75,46 @@ vcf_annotate = {
     //    /usr/bin/env bash $SCRIPTS/vcf_annotate.sh "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
     exec """
         export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5";
-        
-        echo "$VARIANTS variant(s) found in $1"
+
+        echo "$VARIANTS variant(s) found in $input.vcf";
+        VARIANTS=`grep -c -v '^#' < $input.vcf`
         if [ $VARIANTS -eq 0 ];
         then
-            grep '^#' $1 > $2
+            grep '^#' $input.vcf > $output.vcf;
         else
-            PATH="$PATH:$3"
-            perl $VEP/variant_effect_predictor.pl \
-                --allele_number \
-                --assembly GRCh37 \
-                --cache \
-                --canonical \
-                --check_alleles \
-                --check_existing \
-                --dir $VEP_CACHE/ \
-                --dir_plugins $TOOLS/vep_plugins \
-                --fasta $VEP_CACHE/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa \
-                --force_overwrite \
-                --gmaf \
-                --hgvs \
-                -i $input.vcf \
-                --maf_1kg \
-                --maf_esp \
-                --maf_exac \
-                -o $output.vcf \
-                --offline \
-                --per_gene \
-                --plugin Condel,$CONDEL/config,s \
-                ${DBNSFP_OPTS}\
-                --plugin Grantham \
-                --polyphen b \
-                --protein \
-                --pubmed \
-                --refseq \
-                --sift b \
-                -species homo_sapiens \
-                --symbol \
-                --vcf \
-                --vcf_info_field ANN \
-                --verbose
+            PATH="$PATH:$HTSLIB"
+            perl $VEP/variant_effect_predictor.pl
+                --allele_number
+                --assembly GRCh37
+                --cache
+                --canonical
+                --check_alleles
+                --check_existing
+                --dir $VEP/../vep_cache
+                --dir_plugins $TOOLS/vep_plugins
+                --fasta $VEP/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
+                --force_overwrite
+                --gmaf
+                --hgvs
+                -i $input.vcf
+                --maf_1kg
+                --maf_esp
+                --maf_exac
+                -o $output.vcf
+                --offline
+                --per_gene
+                --plugin Condel,$CONDEL/config,s ${DBNSFP_OPTS}
+                --plugin Grantham
+                --polyphen b
+                --protein
+                --pubmed
+                --refseq
+                --sift b
+                -species homo_sapiens
+                --symbol
+                --vcf
+                --vcf_info_field ANN
+                --verbose;
         fi
     """
     stage_status("vcf_annotate", "exit", "${sample} ${branch.analysis}");
