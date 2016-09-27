@@ -1,7 +1,6 @@
 FROM ubuntu
 SHELL ["/bin/bash"]
-ADD . /cpipe
-RUN install/dependencies/ubuntu_16.04.sh
-RUN install/download_assets.sh
-RUN install/install.sh
-ENTRYPOINT /cpipe/docker/entrypoint.sh
+ADD . /opt/cpipe
+RUN apt-get update && apt install -y curl make build-essential libssl-dev zlib1g-dev libbz2-dev libsqlite3-dev
+RUN ./install.sh
+ENTRYPOINT ./cpipe
