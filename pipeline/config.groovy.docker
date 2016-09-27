@@ -268,3 +268,14 @@ READ_PERCENTAGE_THRESHOLD=50
 // generate a filtered bam file. options are exons, design, or skip
 FILTERED_ON_EXONS="skip"
 
+////////////////////////////////////////////
+// qc options
+////////////////////////////////////////////
+// what depth is required to contribute to satisfactory coverage
+QC_THRESHOLD=20
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a good rating
+QC_GOOD=95
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a pass rating
+QC_PASS=80
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
+QC_FAIL=0
