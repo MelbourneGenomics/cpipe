@@ -89,10 +89,11 @@ def download_ftp_list(ftp, files, target_dir):
         )
 
 
-def task_assets():
+def task_manual_assets():
     return {
         'actions': None,
-        'task_dep': ['tool_assets']  # 'data_assets',
+        'setup': 'manual_install_dependencies',
+        'task_dep': ['tool_assets', 'data_assets']
     }
 
 
