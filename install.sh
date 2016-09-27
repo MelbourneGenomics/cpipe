@@ -4,9 +4,11 @@
 set -e
 
 # Set variables
-PYTHON_VERSION = "2.7.12"
-ROOT=$(dirname $(dirname ${BASH_SOURCE}))
+PYTHON_VERSION="2.7.12"
+ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 PYTHON=${ROOT}/tools/python
+
+echo $BASH_SOURCE $ROOT
 
 # Install Python
 mkdir ${PYTHON}
