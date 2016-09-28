@@ -3,6 +3,8 @@ from tasks.nectar_assets import *
 
 import os
 
+DOIT_CONFIG = {'default_tasks': ['install']}
+
 def task_install():
     swift_credentials = {
         'OS_AUTH_URL',

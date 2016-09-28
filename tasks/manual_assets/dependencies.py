@@ -1,5 +1,5 @@
 import platform
-
+import subprocess
 
 def task_ubuntu_dependencies():
     return {
@@ -19,20 +19,19 @@ def task_ubuntu_dependencies():
                  libpcre3-dev libsqlite3-dev cpanminus wget curl
 
             '''],
-        'uptodate': [True]
+        'uptodate': [False]
     }
 
 
 def task_manual_install_dependencies():
-    (distname, version, id) = platform.linux_distribution()
-
-    if distname == 'Ubuntu' and version == '16.04':
-        task = 'task_ubuntu_dependencies'
+    
+    if len(subprocess.check_output('cat /etc/*release | egrep "Ubuntu 16"', shell=True)) > 1:
+        task = 'ubuntu_dependencies'
     else:
         raise Exception(
             'Unsupported version for manual install. Install the dependencies yourself or obtain NECTAR credentials')
 
     return {
         'actions': [None],
-        'taskdeps': [task]
+        'task_dep': [task]
     }

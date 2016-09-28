@@ -1,0 +1,2 @@
+export(gsa.read.gatkreport)
+export(gsa.reshape.concordance.table)

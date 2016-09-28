@@ -94,8 +94,7 @@ def download_ftp_list(ftp, files, target_dir):
 def task_manual_assets():
     return {
         'actions': None,
-        'setup': ['manual_install_dependencies'],
-        'task_dep': ['tool_assets', 'data_assets']
+        'task_dep': ['manual_install_dependencies', 'tool_assets', 'data_assets']
     }
 
 
@@ -570,7 +569,7 @@ def task_download_trio_refinement():
     }
 
 
-def task_download_refinement_lifetover():
+def task_download_refinement_liftover():
     LIFTOVER_FILE = '{}/b37tohg19.chain'.format(DATA_ROOT)
 
     return {

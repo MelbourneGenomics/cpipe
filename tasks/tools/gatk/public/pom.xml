@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.broadinstitute.gatk</groupId>
+        <artifactId>gatk-root</artifactId>
+        <version>3.6</version>
+        <relativePath>gatk-root</relativePath>
+    </parent>
+
+    <artifactId>gatk-aggregator-public</artifactId>
+    <packaging>pom</packaging>
+    <name>GATK Aggregator Public</name>
+
+    <modules>
+        <module>gatk-root</module>
+        <module>gsalib</module>
+        <module>gatk-utils</module>
+        <module>gatk-engine</module>
+        <module>gatk-tools-public</module>
+        <module>external-example</module>
+        <!-- queue optionally enabled as profiles -->
+    </modules>
+
+    <properties>
+        <gatk.basedir>${project.basedir}/..</gatk.basedir>
+    </properties>
+
+    <profiles>
+        <!-- Allow queue to be disabled. -->
+        <profile>
+            <id>queue</id>
+            <activation>
+                <property>
+                    <name>!disable.queue</name>
+                </property>
+            </activation>
+            <modules>
+                <module>gatk-queue</module>
+                <module>gatk-queue-extensions-generator</module>
+                <module>gatk-queue-extensions-public</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

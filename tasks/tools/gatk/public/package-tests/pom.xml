@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    Run during package testing by the maven invoker plugin in the gatk-aggregator /pom.xml
+    -->
+
+    <parent>
+        <groupId>org.broadinstitute.gatk</groupId>
+        <artifactId>gatk-root</artifactId>
+        <version>3.6</version>
+        <relativePath>../gatk-root</relativePath>
+    </parent>
+
+    <artifactId>gatk-package-tests</artifactId>
+    <packaging>pom</packaging>
+    <name>GATK Package Tests</name>
+
+    <properties>
+        <gatk.basedir>${project.basedir}/../..</gatk.basedir>
+        <gatk.packageunittests.skipped>true</gatk.packageunittests.skipped>
+        <gatk.packageintegrationtests.skipped>true</gatk.packageintegrationtests.skipped>
+        <gatk.packagequeuetests.skipped>true</gatk.packagequeuetests.skipped>
+        <gatk.packagelargescaletests.skipped>true</gatk.packagelargescaletests.skipped>
+        <gatk.packageknowledgebasetests.skipped>true</gatk.packageknowledgebasetests.skipped>
+    </properties>
+
+    <!-- Dependency configuration (versions, etc.) -->
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${gatk.packagetests.artifactId}</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+        gatk-utils test-jar added for BaseTest
+
+        TODO: Currently the <exclusion> isn't working 100%, so switched to using additionalClasspathElements
+
+        TODO: Uncomment below to use the explicitly bad "exclude *" to really test correct packaging,
+        TODO: until we can separate BaseTest and other utilities into their own gatk-test-utils artifact.
+        TODO: We only want the classes in the packaged jars tested, not the classes within the dependency jars too.
+        See also:
+          http://stackoverflow.com/questions/547805/how-to-exclude-all-transitive-dependencies-of-a-maven-dependency
+          http://maven.apache.org/plugins/maven-jar-plugin/usage.html#The_preferred_way
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gatk-utils</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+
+        </dependency>
+        -->
+
+        <!--
+        NOTE: Any test dependencies used by a packaged artifact must be ALSO added here.
+        For example, gatk-tools-protected uses caliper, so caliper should also be added here.
+        TestNG and its reporters are inherited from the global gatk-root/pom.xml as dependencies.
+        -->
+        <dependency>
+            <groupId>com.google.caliper</groupId>
+            <artifactId>caliper</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <directory>${gatk.packagetests.basedir}/target</directory>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>unittests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>unittests.profile.enabled</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <!-- Plugin configuration -->
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <basedir>${gatk.packagetests.basedir}</basedir>
+                            <workingDirectory>${gatk.packagetests.basedir}</workingDirectory>
+                            <classesDirectory>${project.build.outputDirectory}/ignored_by_package_test</classesDirectory>
+                            <testClassesDirectory>${gatk.packagetests.testClasses}</testClassesDirectory>
+                            <!-- TODO: Using additionalClasspathElement while debugging exclusion issue above -->
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-utils/target/gatk-utils-${project.version}-tests.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-engine/target/gatk-engine-${project.version}-tests.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-queue/target/gatk-queue-${project.version}-tests.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>unit-tests</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${gatk.packageunittests.skipped}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>integrationtests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>integrationtests.profile.enabled</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <!-- Plugin configuration -->
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <basedir>${gatk.packagetests.basedir}</basedir>
+                            <workingDirectory>${gatk.packagetests.basedir}</workingDirectory>
+                            <classesDirectory>${project.build.outputDirectory}/ignored_by_package_test</classesDirectory>
+                            <testClassesDirectory>${gatk.packagetests.testClasses}</testClassesDirectory>
+                            <!-- TODO: Using additionalClasspathElement while debugging exclusion issue above -->
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-utils/target/gatk-utils-${project.version}-tests.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-engine/target/gatk-engine-${project.version}-tests.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${gatk.basedir}/public/gatk-queue/target/gatk-queue-${project.version}-tests.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>integration-tests</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <!-- run integration tests -->
+                                <configuration>
+                                    <skip>${gatk.packageintegrationtests.skipped}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>queue-tests</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <!-- run queue dry run tests -->
+                                <configuration>
+                                    <skip>${gatk.packagequeuetests.skipped}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>large-scale-tests</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <!-- run large scale tests -->
+                                <configuration>
+                                    <skip>${gatk.packagelargescaletests.skipped}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>knowledge-base-tests</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                                <!-- run knowledge base tests -->
+                                <configuration>
+                                    <skip>${gatk.packageknowledgebasetests.skipped}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+</project>
