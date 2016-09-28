@@ -7,28 +7,24 @@ set -e
 PYTHON_VERSION="2.7.12"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 PYTHON=${ROOT}/tools/python
+PYBIN=${PYTHON}/bin
 
-if [[ ! -f ${PYTHON}/python ]]; then
-	
-	# Install Python
-	mkdir -p ${PYTHON}
-	curl https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xzf - --strip-components=1 -C ${PYTHON}
-	pushd ${PYTHON}
-    		./configure
-    		make
+# Use python-build to install python
+if [[ ! -d ${PYTHON} ]]; then
+	pushd tmpdata
+        	git clone --depth 1 git://github.com/yyuu/pyenv.git
+        	mkdir -p ${PYTHON}
+        	pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${PYTHON}
+		rm -rf pyenv
 	popd
-	
 fi
 
-# Install pip
-${PYTHON}/python -m ensurepip
-
 # Install python dependencies
-${PYTHON}/pip install -r requirements.txt
+${PYBIN}/pip install -r requirements.txt
 
 # Download assets and tools using doit
-${PYTHON}/python -m doit install
+${PYBIN}/python -m doit install
 
 # Export the python location so this can be source'd
-export PATH=${PYTHON}:$PATH
+export PATH=${PYBIN}:$PATH
 
