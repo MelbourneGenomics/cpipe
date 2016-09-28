@@ -29,8 +29,8 @@ PICARD_VERSION = "2.6.0"
 DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
 VEP_PLUGIN_COMMIT = "3be3889"
 
-TASKS = os.path.dirname(__file__)  # The cpipe root directory
-ROOT = os.path.dirname(TASKS)
+HERE = os.path.dirname(__file__)  # The cpipe root directory
+ROOT = os.path.realpath(os.path.join(HERE, '..', '..'))
 TOOLS_ROOT = os.path.join(ROOT, 'tools')
 DATA_ROOT = os.path.join(ROOT, 'data')
 INSTALL_ROOT = os.path.join(ROOT, 'install')
@@ -140,8 +140,9 @@ def task_download_perl():
         'targets': [PERL_ROOT],
         'actions': [
             lambda: download_zip("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION), PERL_ROOT),
-            "mv {0}/configure.gnu {0}/configure.sh".format(PERL_ROOT)
-        ],
+            "mv {0}/configure.gnu {0}/configure.sh".format(PERL_ROOT),
+            lambda: os.environ['']
+        ],		
         'uptodate': [True]
     }
 
@@ -291,15 +292,17 @@ def task_download_gatk():
 
 def task_download_picard():
     PICARD_ROOT = os.path.join(TOOLS_ROOT, 'picard')
+    
+    def action():
+        os.makedirs(PICARD_ROOT)
+        urlretrieve(
+            'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
+            os.path.join(PICARD_ROOT, 'picard.jar') 
+        )
+
     return {
         'targets': [os.path.join(PICARD_ROOT, 'picard.jar')],
-        'actions': [
-            lambda: os.makedirs(PICARD_ROOT),
-            lambda: urlretrieve(
-                'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
-                os.path.join(PICARD_ROOT, 'picard.jar')
-            )
-        ],
+        'actions': [action],
         'uptodate': [True]
     }
 
