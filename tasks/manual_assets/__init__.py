@@ -10,6 +10,8 @@ import shutil
 import tempfile
 import glob
 
+from tasks.manual_assets.dependencies import *
+
 # Constants
 BWA_VERSION = "0.7.13"
 BPIPE_VERSION = "0.9.9.2"
@@ -92,7 +94,7 @@ def download_ftp_list(ftp, files, target_dir):
 def task_manual_assets():
     return {
         'actions': None,
-        'setup': 'manual_install_dependencies',
+        'setup': ['manual_install_dependencies'],
         'task_dep': ['tool_assets', 'data_assets']
     }
 
@@ -541,7 +543,7 @@ def task_convert_trio_refinement():
             ''.format(DATA_ROOT)
         ],
         'targets': [TRIO_REFINEMENT_FILE],
-        'taskdeps': [
+        'task_dep': [
             'download_trio_refinement',
             'download_refinement_liftover',
         ],
@@ -592,7 +594,7 @@ def task_download_chromosome_sizes():
 
     return {
         'targets': [CHROMOSOME_FILE],
-        'tasks': [
+        'actions': [
             lambda: os.makedirs(CHROMOSOME_DIR),
             '''mysql
             --user=genome\
@@ -606,7 +608,7 @@ def task_download_chromosome_sizes():
 
 def task_index_reference_files():
     return {
-        'taskdeps': [
+        'task_dep': [
             'bwa_index_ucsc_reference',
             'samtools_index_ucsc_reference'
         ],
@@ -622,7 +624,7 @@ def task_bwa_index_ucsc_reference():
         'actions': [
             '{tools}/bwa/bwa index -a bwtsw {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
         ],
-        'task_deps': [
+        'task_dep': [
             'download_bwa',
             'download_ucsc'
         ],
@@ -637,7 +639,7 @@ def task_samtools_index_ucsc_reference():
         'actions': [
             '{tools}/samtools/samtools faidx {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
         ],
-        'task_deps': [
+        'task_dep': [
             'download_samtools',
             'download_ucsc'
         ],

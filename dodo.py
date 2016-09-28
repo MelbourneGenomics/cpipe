@@ -22,6 +22,6 @@ def task_install():
 
     return {
         'actions': [None],
-        'taskdeps': [task]
+        'task_dep': [task]
     }
 

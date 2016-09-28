@@ -3,7 +3,7 @@ import platform
 
 def task_ubuntu_dependencies():
     return {
-        'actions':
+        'actions': [
             '''
                #Fix for docker apt-get
                 apt-get update
@@ -18,7 +18,7 @@ def task_ubuntu_dependencies():
                  gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python python-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma-dev\
                  libpcre3-dev libsqlite3-dev cpanminus wget curl
 
-            ''',
+            '''],
         'uptodate': [True]
     }
 
