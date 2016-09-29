@@ -3,9 +3,8 @@
 // This is the main configuration file for Cpipe.
 //
 // In here are configured the locations for all the tools that the
-// pipeline uses. You should copy this file to 'config.groovy'
-// and then read through instructions below to edit it for your 
-// local setup. 
+// pipeline uses. This should be automatically copied to config.groovy
+// by running `doit install` in the root directory
 //
 // NOTE: please use C-style single line comments (//), and not BASH 
 // style comments in this file (#)
@@ -14,7 +13,7 @@
 
 /////////////////////////// BASIC PARAMETERS ///////////////////////////
 //
-// The base of everything - set this to the absolute path of the 
+// The base of everything - set this to the absolute path of the
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
 BASE="/opt/cpipe_installer/cpipe"
@@ -27,20 +26,7 @@ TMPDIR="$BASE/tmpdata"
 // Enter email here to get notified by email about failures
 EMAILS=""
 
-// If you are using the default reference data, download it now in 
-// the hg19 folder (see hg19/README)
-//
-// NEXT: run ./pipeline/scripts/install.sh from 
-// the root of the distribution
-
 //////////////////// REFERENCE FILES ////////////////////////////////////
-//
-// You do not need to edit below here if you are using the default 
-// HG19 reference files. These can be downloaded by the installer script.
-// However if you want to avoid downloading those or use your own reference
-// files then you should enter correct paths below.
-//
-////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
 REFBASE="$BASE/data"

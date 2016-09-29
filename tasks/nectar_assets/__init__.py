@@ -1,4 +1,7 @@
 #!/usr/bin/python
+"""
+Defines tasks that are involved in downloading cpipe assets from NECTAR
+"""
 
 # Imports
 import json

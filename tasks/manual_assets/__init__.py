@@ -1,3 +1,8 @@
+"""
+Defines the doit tasks required to download cpipe assets without access to NECTAR. Must be run through the root doit.py
+script
+"""
+
 # Imports
 import os
 from StringIO import StringIO

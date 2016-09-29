@@ -1,3 +1,10 @@
+"""
+The root file for the doit build tool: http://pydoit.org/. This specifies tasks with dependencies and actions in the
+ same way as a tool like make. Specifically, this file downloads and installs assets and build tools and runs other
+ setup operations needed by cpipe. This module imports tasks from the tasks directory and executes whichever the user
+ specified. The default task is 'install'.
+"""
+
 from tasks.manual_assets import *
 from tasks.nectar_assets import *
 
