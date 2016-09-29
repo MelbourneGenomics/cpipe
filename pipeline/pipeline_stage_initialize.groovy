@@ -96,12 +96,6 @@ check_tools = {
         """
     }
 
-    if(file(GROOVY_NGS).name != "1.0.5")
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5 (current = ${file(GROOVY_NGS).name}). Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
-
-    if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.6") 
-        fail "This version of Cpipe requires GROOVY >= 2.4.6. Please edit config.groovy to set the latest version of GROOVY"
-
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
 
@@ -115,6 +109,10 @@ update_gene_lists = {
     // creates files: ../design/cohort.add.genes.txt, cohort.addonce.sample.genes.txt, cohort.notfound.genes.txt
     produce ('update_gene_lists.log') {
         from(sample_metadata_file) {
+
+            // find_new_genes updates the local design's gene list with any genes in the prioritised genes that were missing from it
+            // update_gene_lists transfers this updated gene list to the global design, which is shared amongst all batches using it
+            // This could be disabled because this might cause unpredictable behaviour
             exec """
                 mkdir -p "../design"
 
@@ -212,8 +210,8 @@ set_target_info = {
 
     var HG19_CHROM_INFO : false
 
-    exec """
-        echo "set_target_info: combined target is $COMBINED_TARGET"
+    msg """
+        set_target_info: combined target is $COMBINED_TARGET
     """
 
     branch.splice_region_window=false
@@ -329,7 +327,7 @@ sample_similarity_report = {
 
     produce("similarity_report.txt") {
         exec """
-            $JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.4.6.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -cp "${GROOVY_HOME}/embeddable/groovy-all-${GROOVY_VERSION}.jar:$BASE/tools/java_libs/*" VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }

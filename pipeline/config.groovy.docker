@@ -13,10 +13,10 @@
 
 /////////////////////////// BASIC PARAMETERS ///////////////////////////
 //
-// The base of everything - set this to the absolute path of the 
+// The base of everything - set this to the absolute path of the
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
-BASE="<ROOT DIR>"
+BASE="/opt/cpipe_installer/cpipe"
 
 DATA="$BASE/data"
 
@@ -27,27 +27,20 @@ TMPDIR="$BASE/tmpdata"
 EMAILS=""
 
 //////////////////// REFERENCE FILES ////////////////////////////////////
-//
-// You do not need to edit below here if you are using the default
-// HG19 reference files. These can be downloaded by the installer script.
-// However if you want to avoid downloading those or use your own reference
-// files then you should enter correct paths below.
-//
-////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/data/gatk"
+REFBASE="$BASE/data"
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
 // at ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19
-REF="$REFBASE/ucsc.hg19.fasta"
+REF="$REFBASE/ucsc/ucsc.hg19.fasta"
 
 // Set to a VCF file containing DBSNP entries (or leave it if you are downloading the default)
-DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
+DBSNP="$REFBASE/dbsnp/dbsnp_138.hg19.vcf"
 
 // Set to a VCF file containing known indels here
-GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
+GOLD_STANDARD_INDELS="$REFBASE/mills_and_1000g/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
 
 // For self tests and other default features to work, you should
 // set a "default" exome target here. Note that you can specify a different
@@ -56,11 +49,11 @@ EXOME_TARGET=""
 
 //////////////////// OPTIONAL PARAMTERS ////////////////////////////////
 //
-// You probably do NOT need to set anything under here!
-//
+// You probably do NOT need to set anything under here! 
+// 
 // However you may wish to customise the locations of some tools such
 // as java, python and perl installations.
-//
+// 
 ///////////////////////////////////////////////////////////////////////
 
 // The variant database requires every sample id to map to a different
@@ -109,7 +102,7 @@ GATK_LEGACY=false
 // gatk < 3.5
 GATK_VARIANT_ONLY=false
 
-// Utilities for making Excel files
+// Utilities for making Excel files 
 EXCEL="$TOOLS/excel"
 
 // Location of Bedtools distribution
@@ -127,7 +120,7 @@ GROOVY_NGS="$TOOLS/java_libs"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
-// (you can create a symlink to an existing directory with
+// (you can create a symlink to an existing directory with 
 // that name if desired).
 // See tools/vep/README for more information
 VEP_VERSION="83"
@@ -144,9 +137,8 @@ IGV="$TOOLS/tools/igv"
 BWA="$TOOLS/bwa/bwa"
 BWA_THREADS="5"
 
-CONDEL="$TOOLS/vep_plugins/condel"
-DBNSFP="$TOOLS/vep_plugins/dbNSFP"
-ENABLE_DBNSFP=true
+CONDEL="$TOOLS/vep_plugins/config/Condel"
+DBNSFP="$REFBASE/dbnsfp"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
@@ -179,9 +171,6 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 
 // Use default Java installed in PATH
 JAVA="java"
-
-// Support custom perl libraries installed in tools/perl5
-PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
@@ -231,7 +220,7 @@ POST_ANALYSIS_MOVE=false
 GAP_ANNOTATOR_CUSTOM_BEDS=""
 
 /////////////////////////////////////////////
-// filtering options.
+// filtering options. 
 // if any of these criteria are not met, the variant will be filtered
 // if the variant includes multiple samples (i.e. trio), the average value must meet this criteria
 /////////////////////////////////////////////

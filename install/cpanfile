@@ -1,0 +1,9 @@
+requires 'HTTP::Tiny';
+requires 'LWP::Simple';
+requires 'Archive::Zip';
+requires 'DBI';
+requires 'LWP::Protocol::https';
+requires 'File::Copy::Recursive';
+requires 'Archive::Extract';
+requires 'CGI';
+requires 'Bio::DB::HTS';

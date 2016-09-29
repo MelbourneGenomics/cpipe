@@ -101,12 +101,21 @@ function set_config_variable() {
     cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
     sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
     
-    $TOOLS/groovy/2.3.4/bin/groovy -D name="$NAME" -D value="$VALUE" \
+    $TOOLS/groovy/2.4.6/bin/groovy -D name="$NAME" -D value="$VALUE" \
       -pne 'line.startsWith(System.properties.name+"=")?line.replaceAll("=.*",/="/+java.util.regex.Matcher.quoteReplacement(System.properties.value)+/"/): line' \
       "$BASE/pipeline/config.groovy.tmp" > \
       "$BASE/pipeline/config.groovy" \
         || err "Failed to set configuration variable $NAME to value $VALUE"
         
+    rm "$BASE/pipeline/config.groovy.tmp"
+    load_config
+}
+
+function set_config_variable_bool() {
+    NAME="$1"
+    VALUE="$2"
+    cp "$BASE/pipeline/config.groovy" "$BASE/pipeline/config.groovy.tmp"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' $BASE/pipeline/config.groovy.tmp > "$BASE/pipeline/config.groovy" || err "Failed to set configuration variable $NAME to value $VALUE"
     rm "$BASE/pipeline/config.groovy.tmp"
     load_config
 }
@@ -265,7 +274,7 @@ fi
 # support alternate pattern separators (s,foo,bar,g) which makes it tricky to use
 # for file paths - instead use some inline groovy to do it
 unset GROOVY_HOME
-./tools/groovy/2.3.4/bin/groovy -e 'new File(args[0]).text = new File(args[0]).text.replaceAll("do not use", args[1])' \
+./tools/groovy/2.4.6/bin/groovy -e 'new File(args[0]).text = new File(args[0]).text.replaceAll("do not use", args[1])' \
            $CONDEL/config/condel_SP.conf $CONDEL\/config \
            || err "Unable to configure Condel plugin"
 
@@ -273,36 +282,46 @@ unset GROOVY_HOME
 msg "Configuring dbNSFP plugin"
 
 if [ ! -e $TOOLS/vep_plugins/dbNSFP.pm ]; then
-  ln -s "$DBNSFP/dbNSFP.pm" "$TOOLS/vep_plugins"
+  ln -s "$DBNSFP/2016-01-13/dbNSFP.pm" "$TOOLS/vep_plugins"
 else
   msg "condel symlink already configured"
 fi
 
 # download dbnsfp dataset
 #if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv3.0b2a.zip" ]; then
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
-  DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
-  msg "downloading dbnsfp..."
-  wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
-  msg "downloading dbnsfp: done"
-  popd
+prompt "Do you want to include dbNSFP annotations in your analyses? This requires a download of approximately 8Gb (y/n)." "y"
+if [ "$REPLY" == "y" ]; then
+  set_config_variable_bool ENABLE_DBNSFP true
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFPv2.9.1.zip" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    #DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.0b2a.zip"
+    DBNSFP_URL="ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv2.9.1.zip"
+    msg "downloading dbnsfp..."
+    wget $DBNSFP_URL || err "Failed to download $DBNSFP_URL"
+    msg "downloading dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  set_config_variable_bool ENABLE_DBNSFP false
 fi
 
 # process dbnsfp dataset
-if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
-  pushd "$TOOLS/vep_plugins/dbNSFP"
-  msg "processing dbnsfp..."
-  unzip dbNSFPv2.9.1.zip
-  cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
-  "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
-  msg "processing dbnsfp: done"
-  popd
+if [ "$REPLY" == "y" ]; then
+  if [ ! -e "$TOOLS/vep_plugins/dbNSFP/dbNSFP.gz" ]; then
+    pushd "$TOOLS/vep_plugins/dbNSFP"
+    msg "processing dbnsfp..."
+    unzip dbNSFPv2.9.1.zip
+    cat dbNSFP*chr* | "$HTSLIB/bgzip" -c > dbNSFP.gz
+    "$HTSLIB/tabix" -s 1 -b 2 -e 2 dbNSFP.gz
+    msg "processing dbnsfp: done"
+    popd
+  else
+    msg "dbnsfp dataset already downloaded"
+  fi
 else
-  msg "dbnsfp dataset already downloaded"
+  msg "dbnsfp: skipping..."
 fi
 
 # grantham plugin
