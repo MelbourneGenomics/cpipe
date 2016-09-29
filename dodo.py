@@ -7,12 +7,33 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
 
 from tasks.manual_assets import *
 from tasks.nectar_assets import *
+from tasks.common import ROOT
 
 import os
 
 DOIT_CONFIG = {'default_tasks': ['install']}
 
 def task_install():
+    """
+    Install cpipe in a manual install environment, e.g. not inside a docker container
+    :return:
+    """
+    return {
+        'actions': [None],
+        'task_dep': ['assets', 'copy_config']
+    }
+
+def task_docker_install():
+    """
+    Install cpipe for a docker container
+    :return:
+    """
+    return {
+        'actions': [None],
+        'task_dep': ['assets', 'copy_docker_config']
+    }
+
+def task_assets():
     swift_credentials = {
         'OS_AUTH_URL',
         'OS_TENANT_ID'
@@ -34,3 +55,18 @@ def task_install():
         'task_dep': [task]
     }
 
+def copy_config():
+    return {
+        'actions': lambda: shutil.copy(
+            path.join(ROOT, 'pipeline', 'config.groovy.template'),
+            path.join(ROOT, 'pipeline', 'config.groovy')
+        )
+    }
+
+def copy_docker_config():
+    return {
+        'actions': lambda: shutil.copy(
+            path.join(ROOT, 'pipeline', 'config.groovy.docker'),
+            path.join(ROOT, 'pipeline', 'config.groovy')
+        )
+    }
