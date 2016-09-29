@@ -7,6 +7,7 @@
 # * 5: tools
 # * 6: condel
 # * 7: dbnsfp
+# * 8: vep_cache directory
 
 # 23-may-2016 perl /vlsci/VR0320/shared/production/2.2.0/tools/vep/83/variant_effect_predictor.pl 
 # --allele_number 
@@ -57,9 +58,9 @@ else
         --canonical \
         --check_alleles \
         --check_existing \
-        --dir $4/../vep_cache \
-        --dir_plugins $TOOLS/vep_plugins \
-        --fasta $4/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
+        --dir $8/ \
+        --dir_plugins $5/vep_plugins \
+        --fasta $8/homo_sapiens_refseq/*_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa \
         --force_overwrite \
         --gmaf \
         --hgvs \

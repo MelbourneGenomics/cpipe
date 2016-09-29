@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Set useful variables
+ROOT=$(readlink -f $(dirname $BASH_SOURCE))
+cd $ROOT
+
+# Load config groovy
+source pipeline/scripts/config_groovy_util.sh
+load_config
+
+# Load environment, e.g. tools like python, R
+source install/environment.sh
+
+#ARGS=$(getopt -o e:c:g: --long "ensembl-release:,cache-type:l,usage,help,genome-build" -n $(basename $0) -- "$@")
+#eval set -- "$ARGS"
+
+case "$1" in
+    batch)
+        #  e.g. docker run cpipe batch add_batch --batch batch_identifier --profile profile_name
+        shift 1
+        python pipeline/scripts/manage_batch.py "$@" < /dev/stdin
+    ;;
+    genelist)
+        # e.g. docker run cpipe genelist show_bed --profile profile_name
+        shift 1
+        python pipeline/scripts/manage_genelists.py "$@" < /dev/stdin
+    ;;
+    metadata)
+        shift 1
+        case "$1" in
+            check)
+                #e.g. docker run cpipe metadata check < ./batches/batch_identifier/samples.txt
+                python pipeline/scripts/check_metadata.py "$@" < /dev/stdin
+            ;;
+            update)
+                #e.g. docker run cpipe metadata update --sample sample_name --name prioritised_genes --value “4:ABC1,ABC2” --target ./batches/batch_identifier/samples.txt
+                python pipeline/scripts/update_metadata.py "$@" < /dev/stdin
+            ;;
+        esac
+    # e.g. docker run cpipe genelist show_bed --profile profile_name
+    ;;
+    pipeline)
+        
+        # Parse args
+        shift 1
+        ARGS=$(getopt -o b:p: --long "batch:,bpipe-options:" -n $(basename $BASH_SOURCE) -- "$@")
+        eval set -- "$ARGS"
+
+        # Default args
+        BATCH='batch'
+
+        # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
+	while true ; do
+    		case "$1" in
+        	    -b|--batch)
+          	    	BATCH=$2
+          	    	shift 2
+                    ;;
+                    -p|--bpipe-options)
+                    	BPIPE_OPTIONS=$2
+                    	shift 2
+                    ;;
+                    --)
+                        shift
+                        break
+                    ;;
+    		esac
+	done
+
+        mkdir -p batches/${BATCH}/analysis
+        cd batches/${BATCH}/analysis
+        ../../../bpipe run ${BPIPE_OPTIONS} ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
+    ;;
+    test)
+        shift 1
+        pipeline/scripts/run_unit_tests.sh && pipeline/scripts/run_tests.sh detect_mutations_test
+    ;;
+esac

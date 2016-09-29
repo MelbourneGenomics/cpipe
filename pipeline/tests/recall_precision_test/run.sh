@@ -115,7 +115,7 @@ cd "$HERE"
 msg "Comparing VCF files  NA12878.target.vcf  to $BATCH_DIR/analysis/variants/NA*.recal.vcf"
 
 # Run VCFSimilarity - this only compares SNVs - we'll do better one day
-$JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-2.4.6.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity \
+$JAVA -Xmx4g -cp $GROOVY_HOME/embeddable/groovy-all-$GROOVY_VERSION.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity \
     -s shared.tsv NA12878.target.vcf $BATCH_DIR/analysis/variants/NA*.recal.vcf > similarity.txt \
     || err "Failed to run VCF similarity comparison"
 

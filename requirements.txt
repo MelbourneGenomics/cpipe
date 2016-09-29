@@ -1,0 +1,4 @@
+python-swiftclient
+python-keystoneclient
+doit
+

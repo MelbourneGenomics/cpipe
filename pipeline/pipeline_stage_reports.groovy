@@ -67,7 +67,7 @@ calc_coverage_stats = {
 check_ontarget_perc = {
     stage_status("check_ontarget_perc", "enter", sample)
 
-    var MIN_ONTARGET_PERCENTAGE : 50,
+    var MIN_ONTARGET_PERCENTAGE : READ_PERCENTAGE_THRESHOLD,
         input_ontarget_file: "qc/${sample}.ontarget.txt" // something about segments messes up $input
     check {
         exec """
