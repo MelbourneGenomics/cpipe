@@ -3,13 +3,13 @@ import os
 from StringIO import StringIO
 from zipfile import ZipFile
 from urllib import urlopen, urlretrieve
-from doit.action import CmdAction
 from ftplib import FTP
 import tarfile
 import shutil
 import tempfile
 import glob
 
+from tasks.common import cmd, TOOLS_ROOT, DATA_ROOT, INSTALL_ROOT
 from tasks.manual_assets.dependencies import *
 
 # Constants
@@ -28,12 +28,6 @@ FASTQC_VERSION = "0.11.5"
 PICARD_VERSION = "2.6.0"
 DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
 VEP_PLUGIN_COMMIT = "3be3889"
-
-HERE = os.path.dirname(__file__)  # The cpipe root directory
-ROOT = os.path.realpath(os.path.join(HERE, '..', '..'))
-TOOLS_ROOT = os.path.join(ROOT, 'tools')
-DATA_ROOT = os.path.join(ROOT, 'data')
-INSTALL_ROOT = os.path.join(ROOT, 'install')
 
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
 PERL_ROOT = os.path.join(TOOLS_ROOT, 'perl')
@@ -142,7 +136,7 @@ def task_download_perl():
             lambda: download_zip("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION), PERL_ROOT),
             "mv {0}/configure.gnu {0}/configure.sh".format(PERL_ROOT),
             lambda: os.environ['']
-        ],		
+        ],
         'uptodate': [True]
     }
 
@@ -267,12 +261,12 @@ def task_download_bpipe():
     BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
     return {
         'targets': [BPIPE_ROOT],
-        'actions': [CmdAction('''
+        'actions': [cmd('''
             git clone -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}\
             && cd {bpipe_dir}\
             && ./gradlew dist
             '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT
-                              )],
+                        )],
         'uptodate': [True]
     }
 
@@ -292,12 +286,12 @@ def task_download_gatk():
 
 def task_download_picard():
     PICARD_ROOT = os.path.join(TOOLS_ROOT, 'picard')
-    
+
     def action():
         os.makedirs(PICARD_ROOT)
         urlretrieve(
             'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
-            os.path.join(PICARD_ROOT, 'picard.jar') 
+            os.path.join(PICARD_ROOT, 'picard.jar')
         )
 
     return {
@@ -312,7 +306,7 @@ def task_download_perl_libs():
         'targets': [PERL_LIB_ROOT],
         'actions': [
             lambda: os.makedirs(PERL_LIB_ROOT),
-            CmdAction('cpanm --installdeps --local-lib-contained {}/perl_lib .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
+            cmd('cpanm --installdeps --local-lib-contained {}/perl_lib .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
         ],
         'uptodate': [True]
     }
@@ -336,7 +330,7 @@ def task_download_vep_plugins():
     return {
         'targets': [os.path.join(VEP_PLUGIN_ROOT, 'Condel.pm')],
         'actions': [
-            CmdAction('''
+            cmd('''
             git init\
             && git remote add origin https://github.com/Ensembl/VEP_plugins\
             && git fetch\
@@ -364,7 +358,7 @@ def task_download_java_libs():
 def task_download_junit_xml_formatter():
     return {
         'actions': [
-            CmdAction('''
+            cmd('''
                 git clone https://github.com/barrypitman/JUnitXmlFormatter\
                 && pushd JUnitXmlFormatter\
                     && mvn install\
@@ -383,7 +377,7 @@ def task_download_groovy_ngs_utils():
     return {
         'targets': [os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')],
         'actions': [
-            CmdAction('''
+            cmd('''
               git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
                 && pushd groovy-ngs-utils\
                 && ./gradlew jar \
@@ -399,7 +393,7 @@ def task_download_groovy_ngs_utils():
 def task_download_takari_cpisuite():
     return {
         'actions': [
-            CmdAction('''
+            cmd('''
              mvn dependency:copy \
                     -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}\
                     -DoutputDirectory={java_libs_dir}\
@@ -431,7 +425,7 @@ def task_download_dbnsfp():
         'actions': [
             lambda: download_zip("ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv{}.zip".format(DBNSFP_VERSION),
                                  DBNSFP_ROOT),
-            CmdAction('''
+            cmd('''
             source {install_dir}/environment.sh\
             && mkdir -p dbnsfp\
             && pushd {data_dir}/dbnsfp\
@@ -526,7 +520,7 @@ TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.h
 def task_convert_trio_refinement():
     return {
         'actions': [
-            CmdAction(
+            cmd(
                 '''
                  source {install_dir}/environment.sh
                  java -jar $TOOLS_ROOT/picard/picard.jar LiftoverVcf \
@@ -632,6 +626,7 @@ def task_bwa_index_ucsc_reference():
         ],
         'uptodate': [True]
     }
+
 
 def task_samtools_index_ucsc_reference():
     UCSC_SAMTOOLS_INDEX = '{data}/ucsc/ucsc.hg19.fasta.fai'.format(data=DATA_ROOT)
