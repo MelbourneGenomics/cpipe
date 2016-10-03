@@ -7,11 +7,13 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
 
 from tasks.manual_assets import *
 from tasks.nectar_assets import *
+from tasks.compile_tools import *
 from tasks.common import ROOT
 
 import os
 
 DOIT_CONFIG = {'default_tasks': ['install']}
+
 
 def task_install():
     """
@@ -20,18 +22,20 @@ def task_install():
     """
     return {
         'actions': [None],
-        'task_dep': ['assets', 'copy_config']
+        'task_dep': ['copy_config', 'assets']
     }
 
-def task_docker_install():
-    """
-    Install cpipe for a docker container
-    :return:
-    """
-    return {
-        'actions': [None],
-        'task_dep': ['assets', 'copy_docker_config']
-    }
+
+# def task_docker_install():
+#     """
+#     Install cpipe for a docker container
+#     :return:
+#     """
+#     return {
+#         'actions': [None],
+#         'task_dep': ['assets', 'copy_config']
+#     }
+
 
 def task_assets():
     swift_credentials = {
@@ -55,18 +59,25 @@ def task_assets():
         'task_dep': [task, 'compile_tools']
     }
 
+
 def task_copy_config():
+    def action():
+        input = path.join(ROOT, 'pipeline', 'config.groovy.docker')
+        output = path.join(ROOT, 'pipeline', 'config.groovy')
+        with open(input, 'r') as input_file, open(output, 'w') as output_file:
+            for line in input_file:
+                substituted = line.replace("<ROOT DIR>", ROOT)
+                output_file.write(substituted)
+
     return {
-        'actions': [lambda: shutil.copy(
-            path.join(ROOT, 'pipeline', 'config.groovy.template'),
-            path.join(ROOT, 'pipeline', 'config.groovy')
-        )],
+        'actions': [action]
     }
 
-def task_copy_docker_config():
-    return {
-        'actions': [lambda: shutil.copy(
-            path.join(ROOT, 'pipeline', 'config.groovy.docker'),
-            path.join(ROOT, 'pipeline', 'config.groovy')
-        )]
-    }
+
+# def task_copy_docker_config():
+#     return {
+#         'actions': [lambda: shutil.copy(
+#             path.join(ROOT, 'pipeline', 'config.groovy.docker'),
+#             path.join(ROOT, 'pipeline', 'config.groovy')
+#         )]
+#     }
