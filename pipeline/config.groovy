@@ -3,9 +3,8 @@
 // This is the main configuration file for Cpipe.
 //
 // In here are configured the locations for all the tools that the
-// pipeline uses. You should copy this file to 'config.groovy'
-// and then read through instructions below to edit it for your 
-// local setup. 
+// pipeline uses. This should be automatically copied to config.groovy
+// by running `doit install` in the root directory
 //
 // NOTE: please use C-style single line comments (//), and not BASH 
 // style comments in this file (#)
@@ -14,7 +13,7 @@
 
 /////////////////////////// BASIC PARAMETERS ///////////////////////////
 //
-// The base of everything - set this to the absolute path of the 
+// The base of everything - set this to the absolute path of the
 // root of the pipeline distribution (most likely, parent folder of
 // the folder this file is in)
 BASE="/home/michael/Programming/cpipe_installer/cpipe"
@@ -27,34 +26,21 @@ TMPDIR="$BASE/tmpdata"
 // Enter email here to get notified by email about failures
 EMAILS=""
 
-// If you are using the default reference data, download it now in 
-// the hg19 folder (see hg19/README)
-//
-// NEXT: run ./pipeline/scripts/install.sh from 
-// the root of the distribution
-
 //////////////////// REFERENCE FILES ////////////////////////////////////
-//
-// You do not need to edit below here if you are using the default 
-// HG19 reference files. These can be downloaded by the installer script.
-// However if you want to avoid downloading those or use your own reference
-// files then you should enter correct paths below.
-//
-////////////////////////////////////////////////////////////////////////
 
 // Set location of your reference files here (see hg19/README for what is required)
-REFBASE="$BASE/data/gatk" 
+REFBASE="$BASE/data"
 
 // Set to the reference FASTA file, which must be indexed with bwa, and samtools faidx
 // To download this file, and the files below, visit the GATK resource bundle
 // at ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.8/hg19
-REF="$REFBASE/ucsc.hg19.fasta"
+REF="$REFBASE/ucsc/ucsc.hg19.fasta"
 
 // Set to a VCF file containing DBSNP entries (or leave it if you are downloading the default)
-DBSNP="$REFBASE/dbsnp_138.hg19.vcf"
+DBSNP="$REFBASE/dbsnp/dbsnp_138.hg19.vcf"
 
 // Set to a VCF file containing known indels here
-GOLD_STANDARD_INDELS="$REFBASE/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
+GOLD_STANDARD_INDELS="$REFBASE/mills_and_1000g/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
 
 // For self tests and other default features to work, you should
 // set a "default" exome target here. Note that you can specify a different
@@ -151,8 +137,8 @@ IGV="$TOOLS/tools/igv"
 BWA="$TOOLS/bwa/bwa"
 BWA_THREADS="5"
 
-CONDEL="$TOOLS/vep_plugins/condel"
-DBNSFP="$TOOLS/vep_plugins/dbNSFP"
+CONDEL="$TOOLS/vep_plugins/config/Condel"
+DBNSFP="$REFBASE/dbnsfp"
 
 // Database of unique variants, updated for each sample
 VARIANT_DB="$BASE/variants.db"
@@ -254,7 +240,7 @@ HARD_FILTER_QUAL=5
 // trio related resources
 ////////////////////////////////////////////
 // note: only needed for trio pathway
-TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
+TRIO_REFINEMENT_SUPPORTING="$REFBASE/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz"
 
 ////////////////////////////////////////////
 // check related resources
@@ -268,3 +254,14 @@ READ_PERCENTAGE_THRESHOLD=50
 // generate a filtered bam file. options are exons, design, or skip
 FILTERED_ON_EXONS="skip"
 
+////////////////////////////////////////////
+// qc options
+////////////////////////////////////////////
+// what depth is required to contribute to satisfactory coverage
+QC_THRESHOLD=20
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a good rating
+QC_GOOD=95
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a pass rating
+QC_PASS=80
+// what percentage of QC_THRESHOLD must be achieved across the gene to get a fail rating
+QC_FAIL=0
