@@ -51,7 +51,6 @@ def task_download_perl():
         'actions': [
             lambda: download_zip("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION), PERL_ROOT),
             "mv {0}/configure.gnu {0}/configure.sh".format(PERL_ROOT),
-            lambda: os.environ['']
         ],
         'uptodate': [True]
     }
