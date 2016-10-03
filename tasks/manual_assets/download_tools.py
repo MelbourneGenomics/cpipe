@@ -220,11 +220,15 @@ def task_download_picard():
 
 
 def task_download_perl_libs():
+    """
+    Downloads all cpan libs into the cpan directory
+    :return:
+    """
     return {
         'targets': [PERL_LIB_ROOT],
         'actions': [
             lambda: os.makedirs(PERL_LIB_ROOT),
-            cmd('cpanm --installdeps --local-lib-contained {}/perl_lib .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
+            cmd('cpanm -L /dev/null --save-dists {}/cpan --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
         ],
         'uptodate': [True]
     }

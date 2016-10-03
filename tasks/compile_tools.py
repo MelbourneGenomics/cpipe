@@ -100,3 +100,18 @@ def task_compile_gatk():
         'targets': [os.path.join(GATK_ROOT, 'gatk')],
         'uptodate': [True]
     }
+
+
+def task_install_perl_libs():
+    """
+    Installs all cpan libs from the cpan directory into the perl_lib directory
+    :return:
+    """
+    return {
+        'targets': [PERL_LIB_ROOT],
+        'actions': [
+            lambda: os.makedirs(PERL_LIB_ROOT),
+            cmd('cpanm --mirror file://{}/cpan -L {}/perl_libs --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
+        ],
+        'uptodate': [True]
+    }
