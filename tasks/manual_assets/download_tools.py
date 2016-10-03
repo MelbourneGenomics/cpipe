@@ -8,6 +8,7 @@ import glob
 
 from tasks.common import *
 
+
 def task_tool_assets():
     return {
         'actions': None,
@@ -176,12 +177,14 @@ def task_download_bpipe():
     BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
     return {
         'targets': [BPIPE_ROOT],
-        'actions': [cmd('''
+        'actions': [
+            cmd('''
             git clone -c advice.detachedHead=false -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}\
             && cd {bpipe_dir}\
             && ./gradlew dist
-            '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT
-                        )],
+            '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT)
+        ],
+        'task_dep': ['compile_htslib'],
         'uptodate': [True]
     }
 
@@ -319,4 +322,3 @@ def task_download_takari_cpisuite():
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
         ],
     }
-
