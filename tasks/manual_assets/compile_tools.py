@@ -4,7 +4,6 @@ def task_compile_tools():
     return {
         'actions': [None],
         'task_dep': [
-            'compile_python',
             'compile_perl',
             'compile_r',
             'compile_bwa',
@@ -14,15 +13,6 @@ def task_compile_tools():
             'compile_bedtools',
             'compile_gatk'
         ]
-    }
-
-def task_compile_python():
-    return {
-        'actions': [
-            cmd('make', cwd=PYTHON_ROOT)
-        ],
-        'targets': [os.path.join(PYTHON_ROOT, 'bin', 'python')],
-        'uptodate': [True]
     }
 
 def task_compile_perl():
