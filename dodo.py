@@ -55,18 +55,18 @@ def task_assets():
         'task_dep': [task, 'compile_tools']
     }
 
-def copy_config():
+def task_copy_config():
     return {
-        'actions': lambda: shutil.copy(
+        'actions': [lambda: shutil.copy(
             path.join(ROOT, 'pipeline', 'config.groovy.template'),
             path.join(ROOT, 'pipeline', 'config.groovy')
-        )
+        )],
     }
 
-def copy_docker_config():
+def task_copy_docker_config():
     return {
-        'actions': lambda: shutil.copy(
+        'actions': [lambda: shutil.copy(
             path.join(ROOT, 'pipeline', 'config.groovy.docker'),
             path.join(ROOT, 'pipeline', 'config.groovy')
-        )
+        )]
     }

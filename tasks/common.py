@@ -94,10 +94,16 @@ def cmd(command, **kwargs):
     :param kwargs: And additional arguments to pass to CmdAction or popen
     :return: A doit CmdAction
     """
+
+    # Set default options and override then with the user specified options
+    defaults = {
+        'executable': 'bash',
+        'shell': True,
+        'cwd': ROOT
+    }
+    defaults.update(kwargs)
+
     return CmdAction(
         'source {}\n'.format(ENVIRONMENT_FILE) + command,
-        executable='bash',
-        shell=True,
-        cwd=ROOT,
-        **kwargs
+        **defaults
     )
