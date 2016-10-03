@@ -52,7 +52,7 @@ def task_assets():
 
     return {
         'actions': [None],
-        'task_dep': [task]
+        'task_dep': [task, 'compile_tools']
     }
 
 def copy_config():
