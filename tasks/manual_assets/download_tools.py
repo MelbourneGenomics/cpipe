@@ -177,7 +177,7 @@ def task_download_bpipe():
     return {
         'targets': [BPIPE_ROOT],
         'actions': [cmd('''
-            git clone -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}\
+            git clone -c advice.detachedHead=false -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}\
             && cd {bpipe_dir}\
             && ./gradlew dist
             '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT
