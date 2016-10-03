@@ -61,16 +61,19 @@ def task_assets():
 
 
 def task_copy_config():
+    input = path.join(ROOT, 'pipeline', 'config.groovy.docker')
+    output = path.join(ROOT, 'pipeline', 'config.groovy')
+
     def action():
-        input = path.join(ROOT, 'pipeline', 'config.groovy.docker')
-        output = path.join(ROOT, 'pipeline', 'config.groovy')
         with open(input, 'r') as input_file, open(output, 'w') as output_file:
             for line in input_file:
                 substituted = line.replace("<ROOT DIR>", ROOT)
                 output_file.write(substituted)
 
     return {
-        'actions': [action]
+        'actions': [action],
+        'targets': [output],
+        'uptodate': [True]
     }
 
 
