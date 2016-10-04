@@ -10,6 +10,7 @@ import hashlib
 from os import path
 from subprocess import check_call
 from swiftclient.service import SwiftService
+from tasks.nectar_assets.dependencies import *
 
 current_dir = path.dirname(__file__)
 root = path.realpath(path.join(current_dir, '..', '..'))
