@@ -264,6 +264,15 @@ def task_download_perl_libs():
                 ]
             }
 
+    # This last subtask deletes the temporary cpan dir
+    yield {
+        'name': 'create_cpan_root',
+        'actions': [
+            lambda: shutil.rmtree(CPAN_TEMP),
+        ],
+        'uptodate': [lambda: not os.path.exists(CPAN_TEMP)]
+    }
+
 
 def task_download_vep_libs():
     return {
