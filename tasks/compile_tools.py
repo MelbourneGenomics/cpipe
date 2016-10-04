@@ -31,7 +31,7 @@ def task_compile_r():
         'actions': [
             cmd('./configure && make', cwd=R_ROOT)
         ],
-        'task_dep': ['download_r'],
+        'task_dep': ['nectar_install_dependencies', 'download_r'],
         'targets': [os.path.join(R_ROOT, 'bin', 'R')],
         'uptodate': [True]
     }

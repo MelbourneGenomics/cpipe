@@ -1,2 +1,5 @@
 def task_nectar_install_dependencies():
-    pass
+    return {
+        'actions': ['apt-get install -y gfortran'],
+        'uptodate': [False]
+    }

@@ -14,7 +14,7 @@ def task_ubuntu_dependencies():
                 apt-get update
 
                 # Install apt-getable things
-                apt-get install -y git make poppler-utils zlib1g-dev ncurses-dev gcc g++ gfortran patch libssl-dev unzip maven\
+                apt-get install -y git make poppler-utils zlib1g-dev ncurses-dev gcc g++ patch libssl-dev unzip maven\
                  gradle libcurl4-openssl-dev texinfo openjdk-8-jdk python python-pip mysql-client xorg-dev libreadline-dev libbz2-dev liblzma-dev\
                  libpcre3-dev libsqlite3-dev cpanminus wget curl
 
