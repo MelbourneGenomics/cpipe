@@ -1,10 +1,7 @@
-from StringIO import StringIO
-from zipfile import ZipFile
-from urllib import urlopen, urlretrieve
-import tarfile
-import shutil
+from doit.tools import create_folder
 import tempfile
 import glob
+import re
 
 from tasks.common import *
 
@@ -206,7 +203,7 @@ def task_download_picard():
     PICARD_ROOT = os.path.join(TOOLS_ROOT, 'picard')
 
     def action():
-        os.makedirs(PICARD_ROOT)
+        create_folder(PICARD_ROOT)
         urlretrieve(
             'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
             os.path.join(PICARD_ROOT, 'picard.jar')
@@ -221,17 +218,51 @@ def task_download_picard():
 
 def task_download_perl_libs():
     """
-    Downloads all cpan libs into the cpan directory
+    Downloads all cpan libs into the cpan directory. Each dependency is a subtask
     :return:
     """
-    return {
-        'targets': [PERL_LIB_ROOT],
+
+    def cpan_exists(dependency):
+        """
+        Returns true if the CPAN_ROOT directory contains the given cpan module
+        :param dependency:
+        :return:
+        """
+        module_name = dependency.split('::')[-1]
+        for root, dirnames, filenames in os.walk(CPAN_ROOT):
+            for filename in filenames:
+                if module_name in filename:
+                    return True
+
+        return False
+
+    CPAN_TEMP = os.path.join(TOOLS_ROOT, 'cpan_temp')
+
+    # This first subtask creates the cpan root
+    yield {
+        'name': 'create_cpan_root',
+        'targets': [CPAN_ROOT],
         'actions': [
-            lambda: os.makedirs(PERL_LIB_ROOT),
-            cmd('cpanm -L /dev/null --save-dists {}/cpan --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
+            lambda: create_folder(CPAN_ROOT),
+            lambda: create_folder(CPAN_TEMP),
         ],
         'uptodate': [True]
     }
+
+    # Subsequent tasks download a cpan module and its dependencies by reading the cpanfile
+    with open(os.path.join(INSTALL_ROOT, 'cpanfile'), 'r') as cpanfile:
+        for line in cpanfile:
+            dependency = re.match("requires '(.+)';", line).group(1)
+            yield {
+                'name': dependency,
+                'uptodate': [lambda: cpan_exists(dependency)],
+                'actions': [
+                    # 'cpanm -L /dev/null --save-dists /home/michael/Programming/cpipe_installer/cpipe/tools/cpan --scandeps Archive::Zip'
+                    'cpanm -L /dev/null --save-dists {libs} --scandeps {module}'.format(libs=CPAN_TEMP, module=dependency),
+                    'rsync -av {src}/ {dest}/'.format(src=CPAN_TEMP, dest=CPAN_ROOT),
+                    'rm -rf {tmp}/*'.format(tmp=CPAN_TEMP)
+                ]
+            }
 
 
 def task_download_vep_libs():

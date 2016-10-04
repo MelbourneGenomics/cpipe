@@ -1,4 +1,5 @@
 from tasks.common import *
+from doit.tools import create_folder
 
 def task_compile_tools():
     return {
@@ -109,9 +110,10 @@ def task_install_perl_libs():
     """
     return {
         'targets': [PERL_LIB_ROOT],
+        'task_dep': ['download_perl_libs'],
         'actions': [
-            lambda: os.makedirs(PERL_LIB_ROOT),
-            cmd('cpanm --mirror file://{}/cpan -L {}/perl_libs --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
+            lambda: create_folder(PERL_LIB_ROOT),
+            cmd('cpanm --mirror file://{0}/cpan -L {0}/perl_lib --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
         ],
-        'uptodate': [True]
+        # 'uptodate': [True]
     }
