@@ -108,3 +108,6 @@ def cmd(command, **kwargs):
         'source {}\n'.format(ENVIRONMENT_FILE) + command,
         **defaults
     )
+
+def in_docker():
+    return os.path.exists('/.dockerenv')

@@ -1,4 +1,5 @@
 from tasks.common import *
+from tasks.docker_dependencies import *
 from doit.tools import create_folder
 
 def task_compile_tools():
@@ -27,11 +28,15 @@ def task_compile_perl():
     }
 
 def task_compile_r():
+    task_dep = ['download_r']
+    if in_docker():
+        task_dep.append('r_docker_dependencies')
+
     return {
         'actions': [
             cmd('./configure && make', cwd=R_ROOT)
         ],
-        'task_dep': ['install_fortran_compiler', 'download_r'],
+        'task_dep': task_dep,
         'targets': [os.path.join(R_ROOT, 'bin', 'R')],
         'uptodate': [True]
     }
@@ -116,10 +121,4 @@ def task_install_perl_libs():
             cmd('cpanm --mirror file://{0}/cpan -L {0}/perl_lib --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)
         ],
         # 'uptodate': [True]
-    }
-
-def task_install_fortran_compiler():
-    return {
-        'actions': ['apt-get install -y gfortran xorg-dev libreadline-dev libbz2-dev liblzma-dev'],
-        'uptodate': [False]
     }
