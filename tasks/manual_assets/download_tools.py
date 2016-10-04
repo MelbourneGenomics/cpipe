@@ -266,7 +266,7 @@ def task_download_perl_libs():
 
     # This last subtask deletes the temporary cpan dir
     yield {
-        'name': 'create_cpan_root',
+        'name': 'delete_cpan_temp',
         'actions': [
             lambda: shutil.rmtree(CPAN_TEMP),
         ],
