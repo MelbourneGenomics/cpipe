@@ -4,7 +4,7 @@ FROM ubuntu
 SHELL ["/bin/bash", "-c"]
 
 # Install basic linux tools that we need to make python
-RUN apt-get update && apt install -y curl make build-essential libssl-dev zlib1g-dev libbz2-dev libsqlite3-dev libreadline-dev
+RUN apt-get update && apt install -y curl make build-essential libssl-dev zlib1g-dev libbz2-dev libsqlite3-dev libreadline-dev git
 
 # Copy in the repository
 ADD . /opt/cpipe
