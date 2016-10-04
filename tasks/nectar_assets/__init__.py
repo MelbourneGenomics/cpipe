@@ -18,18 +18,21 @@ current_manifest = path.join(current_dir, 'current.manifest.json')
 
 
 def task_setup_manifests():
-    def action():
-        # Create the current manifest if it doesn't exist
-        if not path.exists(current_manifest):
-            with open(current_manifest, 'w') as current:
-                json.dump({}, current)
     return {
-        'actions': [action],
+        'actions': [create_current_manifest],
         'uptodate': [True]     
     }
-   
+
+
+def create_current_manifest():
+    # Create the current manifest if it doesn't exist
+    if not path.exists(current_manifest):
+        with open(current_manifest, 'w') as current:
+            json.dump({}, current)
 
 def assets_needing_update():
+    create_current_manifest()
+
     with open(path.join(current_dir, 'target.manifest.json'), 'r') as target, \
             open(current_manifest, 'r') as current:
 

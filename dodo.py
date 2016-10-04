@@ -40,7 +40,7 @@ def task_install():
 def task_assets():
     swift_credentials = {
         'OS_AUTH_URL',
-        'OS_TENANT_ID'
+        'OS_TENANT_ID',
         'OS_TENANT_NAME',
         'OS_PROJECT_NAME',
         'OS_USERNAME',
