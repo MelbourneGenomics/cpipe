@@ -12,7 +12,7 @@ from subprocess import check_call
 from swiftclient.service import SwiftService
 
 current_dir = path.dirname(__file__)
-root = path.join(current_dir, 'cpipe')
+root = path.realpath(path.join(current_dir, '..', '..'))
 temp = path.join(current_dir, 'temp')
 current_manifest = path.join(current_dir, 'current.manifest.json')
 
@@ -21,8 +21,8 @@ def task_setup_manifests():
     def action():
         # Create the current manifest if it doesn't exist
         if not path.exists(current_manifest):
-	    with open(current_manifest, 'w') as current:
-	        json.dump({}, current)
+            with open(current_manifest, 'w') as current:
+                json.dump({}, current)
     return {
         'actions': [action],
         'uptodate': [True]     
