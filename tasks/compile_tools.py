@@ -120,6 +120,6 @@ def task_install_perl_libs():
 
 def task_install_fortran_compiler():
     return {
-        'actions': ['apt-get install -y gfortran'],
+        'actions': ['apt-get install -y gfortran xorg-dev libreadline-dev libbz2-dev liblzma-dev'],
         'uptodate': [False]
     }

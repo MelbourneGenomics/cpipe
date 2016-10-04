@@ -12,8 +12,9 @@ from tasks.common import ROOT
 
 import os
 
-DOIT_CONFIG = {'default_tasks': ['install']}
-
+DOIT_CONFIG = {
+    'default_tasks': ['install']
+}
 
 def task_install():
     """
