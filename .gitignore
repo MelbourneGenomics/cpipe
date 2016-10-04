@@ -1,4 +1,5 @@
 /tools/
 /data/
+/pipeline/config.groovy
 *.pyc
 *.swp
