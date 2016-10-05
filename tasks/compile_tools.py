@@ -67,9 +67,10 @@ def task_compile_r():
 def task_compile_bwa():
     return {
         'actions': [
-            cmd('./configure && make', cwd=BWA_ROOT)
+            cmd('make', cwd=BWA_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bwa'],
+        'task_dep': [
+            'download_nectar_assets' if has_swift_auth() else 'download_bwa'],
         'targets': [os.path.join(BWA_ROOT, 'bwa')],
         'uptodate': [True]
     }
@@ -89,7 +90,10 @@ def task_compile_samtools():
         'actions': [
             cmd('make', cwd=SAMTOOLS_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_samtools'],
+        'task_dep': [
+            'download_htslib',
+            'download_nectar_assets' if has_swift_auth() else 'download_samtools'
+        ],
         'targets': [os.path.join(SAMTOOLS_ROOT, 'samtools')],
         'uptodate': [True]
     }
@@ -99,7 +103,10 @@ def task_compile_bcftools():
         'actions': [
             cmd('make', cwd=BCFTOOLS_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bcftools'],
+        'task_dep': [
+            'download_htslib',
+            'download_nectar_assets' if has_swift_auth() else 'download_bcftools'
+        ],
         'targets': [os.path.join(BCFTOOLS_ROOT, 'bcftools')],
         'uptodate': [True]
     }
