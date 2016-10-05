@@ -52,7 +52,8 @@ def filter_tsv(instream, outstream, log):
     count = 0
     counts = {'nm_orig': 0, 'xm_orig': 0, 'other_orig': 0, 'nm_new': 0, 'xm_new': 0}
     for count, line in enumerate(instream):
-        if first: # get header info
+        if first: 
+            # get header info
             first = False
             header_line = line
             header = line.strip('\n').split('\t')
@@ -99,7 +100,7 @@ def filter_tsv(instream, outstream, log):
                 counts['other_orig'] += 1
     log.write('read {} lines\n'.format(count))
 
-    # write out filtered            
+    # write out filtered list
     count = 0
     outstream.write(header_line)
     for identifier in include:
