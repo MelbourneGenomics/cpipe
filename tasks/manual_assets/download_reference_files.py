@@ -44,7 +44,7 @@ def task_download_dbnsfp():
             '''.format(install_dir=INSTALL_ROOT, data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
         ],
         'task_dep': [
-            'download_htslib'
+            'download_nectar_assets' if has_swift_auth() else 'download_htslib'
         ],
         'uptodate': [True],
     }
@@ -64,7 +64,9 @@ def task_install_vep_cache():
             --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
         ],
         'task_dep': [
-            'download_htslib'
+            'download_nectar_assets' if has_swift_auth() else 'download_htslib',
+            'compile_htslib',
+            'install_perl_libs'
         ],
         'uptodate': [True],
     }
