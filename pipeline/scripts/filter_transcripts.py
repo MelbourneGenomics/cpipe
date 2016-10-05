@@ -32,12 +32,17 @@ import collections
 import datetime
 import sys
 
+# which column name contains the transcript
 TRANSCRIPT_COLUMN = 'Feature'
+
+# how we identify a variant
 IDENTIFYING_COLUMNS = ['CHROM', 'POS', 'REF', 'ALT']
 
 def filter_tsv(instream, outstream, log):
     '''
-        read instream and filter out XM transcripts that are in a location that already has an NM transcript
+        read instream and filter out XM transcripts that are in a location that 
+        already has an NM transcript.
+        write filtered transcripts to outstream.
     '''
     # get header
     first = True
@@ -62,29 +67,34 @@ def filter_tsv(instream, outstream, log):
                     return
                 identifiers.append(header.index(identifier))
         else:
-            # build identifier
             fields = line.strip('\n').split('\t')
+            # build identifier
             identifier = '\t'.join([fields[x] for x in identifiers])
             transcript = fields[transcript_idx]
             if transcript.startswith('NM_'):
-                if identifier not in has_nm: # first seen NM -> remove any existing XMs
+                # if the transcript starts with NM and NM hasn't been seen before,
+                # all previously seen XMs are removed from the list
+                if identifier not in has_nm:
                     new_list = [ line ]
                     for old_item in include[identifier]:
                         old_item_transcript = old_item.strip('\n').split('\t')[transcript_idx]
                         if not old_item_transcript.startswith('XM_'):
                             new_list.append(old_item)
                     include[identifier] = new_list
-                else: # already seen an NM, add another NM
+                # if the transcript starts with NM and we've already seen an NM, 
+                # add the NM
+                else: 
                     include[identifier].append(line)
                 has_nm.add(identifier) 
                 counts['nm_orig'] += 1
             elif transcript.startswith('XM_'):
-                if identifier in has_nm:
-                    pass # don't add XM -> already has an NM
-                else:
+                # if the transcript starts with XM only add it if we haven't
+                # seen an nm
+                if not identifier in has_nm:
                     include[identifier].append(line)
                 counts['xm_orig'] += 1
-            else: # include anything else
+            # anything that's not an XM or NM is added
+            else: 
                 include[identifier].append(line)
                 counts['other_orig'] += 1
     log.write('read {} lines\n'.format(count))
