@@ -109,5 +109,19 @@ def cmd(command, **kwargs):
         **defaults
     )
 
+def has_swift_auth():
+    swift_credentials = {
+        'OS_AUTH_URL',
+        'OS_TENANT_ID',
+        'OS_TENANT_NAME',
+        'OS_PROJECT_NAME',
+        'OS_USERNAME',
+        'OS_PASSWORD'
+    }
+
+    # If the user has all the necessary environment variables set, let them download the cached assets
+    # from the object store
+    return swift_credentials.issubset(os.environ.keys())
+
 def in_docker():
     return os.path.exists('/.dockerenv')

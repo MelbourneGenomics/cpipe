@@ -7,6 +7,12 @@ to install the relevant headers themselves
 
 def task_r_docker_dependencies():
     return {
-        'actions': ['apt-get install -y gfortran xorg-dev libreadline-dev libbz2-dev liblzma-dev libpcre3-dev'],
+        'actions': ['apt-get install -y gfortran xorg-dev libreadline-dev libbz2-dev liblzma-dev libpcre3-dev libcurl4-openssl-dev'],
+        'uptodate': [False]
+    }
+
+def task_java_docker():
+    return {
+        'actions': ['apt-get install -y openjdk-8-jdk'],
         'uptodate': [False]
     }

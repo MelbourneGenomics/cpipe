@@ -2,7 +2,8 @@ from tasks.common import *
 from tasks.docker_dependencies import *
 from doit.tools import create_folder
 
-def task_compile_tools():
+def task_compile_all():
+    'Compiles all assets including java assets; this is only needed for a manual install'
     return {
         'actions': [None],
         'task_dep': [
@@ -17,20 +18,42 @@ def task_compile_tools():
         ]
     }
 
+def task_compile_nectar():
+    'Compiles assets downloaded from nectar; excludes java compilation since this should already have been done'
+    return {
+        'actions': [None],
+        'task_dep': [
+            'compile_perl',
+            'compile_r',
+            'compile_bwa',
+            'compile_htslib',
+            'compile_samtools',
+            'compile_bcftools',
+            'compile_bedtools',
+        ]
+    }
+
 def task_compile_perl():
+
     return {
         'actions': [
             cmd('yes | ./configure.sh && make', cwd=PERL_ROOT)
         ],
-        'task_dep': ['download_perl'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl'],
         'targets': [os.path.join(PERL_ROOT, 'perl')],
         'uptodate': [True]
     }
 
 def task_compile_r():
-    task_dep = ['download_r']
+    task_dep = []
+
     if in_docker():
         task_dep.append('r_docker_dependencies')
+
+    if has_swift_auth():
+        task_dep.append('download_nectar_assets')
+    else:
+        task_dep.append('download_perl')
 
     return {
         'actions': [
@@ -46,7 +69,7 @@ def task_compile_bwa():
         'actions': [
             cmd('./configure && make', cwd=BWA_ROOT)
         ],
-        'task_dep': ['download_bwa'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bwa'],
         'targets': [os.path.join(BWA_ROOT, 'bwa')],
         'uptodate': [True]
     }
@@ -56,7 +79,7 @@ def task_compile_htslib():
         'actions': [
             cmd('make', cwd=HTSLIB_ROOT)
         ],
-        'task_dep': ['download_htslib'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_htslib'],
         'targets': [os.path.join(HTSLIB_ROOT, 'htsfile')],
         'uptodate': [True]
     }
@@ -66,7 +89,7 @@ def task_compile_samtools():
         'actions': [
             cmd('make', cwd=SAMTOOLS_ROOT)
         ],
-        'task_dep': ['download_samtools'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_samtools'],
         'targets': [os.path.join(SAMTOOLS_ROOT, 'samtools')],
         'uptodate': [True]
     }
@@ -76,7 +99,7 @@ def task_compile_bcftools():
         'actions': [
             cmd('make', cwd=BCFTOOLS_ROOT)
         ],
-        'task_dep': ['download_bcftools'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bcftools'],
         'targets': [os.path.join(BCFTOOLS_ROOT, 'bcftools')],
         'uptodate': [True]
     }
@@ -86,7 +109,7 @@ def task_compile_bedtools():
         'actions': [
             cmd('make', cwd=BEDTOOLS_ROOT)
         ],
-        'task_dep': ['download_bedtools'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bedtools'],
         'targets': [os.path.join(BEDTOOLS_ROOT, 'bedtools')],
         'uptodate': [True]
     }
@@ -102,7 +125,7 @@ def task_compile_gatk():
             && bash -O extglob -c 'rm -rf !(GenomeAnalysisTK.jar)'
             ''', cwd=GATK_ROOT)
         ],
-        'task_dep': ['download_gatk'],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_gatk'],
         'targets': [os.path.join(GATK_ROOT, 'gatk')],
         'uptodate': [True]
     }
@@ -114,8 +137,8 @@ def task_install_perl_libs():
     :return:
     """
     return {
-        'targets': [PERL_LIB_ROOT],
-        'task_dep': ['download_perl_libs'],
+        'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl_libs'],
         'actions': [
             lambda: create_folder(PERL_LIB_ROOT),
             cmd('cpanm --mirror file://{0}/cpan -L {0}/perl_lib --installdeps .'.format(TOOLS_ROOT), cwd=INSTALL_ROOT)

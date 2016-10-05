@@ -21,7 +21,7 @@ current_manifest = path.join(current_dir, 'current.manifest.json')
 def task_setup_manifests():
     return {
         'actions': [create_current_manifest],
-        'uptodate': [True]     
+        'uptodate': [True]
     }
 
 
@@ -30,6 +30,7 @@ def create_current_manifest():
     if not path.exists(current_manifest):
         with open(current_manifest, 'w') as current:
             json.dump({}, current)
+
 
 def assets_needing_update():
     create_current_manifest()
@@ -113,6 +114,13 @@ def download_nectar_assets():
 
 
 def task_nectar_assets():
+    return {
+        'task_dep': ['download_nectar_assets', 'compile_nectar'],
+        'actions': [None]
+    }
+
+
+def task_download_nectar_assets():
     return {
         'setup': ['setup_manifests'],
         'uptodate': [lambda: len(assets_needing_update()) == 0],

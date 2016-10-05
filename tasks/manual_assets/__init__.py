@@ -10,5 +10,5 @@ from tasks.manual_assets.download_tools import *
 def task_manual_assets():
     return {
         'actions': None,
-        'task_dep': ['manual_install_dependencies', 'tool_assets', 'data_assets']
+        'task_dep': ['tool_assets', 'data_assets', 'compile_all']
     }
