@@ -23,8 +23,8 @@ def task_install():
     :return:
     """
     return {
-        'actions': [None],
-        'task_dep': ['copy_config', 'assets']
+        'actions': None,
+        'task_dep': ['copy_config', 'assets', 'check_java']
     }
 
 
@@ -34,7 +34,7 @@ def task_install():
 #     :return:
 #     """
 #     return {
-#         'actions': [None],
+#         'actions': None,
 #         'task_dep': ['assets', 'copy_config']
 #     }
 
@@ -48,7 +48,7 @@ def task_assets():
         task = 'manual_assets'
 
     return {
-        'actions': [None],
+        'actions': None,
         'task_dep': [task]
     }
 
@@ -95,13 +95,13 @@ def task_check_java():
 
     if has_java_18():
         return {
-            'actions': [None]
+            'actions': None
         }
     else:
         if in_docker():
             return {
-                'actions': [None],
-                'task_dep': ['task_java_docker']
+                'actions': None,
+                'task_dep': ['java_docker']
             }
         else:
             raise OSError('Missing Java 1.8 or greater! Please install it to continue')
