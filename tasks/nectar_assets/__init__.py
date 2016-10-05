@@ -21,6 +21,7 @@ current_manifest = path.join(current_dir, 'current.manifest.json')
 def task_setup_manifests():
     return {
         'actions': [create_current_manifest],
+        'targets': [current_manifest],
         'uptodate': [True]
     }
 
