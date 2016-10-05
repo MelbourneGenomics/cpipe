@@ -5,7 +5,7 @@ from doit.tools import create_folder
 def task_compile_all():
     'Compiles all assets including java assets; this is only needed for a manual install'
     return {
-        'actions': [None],
+        'actions': None,
         'task_dep': [
             'compile_perl',
             'compile_r',
@@ -21,7 +21,7 @@ def task_compile_all():
 def task_compile_nectar():
     'Compiles assets downloaded from nectar; excludes java compilation since this should already have been done'
     return {
-        'actions': [None],
+        'actions': None,
         'task_dep': [
             'compile_perl',
             'compile_r',
@@ -110,7 +110,7 @@ def task_compile_bedtools():
             cmd('make', cwd=BEDTOOLS_ROOT)
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bedtools'],
-        'targets': [os.path.join(BEDTOOLS_ROOT, 'bedtools')],
+        'targets': [os.path.join(BEDTOOLS_ROOT, 'bin', 'bedtools')],
         'uptodate': [True]
     }
 

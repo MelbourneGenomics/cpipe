@@ -116,7 +116,7 @@ def download_nectar_assets():
 def task_nectar_assets():
     return {
         'task_dep': ['download_nectar_assets', 'compile_nectar'],
-        'actions': [None]
+        'actions': None
     }
 
 
