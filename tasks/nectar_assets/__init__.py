@@ -11,12 +11,13 @@ from os import path
 from subprocess import check_call
 from swiftclient.service import SwiftService
 from tasks.nectar_assets.dependencies import *
+from tasks.common import ROOT
 
 current_dir = path.dirname(__file__)
-root = path.realpath(path.join(current_dir, '..', '..'))
+# root = path.realpath(path.join(current_dir, '..', '..'))
 temp = path.join(current_dir, 'temp')
 current_manifest = path.join(current_dir, 'current.manifest.json')
-
+target_manifest = path.join(current_dir, 'target.manifest.json')
 
 def task_setup_manifests():
     return {
@@ -36,7 +37,7 @@ def create_current_manifest():
 def assets_needing_update():
     create_current_manifest()
 
-    with open(path.join(current_dir, 'target.manifest.json'), 'r') as target, \
+    with open(target_manifest, 'r') as target, \
             open(current_manifest, 'r') as current:
 
         # Work out which files we need to download
@@ -80,7 +81,7 @@ def download_nectar_assets():
         for result in swift.download(
                 container='cpipe-2.4-assets',
                 objects=to_download,
-                options={'out_directory': str(root)}
+                options={'out_directory': str(ROOT)}
         ):
             zip_file = result['path']
             target_dir = path.dirname(zip_file)
@@ -122,7 +123,12 @@ def task_nectar_assets():
 
 
 def task_download_nectar_assets():
+    with open(target_manifest) as target_file:
+        target = json.load(target_file)
+        paths = [os.path.join(ROOT, target[key]['path']) for key in target]
+
     return {
+        'targets': paths,
         'setup': ['setup_manifests'],
         'uptodate': [lambda: len(assets_needing_update()) == 0],
         'actions': [download_nectar_assets]
