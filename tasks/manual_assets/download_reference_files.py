@@ -44,7 +44,8 @@ def task_download_dbnsfp():
             '''.format(install_dir=INSTALL_ROOT, data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
         ],
         'task_dep': [
-            'download_nectar_assets' if has_swift_auth() else 'download_htslib'
+            'download_nectar_assets' if has_swift_auth() else 'download_htslib',
+            'compile_htslib'
         ],
         'uptodate': [True],
     }
@@ -157,6 +158,8 @@ def task_convert_trio_refinement():
         'task_dep': [
             'download_trio_refinement',
             'download_refinement_liftover',
+            'download_htslib',
+            'compile_htslib'
         ],
         'uptodate': [True]
     }
