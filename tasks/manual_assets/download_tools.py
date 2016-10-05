@@ -159,12 +159,15 @@ def task_download_vep():
 
 def task_download_fastqc():
     FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
+    FASTQC_EXE = os.path.join(FASTQC_ROOT, 'fastqc')
+
     return {
         'targets': [FASTQC_ROOT],
         'actions': [
             lambda: download_zip(
                 "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION),
-                FASTQC_ROOT)
+                FASTQC_ROOT),
+            'chmod +x {fastqc}'.format(fastqc=FASTQC_EXE)
         ],
         'uptodate': [True]
     }
