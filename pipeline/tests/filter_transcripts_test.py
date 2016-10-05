@@ -35,6 +35,9 @@ import filter_transcripts
 class FilterTranscriptsTest(unittest.TestCase):
 
     def test_simple_xm_only(self):
+        '''
+            test that XM on its own is not filtered
+        '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tXM_1\n']
         log = StringIO.StringIO()
         target = StringIO.StringIO()
@@ -45,6 +48,9 @@ class FilterTranscriptsTest(unittest.TestCase):
         assert lines[2] == ''
 
     def test_simple_nm_only(self):
+        '''
+            test that NM on its own is not filtered
+        '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tNM_1\n']
         log = StringIO.StringIO()
         target = StringIO.StringIO()
@@ -55,6 +61,9 @@ class FilterTranscriptsTest(unittest.TestCase):
         assert lines[2] == ''
 
     def test_simple_both(self):
+        '''
+            test that XM is filtered if an NM is present
+        '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tNM_1\n', 'chr1\t100\tA\tA\tXM_1\n']
         log = StringIO.StringIO()
         target = StringIO.StringIO()
