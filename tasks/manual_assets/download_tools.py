@@ -258,10 +258,11 @@ def task_download_perl_libs():
             dependency = re.match("requires '(.+)';", line).group(1)
             yield {
                 'name': dependency,
+                'task_dep': ['download_perl', 'compile_perl', 'download_cpanm'],
                 'uptodate': [lambda: cpan_exists(dependency)],
                 'actions': [
                     # 'cpanm -L /dev/null --save-dists /home/michael/Programming/cpipe_installer/cpipe/tools/cpan --scandeps Archive::Zip'
-                    'cpanm -L /dev/null --save-dists {libs} --scandeps {module}'.format(libs=CPAN_TEMP, module=dependency),
+                    'perl {cpanm} -L /dev/null --save-dists {libs} --scandeps {module}'.format(libs=CPAN_TEMP, module=dependency, cpanm=CPANM_EXE),
                     'rsync -av {src}/ {dest}/'.format(src=CPAN_TEMP, dest=CPAN_ROOT),
                     'rm -rf {tmp}/*'.format(tmp=CPAN_TEMP)
                 ]
