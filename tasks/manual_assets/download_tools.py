@@ -171,7 +171,6 @@ def task_download_bpipe():
             && ./gradlew dist
             '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT)
         ],
-        'task_dep': ['compile_htslib'],
         'uptodate': [True]
     }
 
