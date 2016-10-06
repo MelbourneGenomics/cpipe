@@ -11,6 +11,7 @@ if has_swift_auth():
     from tasks.nectar_assets import *
 else:
     from tasks.manual_assets import *
+from os import path
 
 DOIT_CONFIG = {
     'default_tasks': ['install']
