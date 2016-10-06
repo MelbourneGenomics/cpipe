@@ -321,6 +321,14 @@ def task_download_java_libs():
         ]
     }
 
+def task_make_java_libs_dir():
+    return {
+        'actions': [
+            create_folder(JAVA_LIBS_ROOT),
+        ],
+        'targets': [JAVA_LIBS_ROOT],
+        'uptodate': [True]
+    }
 
 def task_download_junit_xml_formatter():
     return {
@@ -334,6 +342,7 @@ def task_download_junit_xml_formatter():
                 && rm -rf JUnitXmlFormatter
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
+        'task_dep': ['make_java_libs_dir'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter*.jar'))) > 0
         ]
@@ -353,6 +362,7 @@ def task_download_groovy_ngs_utils():
                 && rm -rf groovy-ngs-utils
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
+        'task_dep': ['make_java_libs_dir'],
         'uptodate': [True],
     }
 
@@ -367,6 +377,7 @@ def task_download_takari_cpisuite():
                     -DstripVersion=true
             '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
+        'task_dep': ['make_java_libs_dir'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
         ],
