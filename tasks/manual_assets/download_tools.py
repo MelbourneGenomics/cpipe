@@ -312,7 +312,6 @@ def task_download_vep_plugins():
 
 def task_download_java_libs():
     return {
-        'targets': [JAVA_LIBS_ROOT],
         'actions': None,
         'task_dep': [
             'download_junit_xml_formatter',
