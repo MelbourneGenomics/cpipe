@@ -58,13 +58,13 @@ def filter_tsv(instream, outstream, log):
             header_line = line
             header = line.strip('\n').split('\t')
             if TRANSCRIPT_COLUMN not in header:
-                log.write('ERROR: {} not found in header\n'.format(TRANSCRIPT_COLUMN))
+                log.write('ERROR: {0} not found in header\n'.format(TRANSCRIPT_COLUMN))
                 return
             transcript_idx = header.index(TRANSCRIPT_COLUMN)
             identifiers = []
             for identifier in IDENTIFYING_COLUMNS:
                 if identifier not in header:
-                    log.write('ERROR: {} not found in header\n'.format(identifier))
+                    log.write('ERROR: {0} not found in header\n'.format(identifier))
                     return
                 identifiers.append(header.index(identifier))
         else:
@@ -98,7 +98,7 @@ def filter_tsv(instream, outstream, log):
             else: 
                 include[identifier].append(line)
                 counts['other_orig'] += 1
-    log.write('read {} lines\n'.format(count))
+    log.write('read {0} lines\n'.format(count))
 
     # write out filtered list
     count = 0
@@ -112,7 +112,7 @@ def filter_tsv(instream, outstream, log):
                 counts['xm_new'] += 1
             outstream.write(line)
             count += 1
-    log.write('done writing {} lines. stats: {}\n'.format(count, counts))
+    log.write('done writing {0} lines. stats: {1}\n'.format(count, counts))
 
 def main():
     '''
