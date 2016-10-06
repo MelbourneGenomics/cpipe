@@ -1,5 +1,6 @@
 from ftplib import FTP
 from tasks.common import *
+from doit.tools import create_folder
 
 def download_ftp_list(ftp, files, target_dir):
     ftp.login()
@@ -56,7 +57,7 @@ def task_install_vep_cache():
     return {
         'targets': [VEP_CACHE],
         'actions': [
-            lambda: os.makedirs(VEP_CACHE),
+            lambda: create_folder(VEP_CACHE),
             '''perl {tools_dir}/vep/INSTALL.pl\
             --NO_HTSLIB\
             --CACHEDIR $VEP_CACHE\
@@ -209,7 +210,7 @@ def task_download_chromosome_sizes():
     return {
         'targets': [CHROMOSOME_FILE],
         'actions': [
-            lambda: os.makedirs(CHROMOSOME_DIR),
+            lambda: create_folder(CHROMOSOME_DIR),
             '''mysql
             --user=genome\
             --host=genome-mysql.cse.ucsc.edu\
