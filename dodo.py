@@ -5,12 +5,12 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
  specified. The default task is 'install'.
 """
 
-from tasks.manual_assets import *
-from tasks.nectar_assets import *
 from tasks.compile_tools import *
-from tasks.common import ROOT
-
-import os
+from tasks.common import ROOT, has_swift_auth
+if has_swift_auth():
+    from tasks.nectar_assets import *
+else:
+    from tasks.manual_assets import *
 
 DOIT_CONFIG = {
     'default_tasks': ['install']
@@ -26,17 +26,6 @@ def task_install():
         'actions': None,
         'task_dep': ['copy_config', 'assets', 'check_java']
     }
-
-
-# def task_docker_install():
-#     """
-#     Install cpipe for a docker container
-#     :return:
-#     """
-#     return {
-#         'actions': None,
-#         'task_dep': ['assets', 'copy_config']
-#     }
 
 
 def task_assets():
