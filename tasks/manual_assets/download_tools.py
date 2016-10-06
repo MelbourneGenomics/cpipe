@@ -7,6 +7,10 @@ from tasks.common import *
 
 
 def task_tool_assets():
+    """
+    Downloads all the tools needed to run cpipe and install other tools
+    :return:
+    """
     return {
         'actions': None,
         'task_dep': [
@@ -27,9 +31,24 @@ def task_tool_assets():
             'download_perl_libs',
             'download_vep_libs',
             'download_vep_plugins',
-            'download_java_libs'
+            'download_java_libs',
+            'download_maven'
         ],
     }
+
+def task_download_maven():
+    return {
+        'targets': [MAVEN_ROOT],
+        'actions': [
+            lambda: create_folder(MAVEN_ROOT),
+            lambda: download_zip(
+                'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(version=MAVEN_VERSION),
+                MAVEN_ROOT
+            )
+        ],
+        'uptodate': [True]
+    }
+
 
 def task_download_cpanm():
     return {
@@ -341,7 +360,7 @@ def task_download_junit_xml_formatter():
                 && rm -rf JUnitXmlFormatter
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir'],
+        'task_dep': ['make_java_libs_dir', 'download_maven'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter*.jar'))) > 0
         ]
@@ -361,7 +380,7 @@ def task_download_groovy_ngs_utils():
                 && rm -rf groovy-ngs-utils
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir'],
+        'task_dep': ['make_java_libs_dir', 'download_maven'],
         'uptodate': [True],
     }
 
@@ -376,7 +395,7 @@ def task_download_takari_cpisuite():
                     -DstripVersion=true
             '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir'],
+        'task_dep': ['make_java_libs_dir', 'download_maven'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
         ],

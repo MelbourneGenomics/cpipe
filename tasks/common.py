@@ -29,6 +29,7 @@ FASTQC_VERSION = "0.11.5"
 PICARD_VERSION = "2.6.0"
 DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
 VEP_PLUGIN_COMMIT = "3be3889"
+MAVEN_VERSION = '3.3.9'
 
 # Tool paths
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
@@ -47,6 +48,7 @@ GATK_ROOT = os.path.join(TOOLS_ROOT, 'gatk')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
+MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 
 ENVIRONMENT_FILE = os.path.join(INSTALL_ROOT, 'environment.sh')
 
