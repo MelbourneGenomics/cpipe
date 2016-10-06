@@ -45,6 +45,7 @@ BCFTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bcftools')
 BEDTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bedtools')
 GATK_ROOT = os.path.join(TOOLS_ROOT, 'gatk')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
+CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 
 ENVIRONMENT_FILE = os.path.join(INSTALL_ROOT, 'environment.sh')
 

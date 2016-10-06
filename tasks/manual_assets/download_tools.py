@@ -10,6 +10,7 @@ def task_tool_assets():
     return {
         'actions': None,
         'task_dep': [
+            'download_cpanm',
             'download_perl',
             'download_r',
             'download_groovy',
@@ -28,6 +29,19 @@ def task_tool_assets():
             'download_vep_plugins',
             'download_java_libs'
         ],
+    }
+
+def task_download_cpanm():
+    return {
+        'targets': [CPANM_ROOT],
+        'actions': [
+            lambda: create_folder(CPANM_ROOT),
+            cmd('''
+                curl -L https://cpanmin.us/ -o cpanm
+                chmod +x cpanm
+            ''', cwd=CPANM_ROOT),
+        ],
+        'uptodate': [True]
     }
 
 def task_download_perl():
