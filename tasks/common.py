@@ -48,24 +48,19 @@ CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 
 ENVIRONMENT_FILE = os.path.join(INSTALL_ROOT, 'environment.sh')
 
-# Utility functions
-def download_zip(url_str, directory, type=None):
-    url = urlopen(url_str)
-    input = StringIO(url.read())
+def unzip_todir(input, directory, type):
+    """
+    Extracts an archive, either a .tar.gz or a .zip file into the given directory, removing any root-level
+    directories inside the archive to do so
+    :param input: Input stream
+    :param directory:
+    :param type: Either 'zip' or 'tgz', for specifying the type of archive in case the URL does not identify it
+    :return:
+    """
 
     # Create output if not exists
     if not os.path.exists(directory):
         os.makedirs(directory)
-
-    # Either take the type from the arguments, or else deduce it from the URL
-    if not type:
-        [name, ext2] = os.path.splitext(url_str)
-        [name, ext1] = os.path.splitext(name)
-
-        if ext2 == '.zip':
-            type = 'zip'
-        elif (ext1 == '.tar' and ext2 == '.gz') or ext2 == '.tgz':
-            type = 'tgz'
 
     if type == 'zip':
         zip = ZipFile(input)
@@ -83,6 +78,32 @@ def download_zip(url_str, directory, type=None):
         for subfile in [os.path.join(subdir, f) for f in os.listdir(subdir)]:
             shutil.move(subfile, directory)
         os.rmdir(files[0])
+
+# Utility functions
+def download_zip(url_str, directory, type=None):
+    """
+    Downloads the .tar.gz or .zip file from the given URL and extracts it into the given directory, removing any root-level
+    directories inside the archive to do so
+    :param url_str:
+    :param directory:
+    :param type: either 'zip' or 'tgz', for specifying the type of archive in case the URL does not identify it
+    :return:
+    """
+
+    url = urlopen(url_str)
+    input = StringIO(url.read())
+
+    # Try to deduce the type from the URL
+    if not type:
+        [name, ext2] = os.path.splitext(url_str)
+        [name, ext1] = os.path.splitext(name)
+
+        if ext2 == '.zip':
+            type = 'zip'
+        elif (ext1 == '.tar' and ext2 == '.gz') or ext2 == '.tgz':
+            type = 'tgz'
+
+    unzip_todir(input, directory, type)
 
 
 def cmd(command, **kwargs):

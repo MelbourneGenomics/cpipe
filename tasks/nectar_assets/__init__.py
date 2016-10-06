@@ -11,7 +11,7 @@ from os import path
 from subprocess import check_call
 from swiftclient.service import SwiftService
 from tasks.nectar_assets.dependencies import *
-from tasks.common import ROOT
+from tasks.common import ROOT, unzip_todir
 
 current_dir = path.dirname(__file__)
 # root = path.realpath(path.join(current_dir, '..', '..'))
@@ -100,7 +100,8 @@ def download_nectar_assets():
                         asset_key)
 
             # Unzip, removing the outer directory
-            check_call(['tar', '-xzf', zip_file, '-C', str(target_dir), '--strip-components=1'])
+            unzip_todir(zip_file, target_dir, 'tgz')
+            # check_call(['tar', '-xzf', zip_file, '-C', str(target_dir), '--strip-components=1'])
 
             # And delete the zip file
             os.remove(zip_file)
