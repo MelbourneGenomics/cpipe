@@ -79,11 +79,6 @@
     "version": "hg19",
     "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
   },
-  "python": {
-    "path": "tools/python",
-    "version": "2.7.12",
-    "hash": "a6a3c937ce13a55e00367f5e1c8dec4fb9abf8ec"
-  },
   "perl_lib": {
     "path": "tools/perl_lib",
     "version": 1,
