@@ -36,13 +36,15 @@ def task_tool_assets():
         ],
     }
 
+
 def task_download_maven():
     return {
         'targets': [MAVEN_ROOT],
         'actions': [
             lambda: create_folder(MAVEN_ROOT),
             lambda: download_zip(
-                'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(version=MAVEN_VERSION),
+                'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(
+                    version=MAVEN_VERSION),
                 MAVEN_ROOT
             )
         ],
@@ -62,6 +64,7 @@ def task_download_cpanm():
         ],
         'uptodate': [True]
     }
+
 
 def task_download_perl():
     return {
@@ -244,6 +247,25 @@ def task_download_perl_libs():
     :return:
     """
 
+    return {
+        'targets': [CPAN_ROOT],
+        'task_dep': ['download_perl', 'compile_perl', 'download_cpanm'],
+        'uptodate': [True],
+        'actions': [
+            lambda: create_folder(CPAN_ROOT),
+            lambda: create_folder(PERL_LIB_ROOT),
+
+            # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
+            # (while also saving the archive so Module::Build will be bundled on NECTAR)
+            'cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT),
+
+            # Now, download archives of everything we need without installing them
+            cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
+                cwd=INSTALL_ROOT)
+        ]
+    }
+
+    '''
     def cpan_exists(dependency):
         """
         Returns true if the CPAN_ROOT directory contains the given cpan module
@@ -295,6 +317,7 @@ def task_download_perl_libs():
         ],
         'uptodate': [lambda: not os.path.exists(CPAN_TEMP)]
     }
+    '''
 
 
 def task_download_vep_libs():
@@ -339,6 +362,7 @@ def task_download_java_libs():
         ]
     }
 
+
 def task_make_java_libs_dir():
     return {
         'actions': [
@@ -347,6 +371,7 @@ def task_make_java_libs_dir():
         'targets': [JAVA_LIBS_ROOT],
         'uptodate': [True]
     }
+
 
 def task_download_junit_xml_formatter():
     return {
