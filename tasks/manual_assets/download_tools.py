@@ -10,7 +10,6 @@ def task_tool_assets():
     return {
         'actions': None,
         'task_dep': [
-            'download_python',
             'download_perl',
             'download_r',
             'download_groovy',
@@ -30,18 +29,6 @@ def task_tool_assets():
             'download_java_libs'
         ],
     }
-
-
-def task_download_python():
-    return {
-        'targets': [PYTHON_ROOT],
-        'actions': [
-            lambda: download_zip("https://www.python.org/ftp/python/{0}/Python-{0}.tgz".format(PYTHON_VERSION),
-                                 PYTHON_ROOT)
-        ],
-        'uptodate': [True]
-    }
-
 
 def task_download_perl():
     return {
