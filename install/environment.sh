@@ -16,6 +16,9 @@ ROOT=$CURRENT_DIR/..
 source $ROOT/pipeline/scripts/config_groovy_util.sh
 load_config
 
+# Load virtualenv
+source ${TOOLS}/python/bin/activate
+
 # Add all tool directories and bin folders to PATH
 export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
 export HTSLIB_DIR=$TOOLS/htslib
