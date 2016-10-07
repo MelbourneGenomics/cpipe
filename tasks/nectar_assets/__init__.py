@@ -90,7 +90,7 @@ def download_nectar_assets():
 
             if not result['success']:
                 print('\t' + asset_key + '... FAILED! ' + str(result['error']))
-                continue
+                raise IOError(result['error'])
 
             # sha1hash the zip file to ensure its integrity
             with open(zip_file, 'r') as zip_handle:
