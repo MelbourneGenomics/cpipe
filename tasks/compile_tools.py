@@ -45,15 +45,10 @@ def task_compile_perl():
     }
 
 def task_compile_r():
-    task_dep = []
+    task_dep = ['download_nectar_assets' if has_swift_auth() else 'download_perl']
 
     if in_docker():
         task_dep.append('r_docker_dependencies')
-
-    if has_swift_auth():
-        task_dep.append('download_nectar_assets')
-    else:
-        task_dep.append('download_perl')
 
     return {
         'actions': [
@@ -86,11 +81,16 @@ def task_compile_htslib():
     }
 
 def task_compile_samtools():
+    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_samtools', 'download_htslib']
+
+    if in_docker():
+        task_dep.append('samtools_docker_dependencies')
+
     return {
         'actions': [
             cmd('make', cwd=SAMTOOLS_ROOT)
         ],
-        'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_samtools', 'download_htslib'],
+        'task_dep': task_dep,
         'targets': [os.path.join(SAMTOOLS_ROOT, 'samtools')],
         'uptodate': [True]
     }
