@@ -14,7 +14,6 @@ def task_tool_assets():
     return {
         'actions': None,
         'task_dep': [
-            'download_cpanm',
             'download_perl',
             'download_r',
             'download_groovy',
@@ -32,7 +31,6 @@ def task_tool_assets():
             'download_vep_libs',
             'download_vep_plugins',
             'download_java_libs',
-            'download_maven'
         ],
     }
 
@@ -264,61 +262,6 @@ def task_download_perl_libs():
                 cwd=INSTALL_ROOT)
         ]
     }
-
-    '''
-    def cpan_exists(dependency):
-        """
-        Returns true if the CPAN_ROOT directory contains the given cpan module
-        :param dependency:
-        :return:
-        """
-        module_name = dependency.split('::')[-1]
-        for root, dirnames, filenames in os.walk(CPAN_ROOT):
-            for filename in filenames:
-                if module_name in filename:
-                    return True
-
-        return False
-
-    CPAN_TEMP = os.path.join(TOOLS_ROOT, 'cpan_temp')
-
-    # This first subtask creates the cpan root
-    yield {
-        'name': 'create_cpan_root',
-        'targets': [CPAN_ROOT],
-        'actions': [
-            lambda: create_folder(CPAN_ROOT),
-            lambda: create_folder(CPAN_TEMP),
-        ],
-        'uptodate': [True]
-    }
-
-    # Subsequent tasks download a cpan module and its dependencies by reading the cpanfile
-    with open(os.path.join(INSTALL_ROOT, 'cpanfile'), 'r') as cpanfile:
-        for line in cpanfile:
-            dependency = re.match("requires '(.+)';", line).group(1)
-            yield {
-                'name': dependency,
-                'task_dep': ['download_perl', 'compile_perl', 'download_cpanm'],
-                'uptodate': [lambda: cpan_exists(dependency)],
-                'actions': [
-                    # 'cpanm -L /dev/null --save-dists /home/michael/Programming/cpipe_installer/cpipe/tools/cpan --scandeps Archive::Zip'
-                    'perl {cpanm} -L /dev/null --save-dists {libs} --scandeps {module}'.format(libs=CPAN_TEMP, module=dependency, cpanm=CPANM_EXE),
-                    'rsync -av {src}/ {dest}/'.format(src=CPAN_TEMP, dest=CPAN_ROOT),
-                    'rm -rf {tmp}/*'.format(tmp=CPAN_TEMP)
-                ]
-            }
-
-    # This last subtask deletes the temporary cpan dir
-    yield {
-        'name': 'delete_cpan_temp',
-        'actions': [
-            lambda: shutil.rmtree(CPAN_TEMP),
-        ],
-        'uptodate': [lambda: not os.path.exists(CPAN_TEMP)]
-    }
-    '''
-
 
 def task_download_vep_libs():
     return {

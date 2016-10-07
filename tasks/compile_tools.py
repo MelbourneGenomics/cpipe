@@ -126,7 +126,7 @@ def task_compile_gatk():
             && bash -O extglob -c 'rm -rf !(GenomeAnalysisTK.jar)'
             ''', cwd=GATK_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_gatk'],
+        'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_maven', 'download_gatk'],
         'targets': [os.path.join(GATK_ROOT, 'gatk')],
         'uptodate': [True]
     }
@@ -139,7 +139,7 @@ def task_install_perl_libs():
     """
     return {
         'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl_libs'],
+        'task_dep': 'download_nectar_assets' if has_swift_auth() else ['download_perl_libs', 'download_cpanm'],
         'actions': [
             # Use the cpan directory we made in download_perl_libs as a cpan mirror and install from there
             cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=INSTALL_ROOT)
