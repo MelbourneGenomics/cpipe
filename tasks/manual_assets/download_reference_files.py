@@ -1,5 +1,8 @@
 from ftplib import FTP
 from tasks.common import *
+from doit.tools import create_folder
+import pymysql
+
 
 def download_ftp_list(ftp, files, target_dir):
     ftp.login()
@@ -8,6 +11,7 @@ def download_ftp_list(ftp, files, target_dir):
             'RETR {}'.format(file),
             open(os.path.join(target_dir, file), 'wb').write
         )
+
 
 def task_data_assets():
     return {
@@ -56,7 +60,7 @@ def task_install_vep_cache():
     return {
         'targets': [VEP_CACHE],
         'actions': [
-            lambda: os.makedirs(VEP_CACHE),
+            lambda: create_folder(VEP_CACHE),
             '''perl {tools_dir}/vep/INSTALL.pl\
             --NO_HTSLIB\
             --CACHEDIR $VEP_CACHE\
@@ -206,17 +210,21 @@ def task_download_chromosome_sizes():
     CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
     CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
 
+    def download_chromosome_size():
+        create_folder(CHROMOSOME_DIR)
+
+        connection = pymysql.connect(host='genome-mysql.cse.ucsc.edu', user='genome')
+        with connection.cursor() as cursor, open(CHROMOSOME_FILE, 'w') as chrom_file:
+            cursor.execute('select chrom, size from hg19.chromInfo')
+            for line in cursor.fetchall():
+                chrom_file.write('\t'.join([str(el) for el in line]) + '\n')
+
     return {
         'targets': [CHROMOSOME_FILE],
         'actions': [
-            lambda: os.makedirs(CHROMOSOME_DIR),
-            '''mysql
-            --user=genome\
-            --host=genome-mysql.cse.ucsc.edu\
-            -A\
-            -e "select chrom, size from hg19.chromInfo"\
-            > {data}/chromosomes/hg19.genome'''.format(data=DATA_ROOT)
-        ]
+            download_chromosome_size
+        ],
+        'uptodate': [True]
     }
 
 

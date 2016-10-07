@@ -4,6 +4,7 @@ import shutil
 from urllib import urlopen, urlretrieve
 from StringIO import StringIO
 from doit.action import CmdAction
+from doit.tools import create_folder
 from zipfile import ZipFile
 
 # General paths
@@ -52,6 +53,7 @@ MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 
 ENVIRONMENT_FILE = os.path.join(INSTALL_ROOT, 'environment.sh')
 
+
 def unzip_todir(input, directory, type):
     """
     Extracts an archive, either a .tar.gz or a .zip file into the given directory, removing any root-level
@@ -63,8 +65,7 @@ def unzip_todir(input, directory, type):
     """
 
     # Create output if not exists
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    create_folder(directory)
 
     if type == 'zip':
         zip = ZipFile(input)
@@ -82,6 +83,7 @@ def unzip_todir(input, directory, type):
         for subfile in [os.path.join(subdir, f) for f in os.listdir(subdir)]:
             shutil.move(subfile, directory)
         os.rmdir(files[0])
+
 
 # Utility functions
 def download_zip(url_str, directory, type=None):
@@ -134,6 +136,7 @@ def cmd(command, **kwargs):
         **defaults
     )
 
+
 def has_swift_auth():
     swift_credentials = {
         'OS_AUTH_URL',
@@ -147,6 +150,7 @@ def has_swift_auth():
     # If the user has all the necessary environment variables set, let them download the cached assets
     # from the object store
     return swift_credentials.issubset(os.environ.keys())
+
 
 def in_docker():
     return os.path.exists('/.dockerenv')

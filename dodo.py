@@ -83,15 +83,13 @@ def task_check_java():
         except:
             return False
 
-    if has_java_18():
-        return {
-            'actions': None
-        }
-    else:
-        if in_docker():
-            return {
-                'actions': None,
-                'task_dep': ['java_docker']
-            }
+    def check_java():
+        if has_java_18():
+            return True
         else:
             raise OSError('Missing Java 1.8 or greater! Please install it to continue')
+
+    return {
+        'actions': [check_java],
+        'task_dep': ['java_docker'] if in_docker() else []
+    }
