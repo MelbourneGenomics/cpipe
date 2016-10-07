@@ -12,6 +12,8 @@ if has_swift_auth():
 else:
     from tasks.manual_assets import *
 from os import path
+import re
+import subprocess
 
 DOIT_CONFIG = {
     'default_tasks': ['install']
