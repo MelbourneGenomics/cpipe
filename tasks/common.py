@@ -6,6 +6,7 @@ from StringIO import StringIO
 from doit.action import CmdAction
 from doit.tools import create_folder
 from zipfile import ZipFile
+import tempfile
 
 # General paths
 HERE = os.path.dirname(__file__)  # The cpipe root directory
@@ -67,22 +68,31 @@ def unzip_todir(input, directory, type):
     # Create output if not exists
     create_folder(directory)
 
+    # Pick a temporary directory to extract into
+    tempdir = tempfile.mkdtemp()
+
+    # Extract the files into the temp dir
     if type == 'zip':
         zip = ZipFile(input)
-        zip.extractall(directory)
+        zip.extractall(tempdir)
     elif type == 'tgz':
         tar = tarfile.open(fileobj=input, mode='r:gz')
-        tar.extractall(directory)
+        tar.extractall(tempdir)
     else:
         raise ValueError('Can only download .tar.gz or .zip file')
 
-    # If there is only one subdirectory, move the contents out of it and delete that subdirectory
-    files = [os.path.join(directory, f) for f in os.listdir(directory)]
-    if len(files) == 1 and os.path.isdir(files[0]):
+    # If there is only one subdirectory, take the files inside that
+    files = [os.path.join(tempdir, f) for f in os.listdir(tempdir)]
+    if len(files) == 1 and os.path.isdir(tempdir[0]):
         subdir = files[0]
         for subfile in [os.path.join(subdir, f) for f in os.listdir(subdir)]:
             shutil.move(subfile, directory)
-        os.rmdir(files[0])
+    # If there is no subdirectory, just files, move them directly into the destination dir
+    else:
+        for subfile in files:
+            shutil.move(subfile, directory)
+
+    shutil.rmtree(tempdir)
 
 
 # Utility functions
