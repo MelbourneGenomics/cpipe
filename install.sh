@@ -30,6 +30,9 @@ ${TEMP_PYBIN}/pip install virtualenv
 ${TEMP_PYBIN}/virtualenv ${PYTHON}
 source ${PYTHON}/bin/activate
 
+# Source the environment file
+source ${ROOT}/install/environment.sh
+
 # Delete the old python
 rm -rf ${ROOT}/tmpdir/*
 
