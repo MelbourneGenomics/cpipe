@@ -12,6 +12,8 @@ from subprocess import check_call
 from swiftclient.service import SwiftService
 from tasks.nectar_assets.dependencies import *
 from tasks.common import ROOT, unzip_todir
+import tempfile
+import shutil
 
 current_dir = path.dirname(__file__)
 # root = path.realpath(path.join(current_dir, '..', '..'))
@@ -78,10 +80,11 @@ def download_nectar_assets():
         reverse_lookup = {target_json[name]['path']: name for name in target_json}
 
         # Do the download and update the list of downloaded assets
+        download_dir = tempfile.mkdtemp()
         for result in swift.download(
                 container='cpipe-2.4-assets',
                 objects=to_download,
-                options={'out_directory': str(ROOT)}
+                options={'out_directory': download_dir}
         ):
             zip_file = result['path']
             target_dir = path.dirname(zip_file)
@@ -110,6 +113,9 @@ def download_nectar_assets():
             current_json[asset_key] = target_json[asset_key]
 
             print('\t' + asset_key + '... done.')
+
+        # Delete the temp dir
+        shutil.rmtree(download_dir)
 
         # Write out the updated list
         current.seek(0)
