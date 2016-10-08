@@ -87,9 +87,9 @@ def download_nectar_assets():
                 options={'out_directory': download_dir}
         ):
             zip_file = result['path']
-            target_dir = path.dirname(zip_file)
             asset_key = reverse_lookup[path.dirname(result['object'])]
             target_hash = target_json[asset_key]['hash']
+            output_dir = path.join(ROOT, path.dirname(result['object']))
 
             if not result['success']:
                 print('\t' + asset_key + '... FAILED! ' + str(result['error']))
@@ -104,7 +104,7 @@ def download_nectar_assets():
 
                 # Unzip, removing the outer directory
                 zip_handle.seek(0)
-                unzip_todir(zip_handle, target_dir, 'tgz')
+                unzip_todir(zip_handle, output_dir, 'tgz')
 
             # And delete the zip file
             os.remove(zip_file)
