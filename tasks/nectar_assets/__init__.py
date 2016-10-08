@@ -100,8 +100,8 @@ def download_nectar_assets():
                         asset_key)
 
                 # Unzip, removing the outer directory
-                zip_file.seek(0)
-                unzip_todir(zip_file, target_dir, 'tgz')
+                zip_handle.seek(0)
+                unzip_todir(zip_handle, target_dir, 'tgz')
 
             # And delete the zip file
             os.remove(zip_file)
