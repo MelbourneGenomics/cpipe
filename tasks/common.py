@@ -58,7 +58,7 @@ def unzip_todir(input, directory, type):
     """
     Extracts an archive, either a .tar.gz or a .zip file into the given directory, removing any root-level
     directories inside the archive to do so
-    :param input: Input stream
+    :param input: Input file-like object
     :param directory:
     :param type: Either 'zip' or 'tgz', for specifying the type of archive in case the URL does not identify it
     :return:

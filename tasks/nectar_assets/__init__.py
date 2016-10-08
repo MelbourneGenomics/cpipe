@@ -99,9 +99,9 @@ def download_nectar_assets():
                     raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
                         asset_key)
 
-            # Unzip, removing the outer directory
-            unzip_todir(zip_file, target_dir, 'tgz')
-            # check_call(['tar', '-xzf', zip_file, '-C', str(target_dir), '--strip-components=1'])
+                # Unzip, removing the outer directory
+                zip_file.seek(0)
+                unzip_todir(zip_file, target_dir, 'tgz')
 
             # And delete the zip file
             os.remove(zip_file)
