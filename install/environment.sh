@@ -23,5 +23,5 @@ source ${TOOLS}/python/bin/activate
 export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
 export HTSLIB_DIR=$TOOLS/htslib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins
-export C_INCLUDE_PATH=${C_INCLUDE_PATH}:${TOOLS}/perl
+#export C_INCLUDE_PATH=${C_INCLUDE_PATH}:${TOOLS}/perl
 export PERL_SRC=${TOOLS}/perl

@@ -86,11 +86,13 @@ def unzip_todir(input, directory, type):
     if len(files) == 1 and os.path.isdir(tempdir[0]):
         subdir = files[0]
         for subfile in [os.path.join(subdir, f) for f in os.listdir(subdir)]:
-            shutil.move(subfile, directory)
+            new_file = os.path.join(directory, os.path.basename(subfile))
+            shutil.move(subfile, new_file)
     # If there is no subdirectory, just files, move them directly into the destination dir
     else:
         for subfile in files:
-            shutil.move(subfile, directory)
+            new_file = os.path.join(directory, os.path.basename(subfile))
+            shutil.move(subfile, new_file)
 
     shutil.rmtree(tempdir)
 
