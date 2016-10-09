@@ -77,12 +77,12 @@ vcf_annotate = {
         export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5";
 
         echo "$VARIANTS variant(s) found in $input.vcf";
-        VARIANTS=`grep -c -v '^#' < $input.vcf`
-        if [ $VARIANTS -eq 0 ];
+        VARIANTS=`grep -c -v '^#' < $input.vcf`;
+        if [ $VARIANTS -eq 0 ] ;
         then
             grep '^#' $input.vcf > $output.vcf;
         else
-            PATH="$PATH:$HTSLIB"
+            PATH="$PATH:$HTSLIB";
             perl $VEP/variant_effect_predictor.pl
                 --allele_number
                 --assembly GRCh37
