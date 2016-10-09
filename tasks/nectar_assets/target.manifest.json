@@ -2,7 +2,7 @@
     "fastqc": {
         "path": "tools/fastqc", 
         "version": "0.11.5", 
-        "hash": "f32418b492162a335dbd638f30c3b8cd8b03f962"
+        "hash": "093dd50b2b7e53bf30b63c14c35028db34a1ba8a"
     }, 
     "vep_plugins": {
         "path": "tools/vep_plugins", 
@@ -109,19 +109,19 @@
         "version": "0.9.9.2", 
         "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
-    "bcftools": {
-        "path": "tools/bcftools", 
-        "version": "1.3", 
-        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
+    "java_libs": {
+        "path": "tools/java_libs", 
+        "version": 1, 
+        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
     }, 
     "vep_cache": {
         "path": "data/vep_cache", 
         "version": "GRCh37.85", 
         "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
     }, 
-    "java_libs": {
-        "path": "tools/java_libs", 
-        "version": 1, 
-        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
+    "bcftools": {
+        "path": "tools/bcftools", 
+        "version": "1.3", 
+        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
     }
 }
