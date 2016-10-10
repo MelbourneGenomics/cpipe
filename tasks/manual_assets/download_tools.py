@@ -265,12 +265,12 @@ def task_download_perl_libs():
 
 def task_download_vep_libs():
     return {
-        'targets': [os.path.join(PERL_LIB_ROOT, 'lib/perl5/Bio/EnsEMBL')],
+        'targets': [VEP_LIBS_ROOT],
         'task_dep': ['install_perl_libs'],
         'actions': [
-            cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {perl5}'.format(
+            cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(
                 vep_dir=VEP_ROOT,
-                perl5=os.path.join(PERL_LIB_ROOT, 'lib/perl5')
+                vep_libs=VEP_LIBS_ROOT
             ))
         ],
         'uptodate': [True]
