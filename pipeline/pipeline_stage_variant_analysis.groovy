@@ -77,12 +77,12 @@ vcf_annotate = {
         export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5";
 
         echo "$VARIANTS variant(s) found in $input.vcf";
-        VARIANTS=`grep -c -v '^#' < $input.vcf`
-        if [ $VARIANTS -eq 0 ];
+        VARIANTS=`grep -c -v '^#' < $input.vcf`;
+        if [ $VARIANTS -eq 0 ] ;
         then
             grep '^#' $input.vcf > $output.vcf;
         else
-            PATH="$PATH:$HTSLIB"
+            PATH="$PATH:$HTSLIB";
             perl $VEP/variant_effect_predictor.pl
                 --allele_number
                 --assembly GRCh37
@@ -90,9 +90,9 @@ vcf_annotate = {
                 --canonical
                 --check_alleles
                 --check_existing
-                --dir $VEP/../vep_cache
+                --dir $VEP_CACHE
                 --dir_plugins $TOOLS/vep_plugins
-                --fasta $VEP/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
+                --fasta $VEP_CACHE/homo_sapiens_refseq/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa
                 --force_overwrite
                 --gmaf
                 --hgvs
@@ -136,7 +136,7 @@ vcf_post_annotation_filter = {
         then
           cp $input.vcf $output.vcf;
         else
-          PERL5LIB="$TOOLS/perl5:$TOOLS/perl5/lib/perl5:$VEP" perl $VEP/filter_vep.pl 
+          perl $VEP/filter_vep.pl
             --input_file $input.vcf
             --filter "Consequence not matches stream" 
             --filter "BIOTYPE match protein_coding"

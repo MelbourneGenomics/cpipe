@@ -1,4 +1,4 @@
 python-swiftclient
 python-keystoneclient
 doit
-
+pymysql
