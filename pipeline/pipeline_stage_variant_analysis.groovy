@@ -92,7 +92,7 @@ vcf_annotate = {
                 --check_existing
                 --dir $VEP/../vep_cache
                 --dir_plugins $TOOLS/vep_plugins
-                --fasta $VEP/../vep_cache/homo_sapiens/83_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
+                --fasta $VEP_CACHE/homo_sapiens_refseq/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa
                 --force_overwrite
                 --gmaf
                 --hgvs
