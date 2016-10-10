@@ -258,13 +258,15 @@ def task_download_perl_libs():
 
             # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
             # (while also saving the archive so Module::Build will be bundled on NECTAR)
-            cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT)),
+            cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT),
+                env=get_cpanm_env()),
 
             # Now, download archives of everything we need without installing them
             cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
-                cwd=ROOT)
+                cwd=ROOT, env=get_cpanm_env())
         ]
     }
+
 
 def task_download_vep_libs():
     return {
@@ -373,8 +375,8 @@ def task_download_takari_cpisuite():
         ],
     }
 
-def task_download_bzip2():
 
+def task_download_bzip2():
     def action():
         create_folder(BZIP_ROOT)
         download_zip(
@@ -387,4 +389,3 @@ def task_download_bzip2():
         'actions': [action],
         'uptodate': [True]
     }
-

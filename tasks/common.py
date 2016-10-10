@@ -127,6 +127,12 @@ def download_zip(url_str, directory, type=None):
     unzip_todir(input, directory, type)
 
 
+def get_cpanm_env():
+    install_env = os.environ.copy()
+    install_env["CPATH"] = PERL_ROOT + ':' + str(install_env.get("CPATH"))
+    return install_env
+
+
 def cmd(command, **kwargs):
     """
     Creates a doit CmdAction with certain default parameters used by cpipe, namely using bash as the default shell,
