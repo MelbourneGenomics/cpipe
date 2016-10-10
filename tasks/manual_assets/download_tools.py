@@ -61,6 +61,7 @@ def task_download_cpanm():
                 chmod +x cpanm
             ''', cwd=CPANM_ROOT),
         ],
+        'task_dep': ['copy_config'],
         'uptodate': [True]
     }
 
@@ -206,6 +207,7 @@ def task_download_bpipe():
             && ./gradlew dist
             '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT)
         ],
+        'task_dep': ['copy_config'],
         'uptodate': [True]
     }
 
@@ -248,7 +250,7 @@ def task_download_perl_libs():
 
     return {
         'targets': [CPAN_ROOT],
-        'task_dep': ['download_perl', 'compile_perl', 'download_cpanm'],
+        'task_dep': ['copy_config', 'download_perl', 'compile_perl', 'download_cpanm'],
         'uptodate': [True],
         'actions': [
             lambda: create_folder(CPAN_ROOT),
@@ -256,7 +258,7 @@ def task_download_perl_libs():
 
             # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
             # (while also saving the archive so Module::Build will be bundled on NECTAR)
-            'cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT),
+            cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT)),
 
             # Now, download archives of everything we need without installing them
             cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
@@ -267,7 +269,7 @@ def task_download_perl_libs():
 def task_download_vep_libs():
     return {
         'targets': [VEP_LIBS_ROOT],
-        'task_dep': ['install_perl_libs'],
+        'task_dep': ['copy_config', 'install_perl_libs'],
         'actions': [
             cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(
                 vep_dir=VEP_ROOT,
@@ -292,6 +294,7 @@ def task_download_vep_plugins():
             && rm -rf .git
             ''', cwd=VEP_PLUGIN_ROOT)
         ],
+        'task_dep': ['copy_config'],
         'uptodate': [True]
     }
 
@@ -329,7 +332,7 @@ def task_download_junit_xml_formatter():
                 && rm -rf JUnitXmlFormatter
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir', 'download_maven'],
+        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter*.jar'))) > 0
         ]
@@ -349,7 +352,7 @@ def task_download_groovy_ngs_utils():
                 && rm -rf groovy-ngs-utils
             '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir', 'download_maven'],
+        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
         'uptodate': [True],
     }
 
@@ -364,7 +367,7 @@ def task_download_takari_cpisuite():
                     -DstripVersion=true
             '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
         ],
-        'task_dep': ['make_java_libs_dir', 'download_maven'],
+        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
         ],

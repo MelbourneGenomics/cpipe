@@ -48,7 +48,8 @@ def task_download_dbnsfp():
         ],
         'task_dep': [
             'download_nectar_assets' if has_swift_auth() else 'download_htslib',
-            'compile_htslib'
+            'compile_htslib',
+            'copy_config'
         ],
         'uptodate': [True],
     }
@@ -70,7 +71,8 @@ def task_install_vep_cache():
         'task_dep': [
             'download_nectar_assets' if has_swift_auth() else 'download_htslib',
             'compile_htslib',
-            'install_perl_libs'
+            'install_perl_libs',
+            'copy_config'
         ],
         'uptodate': [True],
     }
@@ -161,7 +163,8 @@ def task_convert_trio_refinement():
             'download_trio_refinement',
             'download_refinement_liftover',
             'download_htslib',
-            'compile_htslib'
+            'compile_htslib',
+            'copy_config'
         ],
         'uptodate': [True]
     }
@@ -246,7 +249,8 @@ def task_bwa_index_ucsc_reference():
         ],
         'task_dep': [
             'download_bwa',
-            'download_ucsc'
+            'download_ucsc',
+            'copy_config'
         ],
         'uptodate': [True]
     }
@@ -262,7 +266,8 @@ def task_samtools_index_ucsc_reference():
         ],
         'task_dep': [
             'download_samtools',
-            'download_ucsc'
+            'download_ucsc',
+            'copy_config'
         ],
         'uptodate': [True]
     }
