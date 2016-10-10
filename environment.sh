@@ -8,9 +8,8 @@ function join() {
 }
 
 
-# Set useful variables
-CURRENT_DIR=$(readlink -f $(dirname $BASH_SOURCE))
-ROOT=$CURRENT_DIR/..
+# Work out the directory name
+ROOT=$(readlink -f $(dirname $BASH_SOURCE))
 
 # Load config groovy
 source $ROOT/pipeline/scripts/config_groovy_util.sh
