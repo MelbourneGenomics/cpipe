@@ -183,13 +183,23 @@ table_to_lovd = {
     doc "Explodes out all annotation fields for LOVD compatibility"
     stage_status("table_to_lovd", "enter", "${sample} ${branch.analysis}");
     output.dir="results"
-    produce("${run_id}_${sample}.${analysis}.lovd.tsv") {
+    produce("${run_id}_${sample}.${analysis}.flattened.tsv") {
         exec """
             python $SCRIPTS/convert_to_lovd.py --vcf $input.vcf < $input.table > $output.tsv
         """
     }
     stage_status("table_to_lovd", "exit", "${sample} ${branch.analysis}");
 }
+
+transcript_filter = {
+    doc "Filters XM transcripts that have an NM at the same location"
+    output.dir="results"
+    produce("${run_id}_${sample}.${analysis}.lovd.tsv") {
+        exec """
+            python $SCRIPTS/filter_transcripts.py < $input.tsv > $output.tsv
+        """
+    }
+ }
 
 variant_analysis = segment {
     vcf_normalize +
@@ -199,5 +209,6 @@ variant_analysis = segment {
     vcf_to_table +
     filter_table +
     annotate_custom_regions +
-    table_to_lovd
+    table_to_lovd +
+    transcript_filter
 }
