@@ -1,6 +1,7 @@
 from tasks.common import *
 from tasks.docker_dependencies import *
 from doit.tools import create_folder
+import os
 
 def task_compile_all():
     'Compiles all assets including java assets; this is only needed for a manual install'
@@ -14,7 +15,8 @@ def task_compile_all():
             'compile_samtools',
             'compile_bcftools',
             'compile_bedtools',
-            'compile_gatk'
+            'compile_gatk',
+            'install_perl_libs'
         ]
     }
 
@@ -29,7 +31,8 @@ def task_compile_nectar():
             'compile_htslib',
             'compile_samtools',
             'compile_bcftools',
-            'compile_bedtools',
+            'compile_bedtools', 
+            'install_perl_libs'
         ]
     }
 
@@ -137,12 +140,15 @@ def task_install_perl_libs():
     Installs all cpan libs from the cpan directory into the perl_lib directory
     :return:
     """
+    install_env = os.environ.copy()
+    install_env["CPATH"] = PERL_ROOT + ':' + str(install_env.get("CPATH"))
+
     return {
         'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
         'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_perl_libs', 'download_cpanm'],
         'actions': [
             # Use the cpan directory we made in download_perl_libs as a cpan mirror and install from there
-            cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=INSTALL_ROOT)
+            cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=INSTALL_ROOT, env=install_env)
         ],
         # 'uptodate': [True]
     }
