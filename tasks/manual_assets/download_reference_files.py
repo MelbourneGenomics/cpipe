@@ -38,14 +38,13 @@ def task_download_dbnsfp():
             lambda: download_zip("ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv{}.zip".format(DBNSFP_VERSION),
                                  DBNSFP_ROOT),
             cmd('''
-            source {install_dir}/environment.sh\
-            && mkdir -p dbnsfp\
+            mkdir -p dbnsfp\
             && pushd {data_dir}/dbnsfp\
                 && head -n1 dbNSFP*chr1 > h\
                 && cat dbNSFP*chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
                 && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
                 && bash -O extglob -c 'rm -rf !(dbNSFP.gz*)'
-            '''.format(install_dir=INSTALL_ROOT, data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
+            '''.format(data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
         ],
         'task_dep': [
             'download_nectar_assets' if has_swift_auth() else 'download_htslib',
@@ -142,7 +141,6 @@ def task_convert_trio_refinement():
         'actions': [
             cmd(
                 '''
-                 source {install_dir}/environment.sh
                  java -jar $TOOLS_ROOT/picard/picard.jar LiftoverVcf \
                         I={data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf \
                         O={data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf \
@@ -153,7 +151,7 @@ def task_convert_trio_refinement():
                     && tabix -p vcf {data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz
 
                 bash -O extglob -c "rm -rf {data_dir}/1000G_phase3/!(1000G_phase3_v4_20130502.sites.hg19.vcf.gz*)"
-                '''.format(data_dir=DATA_ROOT, install_dir=INSTALL_ROOT),
+                '''.format(data_dir=DATA_ROOT),
                 executable='bash'
             ),
             ''.format(DATA_ROOT)

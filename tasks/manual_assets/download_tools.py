@@ -259,7 +259,7 @@ def task_download_perl_libs():
 
             # Now, download archives of everything we need without installing them
             cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
-                cwd=INSTALL_ROOT)
+                cwd=ROOT)
         ]
     }
 

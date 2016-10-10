@@ -13,7 +13,6 @@ HERE = os.path.dirname(__file__)  # The cpipe root directory
 ROOT = os.path.dirname(HERE)
 TOOLS_ROOT = os.path.join(ROOT, 'tools')
 DATA_ROOT = os.path.join(ROOT, 'data')
-INSTALL_ROOT = os.path.join(ROOT, 'install')
 
 # Versions
 BWA_VERSION = "0.7.13"
@@ -53,7 +52,7 @@ CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 
-ENVIRONMENT_FILE = os.path.join(INSTALL_ROOT, 'environment.sh')
+ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
 
 def unzip_todir(input, directory, type):
