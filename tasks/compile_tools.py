@@ -55,7 +55,7 @@ def task_compile_r():
 
     return {
         'actions': [
-            cmd('./configure && make', cwd=R_ROOT)
+            cmd('./configure && make', cwd=R_ROOT, env=get_c_env())
         ],
         'task_dep': task_dep,
         'targets': [os.path.join(R_ROOT, 'bin', 'R')],
