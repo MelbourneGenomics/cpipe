@@ -31,8 +31,10 @@ PICARD_VERSION = "2.6.0"
 DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
 VEP_PLUGIN_COMMIT = "3be3889"
 MAVEN_VERSION = '3.3.9'
+BZIP_VERSION = '1.0.6'
 
 # Tool paths
+C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
 PERL_ROOT = os.path.join(TOOLS_ROOT, 'perl')
 R_ROOT = os.path.join(TOOLS_ROOT, 'r')
@@ -51,6 +53,7 @@ CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
+BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

@@ -2,6 +2,7 @@ from doit.tools import create_folder
 import tempfile
 import glob
 import re
+from urllib import urlopen, urlretrieve
 
 from tasks.common import *
 
@@ -368,3 +369,19 @@ def task_download_takari_cpisuite():
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
         ],
     }
+
+def task_download_bzip2():
+
+    def action():
+        create_folder(BZIP_ROOT)
+        download_zip(
+            'http://www.bzip.org/{0}/bzip2-{0}.tar.gz'.format(BZIP_VERSION),
+            BZIP_ROOT
+        )
+
+    return {
+        'targets': [BZIP_ROOT],
+        'actions': [action],
+        'uptodate': [True]
+    }
+

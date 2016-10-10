@@ -48,7 +48,7 @@ def task_compile_perl():
     }
 
 def task_compile_r():
-    task_dep = ['download_nectar_assets' if has_swift_auth() else 'download_perl']
+    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_bzip2', 'download_perl']
 
     if in_docker():
         task_dep.append('r_docker_dependencies')
