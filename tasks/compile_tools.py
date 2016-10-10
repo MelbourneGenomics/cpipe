@@ -2,6 +2,7 @@ from tasks.common import *
 from tasks.docker_dependencies import *
 from doit.tools import create_folder
 import os
+import subprocess
 
 def task_compile_all():
     'Compiles all assets including java assets; this is only needed for a manual install'
@@ -48,15 +49,16 @@ def task_compile_perl():
     }
 
 def task_compile_r():
-    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_bzip2', 'download_perl']
+    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_bzip2', 'download_perl', 'download_r']
 
     if in_docker():
         task_dep.append('r_docker_dependencies')
 
+    def action(): 
+        subprocess.check_call('./configure && make', cwd=R_ROOT, env=get_c_env(), shell=True)
+
     return {
-        'actions': [
-            cmd('./configure && make', cwd=R_ROOT, env=get_c_env())
-        ],
+        'actions': [action],
         'task_dep': task_dep,
         'targets': [os.path.join(R_ROOT, 'bin', 'R')],
         'uptodate': [True]
