@@ -10,6 +10,12 @@ TEMP_PYTHON=${ROOT}/tmpdata/python
 TEMP_PYBIN=${TEMP_PYTHON}/bin
 PYTHON=${ROOT}/tools/python
 
+if [[ -n $1 ]] ; then
+   COMMAND=$1
+else
+   COMMAND=install
+fi
+
 # Load swift credentials if they exist
 if [[ -f ${ROOT}/swift_credentials.sh ]] ; then
     source ${ROOT}/swift_credentials.sh
@@ -26,7 +32,7 @@ if [[ ! -d ${PYTHON} ]]; then
 fi
 
 # Install virtualenv and create a real python installation. Activate it
-${TEMP_PYBIN}/pip install virtualenv
+${TEMP_PYBIN}/pip install -q virtualenv
 ${TEMP_PYBIN}/virtualenv ${PYTHON}
 source ${PYTHON}/bin/activate
 
@@ -37,7 +43,7 @@ source ${PYTHON}/bin/activate
 rm -rf ${ROOT}/tmpdir/*
 
 # Install pip dependencies
-pip install -r requirements.txt
+pip install -q -r requirements.txt
 
 # Download assets and tools using doit
-python -m doit install
+python -m doit $COMMAND
