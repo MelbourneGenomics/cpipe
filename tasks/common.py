@@ -129,7 +129,7 @@ def download_zip(url_str, directory, type=None):
 
 def get_cpanm_env():
     install_env = os.environ.copy()
-    install_env["CPATH"] = str(install_env.get("CPATH")) + os.pathsep + PERL_ROOT
+    install_env["CPATH"] = (install_env.get("C_INCLUDE_PATH") or '') + os.pathsep + PERL_ROOT
     install_env["PERL_SRC"] = PERL_ROOT
     return install_env
 
@@ -137,7 +137,7 @@ def get_cpanm_env():
 def get_c_env():
     env = os.environ.copy()
     include_dirs = [os.path.realpath(p) for p in os.listdir(C_INCLUDE_ROOT)]
-    env["C_INCLUDE_PATH"] = str(env.get("C_INCLUDE_PATH")) + os.pathsep + os.pathsep.join(include_dirs)
+    env["CPATH"] = (env.get("CPATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
     return env
 
 
