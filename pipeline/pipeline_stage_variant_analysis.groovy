@@ -90,7 +90,7 @@ vcf_annotate = {
                 --canonical
                 --check_alleles
                 --check_existing
-                --dir $VEP/../vep_cache
+                --dir $VEP_CACHE
                 --dir_plugins $TOOLS/vep_plugins
                 --fasta $VEP_CACHE/homo_sapiens_refseq/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa
                 --force_overwrite
