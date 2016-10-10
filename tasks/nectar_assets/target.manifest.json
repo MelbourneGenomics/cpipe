@@ -83,12 +83,7 @@
         "path": "data/chromosomes", 
         "version": "hg19", 
         "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
-    }, 
-    "perl_lib": {
-        "path": "tools/perl_lib", 
-        "version": 1, 
-        "hash": "9ae54a88948d3cc9fb9d6b357371b59fa426bc88"
-    }, 
+    },
     "bwa": {
         "path": "tools/bwa", 
         "version": "0.7.13", 
