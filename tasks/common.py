@@ -34,6 +34,7 @@ VEP_PLUGIN_COMMIT = "3be3889"
 MAVEN_VERSION = '3.3.9'
 BZIP_VERSION = '1.0.6'
 XZ_VERSION = '5.2.2'
+PCRE_VERSION = '8.39'
 
 # Tool paths
 C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
@@ -55,8 +56,10 @@ CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
+
 BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
 XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
+PCRE_ROOT = os.path.join(C_INCLUDE_ROOT, 'pcre')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

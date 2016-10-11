@@ -390,6 +390,7 @@ def task_download_bzip2():
         'uptodate': [True]
     }
 
+
 def task_download_xz():
     def action():
         create_folder(XZ_ROOT)
@@ -404,3 +405,17 @@ def task_download_xz():
         'uptodate': [True]
     }
 
+
+def task_download_pcre():
+    def action():
+        create_folder(PCRE_ROOT)
+        download_zip(
+            'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-{}.tar.gz'.format(PCRE_VERSION),
+            PCRE_ROOT
+        )
+
+    return {
+        'targets': [PCRE_ROOT],
+        'actions': [action],
+        'uptodate': [True]
+    }

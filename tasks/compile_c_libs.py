@@ -30,3 +30,16 @@ def task_compile_xz():
         'uptodate': [True]
     }
 
+def task_compile_pcre():
+    return {
+        'actions': [
+            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
+            cmd('make', cwd=PCRE_ROOT),
+            cmd('make install'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
+        ],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_pcre'],
+        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'pcregrep')],
+        'uptodate': [True]
+    }
+
+
