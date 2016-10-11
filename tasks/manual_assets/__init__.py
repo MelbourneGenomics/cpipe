@@ -3,7 +3,6 @@ Defines the doit tasks required to download cpipe assets without access to NECTA
 script
 """
 
-from tasks.manual_assets.dependencies import *
 from tasks.manual_assets.download_reference_files import *
 from tasks.manual_assets.download_tools import *
 
