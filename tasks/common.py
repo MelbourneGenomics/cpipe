@@ -136,8 +136,22 @@ def get_cpanm_env():
 
 def get_c_env():
     env = os.environ.copy()
-    include_dirs = [os.path.realpath(p) for p in os.listdir(C_INCLUDE_ROOT)]
-    env["CPATH"] = (env.get("CPATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
+    include_dirs = [os.path.abspath(os.path.join(C_INCLUDE_ROOT, p)) for p in os.listdir(C_INCLUDE_ROOT)]
+    
+    if 'CFLAGS' not in env:
+        env['CFLAGS'] = ''
+    if 'LDFLAGS' not in env:
+        env['LDFLAGS'] = ''
+    if 'CPPFLAGS' not in env:
+        env['CPPFLAGS'] = ''
+
+    for dir in include_dirs:
+        env['CFLAGS'] += ' -I' + dir
+        env['CPPFLAGS'] += ' -I' + dir 
+        env['LDFLAGS'] += ' -L' + dir 
+    #env['LDFLAGS'] += '-L' + os.pathsep.join(include_dirs)
+    #env["CPATH"] = (env.get("CPATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
+    #env['LD_LIBRARY_PATH'] = (env.get("LD_LIBRARY_PATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
     return env
 
 
