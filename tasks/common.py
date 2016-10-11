@@ -13,6 +13,7 @@ HERE = os.path.dirname(__file__)  # The cpipe root directory
 ROOT = os.path.dirname(HERE)
 TOOLS_ROOT = os.path.join(ROOT, 'tools')
 DATA_ROOT = os.path.join(ROOT, 'data')
+TMPDATA = os.path.join(ROOT, 'tmpdata')
 
 # Versions
 BWA_VERSION = "0.7.13"
@@ -197,3 +198,7 @@ def has_swift_auth():
 
 def in_docker():
     return os.path.exists('/.dockerenv')
+
+
+def is_root():
+    return os.geteuid() == 0
