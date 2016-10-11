@@ -57,7 +57,7 @@
     "perl": {
         "path": "tools/perl", 
         "version": "5.24.0", 
-        "hash": "6f7b731e9bf1e741ddd1f8ebbf09c871997197f3"
+        "hash": "34af49f6b09247bc52e40cd0cffc87fa11eb6924"
     }, 
     "ucsc": {
         "path": "data/ucsc", 
