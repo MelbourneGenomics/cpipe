@@ -376,6 +376,13 @@ def task_download_takari_cpisuite():
     }
 
 
+def task_download_c_libs():
+    return {
+        'actions': None,
+        'task_dep': ['download_bzip2', 'download_xz', 'download_pcre', 'download_libcurl'],
+    }
+
+
 def task_download_bzip2():
     def action():
         create_folder(BZIP_ROOT)
