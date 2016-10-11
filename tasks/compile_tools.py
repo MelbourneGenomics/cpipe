@@ -42,7 +42,7 @@ def task_compile_perl():
 
     return {
         'actions': [
-            cmd('yes | ./configure.sh && make', cwd=PERL_ROOT)
+            cmd('Configure -de -Dprefix={} && make && make install'.format(C_INCLUDE_ROOT), cwd=PERL_ROOT)
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl'],
         'targets': [os.path.join(PERL_ROOT, 'perl')],
@@ -83,7 +83,13 @@ def task_compile_bwa():
 def task_compile_htslib():
     return {
         'actions': [
-            cmd('make', cwd=HTSLIB_ROOT)
+            cmd('''
+            autoheader
+            autoconf
+            ./configure --prefix={}
+            make
+            make install
+            '''.format(C_INCLUDE_ROOT))
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_htslib'],
         'targets': [os.path.join(HTSLIB_ROOT, 'htsfile')],
@@ -150,13 +156,15 @@ def task_install_perl_libs():
     Installs all cpan libs from the cpan directory into the perl_lib directory
     :return:
     """
+    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_perl_libs', 'download_cpanm']
+    task_dep.append('compile_perl')
 
     return {
         'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
-        'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_perl_libs', 'download_cpanm'],
+        'task_dep': task_dep,
         'actions': [
             # Use the cpan directory we made in download_perl_libs as a cpan mirror and install from there
-            cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=ROOT, env=get_cpanm_env())
+            cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=ROOT)#, env=get_cpanm_env())
         ],
         'uptodate': [True]
     }
