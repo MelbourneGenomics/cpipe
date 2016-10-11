@@ -58,7 +58,7 @@ def task_compile_r():
         task_dep.append('r_docker_dependencies')
 
     def action(): 
-        subprocess.check_call('./configure && make', cwd=R_ROOT, env=get_c_env(), shell=True)
+        subprocess.check_call('source {env} && ./configure && make'.format(env=ENVIRONMENT_FILE), cwd=R_ROOT, env=get_c_env(), shell=True)
 
     return {
         'actions': [action],
