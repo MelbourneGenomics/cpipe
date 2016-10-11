@@ -21,9 +21,9 @@ def task_compile_bzip2():
 def task_compile_xz():
     return {
         'actions': [
-            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=BZIP_ROOT),
-            cmd('make', cwd=BZIP_ROOT),
-            cmd('make install'.format(C_INCLUDE_ROOT), cwd=BZIP_ROOT),
+            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=XZ_ROOT),
+            cmd('make', cwd=XZ_ROOT),
+            cmd('make install'.format(C_INCLUDE_ROOT), cwd=XZ_ROOT),
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_xz'],
         'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'xz')],
