@@ -22,3 +22,6 @@ source ${TOOLS}/python/bin/activate
 export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
 export HTSLIB_DIR=$TOOLS/htslib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins:${TOOLS}/vep_libs
+export CFLAGS="$CFLAGS -I ${TOOLS}/c_libs/include"
+export CPPFLAGS="$CPPFLAGS -I ${TOOLS}/c_libs/include"
+export LDFLAGS="$CPPFLAGS -L ${TOOLS}/c_libs/lib"
