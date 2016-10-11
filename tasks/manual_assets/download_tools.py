@@ -389,3 +389,18 @@ def task_download_bzip2():
         'actions': [action],
         'uptodate': [True]
     }
+
+def task_download_xz():
+    def action():
+        create_folder(XZ_ROOT)
+        download_zip(
+            'http://tukaani.org/xz/xz-{}.tar.gz'.format(XZ_VERSION),
+            XZ_ROOT
+        )
+
+    return {
+        'targets': [XZ_ROOT],
+        'actions': [action],
+        'uptodate': [True]
+    }
+

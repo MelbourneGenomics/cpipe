@@ -33,6 +33,7 @@ DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
 VEP_PLUGIN_COMMIT = "3be3889"
 MAVEN_VERSION = '3.3.9'
 BZIP_VERSION = '1.0.6'
+XZ_VERSION = '5.2.2'
 
 # Tool paths
 C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
@@ -55,6 +56,7 @@ CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
 CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
+XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
