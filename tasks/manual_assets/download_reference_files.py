@@ -183,7 +183,7 @@ def task_download_trio_refinement():
                  | gunzip > {data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf
             '''.format(data_dir=DATA_ROOT)
         ],
-        'targets': [RAW_VCF],
+        #'targets': [RAW_VCF],
         # The task is up to date if the final refinement file exists or if just this step's product exists
         'uptodate': [lambda: os.path.exists(TRIO_REFINEMENT_FILE) or os.path.exists(RAW_VCF)]
     }
@@ -201,7 +201,7 @@ def task_download_refinement_liftover():
                      ftp://gsapubftp-anonymous@ftp.broadinstitute.org/Liftover_Chain_Files/b37tohg19.chain
             '''.format(data_dir=DATA_ROOT)
         ],
-        'targets': [LIFTOVER_FILE],
+        #'targets': [LIFTOVER_FILE],
         # The task is up to date if the final refinement file exists or if just this step's product exists
         'uptodate': [lambda: os.path.exists(TRIO_REFINEMENT_FILE) or os.path.exists(LIFTOVER_FILE)]
     }
@@ -221,7 +221,7 @@ def task_download_chromosome_sizes():
                 chrom_file.write('\t'.join([str(el) for el in line]) + '\n')
 
     return {
-        'targets': [CHROMOSOME_FILE],
+        #'targets': [CHROMOSOME_FILE],
         'actions': [
             download_chromosome_size
         ],
