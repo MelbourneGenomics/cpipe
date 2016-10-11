@@ -50,7 +50,7 @@ def task_compile_perl():
 
 def task_compile_r():
     task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_bzip2', 'download_perl', 'download_r']
-
+    task_dep.append('compile_bzip2')
     if in_docker():
         task_dep.append('r_docker_dependencies')
 
@@ -150,5 +150,16 @@ def task_install_perl_libs():
             # Use the cpan directory we made in download_perl_libs as a cpan mirror and install from there
             cmd('cpanm -l {perl_lib} --mirror file://{tools_dir}/cpan --installdeps .'.format(tools_dir=TOOLS_ROOT, perl_lib=PERL_LIB_ROOT), cwd=ROOT, env=get_cpanm_env())
         ],
+        'uptodate': [True]
+    }
+
+def task_compile_bzip2():
+    return {
+        'actions': [
+            cmd('make -f Makefile-libbz2_so', cwd=BZIP_ROOT),
+            cmd('make', cwd=BZIP_ROOT),
+        ],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bzip2'],
+        'targets': [os.path.join(BZIP_ROOT, 'bzip2')],
         'uptodate': [True]
     }
