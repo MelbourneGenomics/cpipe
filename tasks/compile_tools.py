@@ -140,7 +140,7 @@ def task_compile_gatk():
             ''', cwd=GATK_ROOT)
         ],
         'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_maven', 'download_gatk'],
-        'targets': [os.path.join(GATK_ROOT, 'gatk')],
+        'targets': [os.path.join(GATK_ROOT, 'GenomeAnalysisTK.jar')],
         'uptodate': [True]
     }
 
