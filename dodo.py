@@ -26,9 +26,11 @@ def task_install():
     Install cpipe in a manual install environment, e.g. not inside a docker container
     :return:
     """
+
     return {
         'actions': None,
-        'task_dep': ['copy_config', 'assets', 'check_java']
+        'task_dep': ['copy_config', 'assets', 'check_java'],
+        'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
 
