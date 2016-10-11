@@ -26,7 +26,7 @@ if [[ ! -d ${PYTHON} ]]; then
 	pushd tmpdata
         	git clone --depth 1 git://github.com/yyuu/pyenv.git
         	mkdir -p ${PYTHON}
-        	pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
+        	env PREFIX=${TEMP_PYTHON} pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
 		rm -rf pyenv
 	popd
 fi
