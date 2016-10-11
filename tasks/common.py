@@ -151,10 +151,10 @@ def get_c_env():
     if 'CPPFLAGS' not in env:
         env['CPPFLAGS'] = ''
 
-    for dir in include_dirs:
-        env['CFLAGS'] += ' -I' + dir
-        env['CPPFLAGS'] += ' -I' + dir 
-        env['LDFLAGS'] += ' -L' + dir 
+    #for dir in include_dirs:
+    #    env['CFLAGS'] += ' -I' + dir
+    #    env['CPPFLAGS'] += ' -I' + dir 
+    #    env['LDFLAGS'] += ' -L' + dir 
     #env['LDFLAGS'] += '-L' + os.pathsep.join(include_dirs)
     #env["CPATH"] = (env.get("CPATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
     #env['LD_LIBRARY_PATH'] = (env.get("LD_LIBRARY_PATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
