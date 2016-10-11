@@ -15,6 +15,8 @@ ROOT=$(readlink -f $(dirname $BASH_SOURCE))
 source $ROOT/pipeline/scripts/config_groovy_util.sh
 load_config
 
+CROOT=${TOOLS}/c_libs
+
 # Load virtualenv
 source ${TOOLS}/python/bin/activate
 
@@ -22,6 +24,8 @@ source ${TOOLS}/python/bin/activate
 export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
 export HTSLIB_DIR=$TOOLS/htslib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins:${TOOLS}/vep_libs
+export CPATH="${TOOLS}/c_libs/include"
 export CFLAGS="$CFLAGS -I${TOOLS}/c_libs/include"
 export CPPFLAGS="$CPPFLAGS -I${TOOLS}/c_libs/include"
-export LDFLAGS="$CPPFLAGS -L${TOOLS}/c_libs/lib"
+export LDFLAGS="$LDFLAGS -L${TOOLS}/c_libs/lib"
+export LD_LIBRARY_PATH=${TOOLS}/c_libs/lib:${LD_LIBRARY_PATH}
