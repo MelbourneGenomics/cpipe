@@ -33,7 +33,7 @@ def task_compile_xz():
 def task_compile_pcre():
     return {
         'actions': [
-            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
+            cmd('./configure --enable-utf8 --prefix={}'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
             cmd('make', cwd=PCRE_ROOT),
             cmd('make install'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
         ],
