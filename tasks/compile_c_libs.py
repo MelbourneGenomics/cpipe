@@ -52,7 +52,7 @@ def task_compile_libcurl():
             cmd('make install'.format(C_INCLUDE_ROOT), cwd=LIBCURL_ROOT),
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_libcurl'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'libcurl')],
+        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'curl')],
         'uptodate': [True]
     }
 
