@@ -57,3 +57,16 @@ def task_compile_libcurl():
     }
 
 
+def task_compile_zlib():
+    return {
+        'actions': [
+            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=ZLIB_ROOT),
+            cmd('make', cwd=ZLIB_ROOT),
+            cmd('make install'.format(C_INCLUDE_ROOT), cwd=ZLIB_ROOT),
+        ],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_zlib'],
+        'targets': [os.path.join(C_INCLUDE_ROOT, 'lib', 'libz.so')],
+        'uptodate': [True]
+    }
+
+

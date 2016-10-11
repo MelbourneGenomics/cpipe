@@ -36,6 +36,7 @@ BZIP_VERSION = '1.0.6'
 XZ_VERSION = '5.2.2'
 PCRE_VERSION = '8.39'
 LIBCURL_VERSION = '7.50.3'
+ZLIB_VERSION = '1.2.8'
 
 # Tool paths
 C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
@@ -62,6 +63,7 @@ BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
 XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
 PCRE_ROOT = os.path.join(C_INCLUDE_ROOT, 'pcre')
 LIBCURL_ROOT = os.path.join(C_INCLUDE_ROOT, 'libcurl')
+ZLIB_ROOT = os.path.join(C_INCLUDE_ROOT, 'zlib')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

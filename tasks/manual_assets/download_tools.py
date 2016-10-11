@@ -442,3 +442,17 @@ def task_download_libcurl():
         'uptodate': [True]
     }
 
+
+def task_download_zlib():
+    def action():
+        create_folder(ZLIB_ROOT)
+        download_zip(
+            'http://zlib.net/zlib-{}.tar.gz'.format(ZLIB_VERSION),
+            ZLIB_ROOT
+        )
+
+    return {
+        'targets': [ZLIB_ROOT],
+        'actions': [action],
+        'uptodate': [True]
+    }

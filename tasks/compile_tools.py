@@ -55,6 +55,7 @@ def task_compile_r():
     task_dep.append('compile_xz')
     task_dep.append('compile_pcre')
     task_dep.append('compile_libcurl')
+    task_dep.append('compile_zlib')
     if in_docker():
         task_dep.append('r_docker_dependencies')
 
@@ -115,11 +116,14 @@ def task_compile_bcftools():
     }
 
 def task_compile_bedtools():
+    task_dep = ['download_nectar_assets' if has_swift_auth() else 'download_bedtools']
+    task_dep.append('compile_zlib')
+
     return {
         'actions': [
             cmd('make', cwd=BEDTOOLS_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bedtools'],
+        'task_dep': task_dep,
         'targets': [os.path.join(BEDTOOLS_ROOT, 'bin', 'bedtools')],
         'uptodate': [True]
     }
