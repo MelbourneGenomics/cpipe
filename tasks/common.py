@@ -35,6 +35,7 @@ MAVEN_VERSION = '3.3.9'
 BZIP_VERSION = '1.0.6'
 XZ_VERSION = '5.2.2'
 PCRE_VERSION = '8.39'
+LIBCURL_VERSION = '7.50.3'
 
 # Tool paths
 C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
@@ -60,6 +61,7 @@ MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
 XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
 PCRE_ROOT = os.path.join(C_INCLUDE_ROOT, 'pcre')
+LIBCURL_ROOT = os.path.join(C_INCLUDE_ROOT, 'libcurl')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

@@ -54,6 +54,7 @@ def task_compile_r():
     task_dep.append('compile_bzip2')
     task_dep.append('compile_xz')
     task_dep.append('compile_pcre')
+    task_dep.append('compile_libcurl')
     if in_docker():
         task_dep.append('r_docker_dependencies')
 

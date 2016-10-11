@@ -419,3 +419,19 @@ def task_download_pcre():
         'actions': [action],
         'uptodate': [True]
     }
+
+
+def task_download_libcurl():
+    def action():
+        create_folder(LIBCURL_ROOT)
+        download_zip(
+            'https://curl.haxx.se/download/curl-{}.tar.gz'.format(LIBCURL_VERSION),
+            LIBCURL_ROOT
+        )
+
+    return {
+        'targets': [LIBCURL_ROOT],
+        'actions': [action],
+        'uptodate': [True]
+    }
+

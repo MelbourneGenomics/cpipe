@@ -43,3 +43,17 @@ def task_compile_pcre():
     }
 
 
+
+def task_compile_libcurl():
+    return {
+        'actions': [
+            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=LIBCURL_ROOT),
+            cmd('make', cwd=LIBCURL_ROOT),
+            cmd('make install'.format(C_INCLUDE_ROOT), cwd=LIBCURL_ROOT),
+        ],
+        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_libcurl'],
+        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'libcurl')],
+        'uptodate': [True]
+    }
+
+
