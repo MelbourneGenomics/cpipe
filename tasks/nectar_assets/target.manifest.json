@@ -71,8 +71,8 @@
     }, 
     "c_libs": {
         "path": "tools/c_libs", 
-        "version": "1", 
-        "hash": "1889b1acacc8a78ba9a2cf5985bba64fb7018c54"
+        "version": "2", 
+        "hash": "a3186cef85dfbbdd325ea5c2d2ace7145ad4b7ff"
     }, 
     "gatk": {
         "path": "tools/gatk", 
@@ -83,7 +83,7 @@
         "path": "data/chromosomes", 
         "version": "hg19", 
         "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
-    },
+    }, 
     "bwa": {
         "path": "tools/bwa", 
         "version": "0.7.13", 
