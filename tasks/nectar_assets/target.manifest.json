@@ -71,8 +71,8 @@
     }, 
     "c_libs": {
         "path": "tools/c_libs", 
-        "version": "2", 
-        "hash": "a3186cef85dfbbdd325ea5c2d2ace7145ad4b7ff"
+        "version": "4", 
+        "hash": "fc130124e1cb97845c178e2598a2bcf0be9f2f29"
     }, 
     "gatk": {
         "path": "tools/gatk", 
