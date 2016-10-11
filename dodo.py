@@ -16,7 +16,8 @@ import re
 import subprocess
 
 DOIT_CONFIG = {
-    'default_tasks': ['install']
+    'default_tasks': ['install'],
+    'backend': 'json'
 }
 
 
