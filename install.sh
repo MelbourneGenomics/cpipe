@@ -11,7 +11,7 @@ TEMP_PYBIN=${TEMP_PYTHON}/bin
 PYTHON=${ROOT}/tools/python
 
 if [[ -n $1 ]] ; then
-   COMMAND=$1
+   COMMAND=$@
 else
    COMMAND=install
 fi
@@ -29,21 +29,23 @@ if [[ ! -d ${PYTHON} ]]; then
         	env PREFIX=${TEMP_PYTHON} pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
 		rm -rf pyenv
 	popd
+
+    # Install virtualenv and create a real python installation. Activate it
+    ${TEMP_PYBIN}/pip install -q virtualenv
+    ${TEMP_PYBIN}/virtualenv ${PYTHON}
+
+    # Delete the old python
+    rm -rf ${ROOT}/tmpdir/*
+    
+    # Install pip dependencies
+    pip install -q -r requirements.txt
+
 fi
 
-# Install virtualenv and create a real python installation. Activate it
-${TEMP_PYBIN}/pip install -q virtualenv
-${TEMP_PYBIN}/virtualenv ${PYTHON}
 source ${PYTHON}/bin/activate
 
 # Source the environment file
 #source ${ROOT}/install/environment.sh
-
-# Delete the old python
-rm -rf ${ROOT}/tmpdir/*
-
-# Install pip dependencies
-pip install -q -r requirements.txt
 
 # Download assets and tools using doit
 python -m doit $COMMAND
