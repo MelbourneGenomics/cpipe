@@ -57,7 +57,7 @@
     "perl": {
         "path": "tools/perl", 
         "version": "5.24.0", 
-        "hash": "7271613a10bf65a06b893a2e2d8f49b63335ce02"
+        "hash": "73f2a074d8e54049208083c78a78ec3f2ddb7698"
     }, 
     "ucsc": {
         "path": "data/ucsc", 
@@ -114,19 +114,19 @@
         "version": "0.9.9.2", 
         "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
-    "java_libs": {
-        "path": "tools/java_libs", 
-        "version": 1, 
-        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
+    "bcftools": {
+        "path": "tools/bcftools", 
+        "version": "1.3", 
+        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
     }, 
     "vep_cache": {
         "path": "data/vep_cache", 
         "version": "GRCh37.85", 
         "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
     }, 
-    "bcftools": {
-        "path": "tools/bcftools", 
-        "version": "1.3", 
-        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
+    "java_libs": {
+        "path": "tools/java_libs", 
+        "version": 1, 
+        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
     }
 }
