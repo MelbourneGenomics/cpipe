@@ -1,4 +1,3 @@
-// vim: ts=4:sw=4:expandtab:cindent
 /////////////////////////////////////////////////////////////////////////////////
 //
 // This file is part of Cpipe.
@@ -203,11 +202,11 @@ run {
    [
        proband_samples *
        [
-           set_sample_name_without_target + set_analysis_type_trio + update_sample_database
+           set_sample_name_without_target + set_analysis_type_trio// + update_sample_database
        ],
        individual_samples * // individuals and probands
        [
-           set_sample_name_without_target + set_analysis_type_individual + update_sample_database
+           set_sample_name_without_target + set_analysis_type_individual// + update_sample_database
        ]
    ]
    
