@@ -50,7 +50,7 @@ def task_compile_perl():
             )
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl'],
-        'targets': [os.path.join(PERL_ROOT, 'perl')],
+        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'perl')],
         'uptodate': [True]
     }
 
@@ -88,12 +88,12 @@ def task_compile_bwa():
 def task_compile_htslib():
     return {
         'actions': [
+            CmdAction('autoheader', cwd=HTSLIB_ROOT),
             cmd('''
-            autoheader
-            autoconf
-            ./configure --prefix={}
-            make
-            make install
+                autoconf
+                ./configure --prefix={}
+                make
+                make install
             '''.format(C_INCLUDE_ROOT), cwd=HTSLIB_ROOT)
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_htslib'],
