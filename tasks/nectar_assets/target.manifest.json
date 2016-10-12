@@ -32,7 +32,7 @@
     "samtools": {
         "path": "tools/samtools", 
         "version": "1.3", 
-        "hash": "7984517b835f6ea7570bf723ade0b5f7ef7ec03b"
+        "hash": "d4d16514db4f6e8af7048c385ea59f867d4c6e07"
     }, 
     "vep_libs": {
         "path": "tools/vep_libs", 
@@ -64,10 +64,10 @@
         "version": "hg19", 
         "hash": "3dd6aefbf60f2e5d5b58241d34d7591ca12bc6d5"
     }, 
-    "r": {
-        "path": "tools/r", 
-        "version": "3.3.1", 
-        "hash": "c86465e481ad23bf8949ea2a83507bce0e9b6103"
+    "bpipe": {
+        "path": "tools/bpipe", 
+        "version": "0.9.9.2", 
+        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
     "c_libs": {
         "path": "tools/c_libs", 
@@ -109,24 +109,24 @@
         "version": "2.4.7", 
         "hash": "1cfcb19b6b2056e24c438101cc0fafe4cb06311e"
     }, 
-    "bpipe": {
-        "path": "tools/bpipe", 
-        "version": "0.9.9.2", 
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+    "r": {
+        "path": "tools/r", 
+        "version": "3.3.1", 
+        "hash": "c86465e481ad23bf8949ea2a83507bce0e9b6103"
     }, 
-    "java_libs": {
-        "path": "tools/java_libs", 
-        "version": 1, 
-        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
+    "bcftools": {
+        "path": "tools/bcftools", 
+        "version": "1.3", 
+        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
     }, 
     "vep_cache": {
         "path": "data/vep_cache", 
         "version": "GRCh37.85", 
         "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
     }, 
-    "bcftools": {
-        "path": "tools/bcftools", 
-        "version": "1.3", 
-        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
+    "java_libs": {
+        "path": "tools/java_libs", 
+        "version": 1, 
+        "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
     }
 }
