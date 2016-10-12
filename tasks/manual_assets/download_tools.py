@@ -128,8 +128,9 @@ def task_download_samtools():
         'targets': [SAMTOOLS_ROOT],
         'actions': [
             lambda: download_zip(
-                "https://codeload.github.com/samtools/samtools/tar.gz/{0}".format(HTSLIB_VERSION), SAMTOOLS_ROOT,
-                type='tgz')
+                "https://github.com/samtools/samtools/releases/download/{0}/samtools-{0}.tar.bz2".format(HTSLIB_VERSION),
+                SAMTOOLS_ROOT
+            )
         ],
         'uptodate': [True]
     }
@@ -446,8 +447,9 @@ def task_download_zlib():
     def action():
         create_folder(ZLIB_ROOT)
         download_zip(
-            'http://zlib.net/zlib-{}.tar.gz'.format(ZLIB_VERSION),
-            ZLIB_ROOT
+           'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION),
+            ZLIB_ROOT,
+            type='tgz'
         )
 
     return {
