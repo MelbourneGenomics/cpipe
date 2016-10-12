@@ -42,7 +42,12 @@ def task_compile_perl():
 
     return {
         'actions': [
-            cmd('yes | ./Configure -de -Dprefix={} && make && make install'.format(C_INCLUDE_ROOT), cwd=PERL_ROOT)
+            cmd('''
+                  ./Configure -de -Dprefix={} 
+                  make
+                  make install
+                '''.format(C_INCLUDE_ROOT), cwd=PERL_ROOT
+            )
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl'],
         'targets': [os.path.join(PERL_ROOT, 'perl')],
