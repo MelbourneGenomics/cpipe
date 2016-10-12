@@ -91,8 +91,11 @@ def unzip_todir(input, directory, type):
     elif type == 'tgz':
         tar = tarfile.open(fileobj=input, mode='r:gz')
         tar.extractall(tempdir)
+    elif type == 'tbz2':
+        tar = tarfile.open(fileobj=input, mode='r:bz2')
+        tar.extractall(tempdir)
     else:
-        raise ValueError('Can only download .tar.gz or .zip file')
+        raise ValueError('Can only download .tar.gz, .tar.bz2, or .zip file')
 
     # If there is only one subdirectory, take the files inside that
     files = [os.path.join(tempdir, f) for f in os.listdir(tempdir)]
@@ -133,6 +136,8 @@ def download_zip(url_str, directory, type=None):
             type = 'zip'
         elif (ext1 == '.tar' and ext2 == '.gz') or ext2 == '.tgz':
             type = 'tgz'
+        elif (ext1 == '.tar' and ext2 == '.bz2') or ext2 == '.tbz2':
+            type = 'tbz2'
 
     unzip_todir(input, directory, type)
 
