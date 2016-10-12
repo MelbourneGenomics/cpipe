@@ -89,7 +89,7 @@ def task_compile_htslib():
             ./configure --prefix={}
             make
             make install
-            '''.format(C_INCLUDE_ROOT))
+            '''.format(C_INCLUDE_ROOT), cwd=HTSLIB_ROOT)
         ],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_htslib'],
         'targets': [os.path.join(HTSLIB_ROOT, 'htsfile')],
@@ -98,13 +98,19 @@ def task_compile_htslib():
 
 def task_compile_samtools():
     task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_samtools', 'download_htslib']
+    task_dep.append('compile_zlib')
+    task_dep.append('compile_htslib')
 
     if in_docker():
         task_dep.append('samtools_docker_dependencies')
 
     return {
         'actions': [
-            cmd('make', cwd=SAMTOOLS_ROOT)
+            cmd('''
+                ./configure --prefix={} --with-htslib={}
+                make
+                make install
+            '''.format(C_INCLUDE_ROOT, HTSLIB_ROOT), cwd=SAMTOOLS_ROOT)
         ],
         'task_dep': task_dep,
         'targets': [os.path.join(SAMTOOLS_ROOT, 'samtools')],
