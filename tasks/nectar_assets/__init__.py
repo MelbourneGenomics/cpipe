@@ -54,8 +54,7 @@ def assets_needing_update():
         for key in target_json:
 
             # We need to update if the file doesn't exist or is out of date (wrong hash)
-            if (key not in current_json or target_json[key]['hash'] != current_json[key]['hash']) \
-                    and not os.path.exists(os.path.join(ROOT, target_json[key]['path'])):
+            if key not in current_json or target_json[key]['hash'] != current_json[key]['hash']:
                 to_download.append('{path}/{version}.tar.gz'.format(**target_json[key]))
 
         return to_download
