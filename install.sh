@@ -105,35 +105,39 @@ else
     OUTPUT_STREAM="/dev/null"
 fi
 
-{
+
     # Use python-build to install python
     if [[ ! -f ${VENV} ]]; then
 
             echo -n 'Installing local python...'
 
-            pushd ${TEMP_SUBDIR}
-                    git clone --depth 1 git://github.com/yyuu/pyenv.git
-                    pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
-            popd
+            {
+                pushd ${TEMP_SUBDIR}
+                        git clone --depth 1 git://github.com/yyuu/pyenv.git
+                        pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
+                popd
 
-            # Install virtualenv and create a real python installation. Activate it
-            ${TEMP_PYBIN}/pip install virtualenv
-            ${TEMP_PYBIN}/virtualenv ${PYTHON}
+                # Install virtualenv and create a real python installation. Activate it
+                ${TEMP_PYBIN}/pip install virtualenv
+                ${TEMP_PYBIN}/virtualenv ${PYTHON} --always-copy --distribute --no-site-packages -p ${TEMP_PYBIN}/python
 
-            # Delete the temporary files
-            rm -rf ${TEMP_SUBDIR}
+                # Delete the temporary files
+                #rm -rf ${TEMP_SUBDIR}
 
-            echo 'done!'
+            } > ${OUTPUT_STREAM}
+
     fi
 
-    # Load virtualenv
-    source ${PYTHON}/bin/activate
+    {
+        # Load virtualenv
+        source ${PYTHON}/bin/activate
 
-    # Install pip dependencies
-    if (( USE_PIP )); then
-        pip install -q -r requirements.txt
-    fi ;
-} 2>&1 >> ${OUTPUT_STREAM}
+        # Install pip dependencies
+        if (( USE_PIP )); then
+            pip install -q -r requirements.txt
+        fi ;
+
+    } > ${OUTPUT_STREAM}
 
 # Download assets and tools using doit
 doit -n $PROCESSES --verbosity $VERBOSITY $TASKS
