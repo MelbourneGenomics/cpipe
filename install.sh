@@ -37,12 +37,12 @@ if [[ ! -d ${PYTHON} ]]; then
     # Delete the old python
     rm -rf ${ROOT}/tmpdir/*
     
-    # Install pip dependencies
-    pip install -q -r requirements.txt
-
 fi
 
 source ${PYTHON}/bin/activate
+
+# Install pip dependencies
+pip install -q -r requirements.txt
 
 # Source the environment file
 #source ${ROOT}/install/environment.sh
