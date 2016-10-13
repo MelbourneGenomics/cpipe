@@ -32,7 +32,7 @@
     "samtools": {
         "path": "tools/samtools", 
         "version": "1.3", 
-        "hash": "d4d16514db4f6e8af7048c385ea59f867d4c6e07"
+        "hash": "641ed06e528dcb4a81833ca87601772f453ac1a4"
     }, 
     "vep_libs": {
         "path": "tools/vep_libs", 
@@ -92,7 +92,7 @@
     "htslib": {
         "path": "tools/htslib", 
         "version": "1.3", 
-        "hash": "57215dac473b8590c437a2a4d794a34dd17f9d4e"
+        "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     }, 
     "cpan": {
         "path": "tools/cpan", 
@@ -117,7 +117,7 @@
     "bcftools": {
         "path": "tools/bcftools", 
         "version": "1.3", 
-        "hash": "6d02755c0c756f842f0955873184651e38a463f0"
+        "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
     }, 
     "vep_cache": {
         "path": "data/vep_cache", 
