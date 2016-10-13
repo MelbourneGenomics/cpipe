@@ -1,9 +1,9 @@
-requires 'HTTP::Tiny';
-requires 'LWP::Simple';
-requires 'Archive::Zip';
-requires 'DBI';
-requires 'LWP::Protocol::https';
-requires 'File::Copy::Recursive';
-requires 'Archive::Extract';
-requires 'CGI';
-requires 'Bio::DB::HTS';
+requires 'HTTP::Tiny', '== 0.056';
+requires 'LWP::Simple', '== 6.15';
+requires 'Archive::Zip', '== 1.56';
+requires 'DBI', '== 1.636';
+requires 'LWP::Protocol::https', '== 6.04';
+requires 'File::Copy::Recursive', '== 0.38';
+requires 'Archive::Extract', '== 0.78';
+requires 'CGI', '== 4.32';
+requires 'Bio::DB::HTS', '== 2.4';
