@@ -86,17 +86,18 @@ def task_compile_bwa():
     }
 
 def task_compile_htslib():
+    task_dep = ['download_nectar_assets' if has_swift_auth() else 'download_htslib']
+    task_dep.append('compile_zlib')
+    
     return {
         'actions': [
-            CmdAction('autoheader', cwd=HTSLIB_ROOT),
             cmd('''
-                autoconf
-                ./configure --prefix={}
+                ./configure --prefix={0}
                 make
-                make install
+                make prefix={0} install
             '''.format(C_INCLUDE_ROOT), cwd=HTSLIB_ROOT)
         ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_htslib'],
+        'task_dep': task_dep,
         'targets': [os.path.join(HTSLIB_ROOT, 'htsfile')],
         'uptodate': [True]
     }
@@ -112,9 +113,9 @@ def task_compile_samtools():
     return {
         'actions': [
             cmd('''
-                ./configure --prefix={} --with-htslib={}
+                ./configure --prefix={0} --with-htslib={1}
                 make
-                make install
+                make prefix={0} install
             '''.format(C_INCLUDE_ROOT, HTSLIB_ROOT), cwd=SAMTOOLS_ROOT)
         ],
         'task_dep': task_dep,
@@ -123,11 +124,17 @@ def task_compile_samtools():
     }
 
 def task_compile_bcftools():
+    task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_bcftools', 'download_htslib']
+    task_dep.append('compile_zlib')
+
     return {
         'actions': [
-            cmd('make', cwd=BCFTOOLS_ROOT)
+            cmd('''
+                make
+                make prefix={0} install
+            '''.format(C_INCLUDE_ROOT, HTSLIB_ROOT), cwd=BCFTOOLS_ROOT)
         ],
-        'task_dep': ['download_nectar_assets'] if has_swift_auth() else ['download_bcftools', 'download_htslib'],
+        'task_dep': task_dep, 
         'targets': [os.path.join(BCFTOOLS_ROOT, 'bcftools')],
         'uptodate': [True]
     }

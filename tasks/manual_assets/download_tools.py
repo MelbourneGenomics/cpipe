@@ -115,8 +115,8 @@ def task_download_htslib():
         'targets': [HTSLIB_ROOT],
         'actions': [
             lambda: download_zip(
-                "https://codeload.github.com/samtools/htslib/tar.gz/{0}".format(HTSLIB_VERSION), HTSLIB_ROOT,
-                type='tgz')
+                "https://github.com/samtools/htslib/releases/download/{0}/htslib-{0}.tar.bz2".format(HTSLIB_VERSION), HTSLIB_ROOT
+            )
         ],
         'uptodate': [True]
     }
@@ -142,8 +142,9 @@ def task_download_bcftools():
         'targets': [BCFTOOLS_ROOT],
         'actions': [
             lambda: download_zip(
-                "https://codeload.github.com/samtools/bcftools/tar.gz/{0}".format(HTSLIB_VERSION), BCFTOOLS_ROOT,
-                type='tgz')
+                'https://github.com/samtools/bcftools/releases/download/{0}/bcftools-{0}.tar.bz2'.format(HTSLIB_VERSION),
+                BCFTOOLS_ROOT
+            )
         ],
         'uptodate': [True]
     }
