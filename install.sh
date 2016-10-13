@@ -8,12 +8,12 @@ PYTHON_VERSION="2.7.12"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
 TEMP_SUBDIR=`mktemp -d`
-TEMP_PYTHON=${TEMP_SUBDIR}/python
-TEMP_PYBIN=${TEMP_PYTHON}/bin
+SYS_PYTHON=${ROOT}/tools/c_libs
+SYS_PYBIN=${SYS_PYTHON}/bin
 PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
-# Printing utilities
+# Printing utilitiesls t
 bold=$(tput bold)
 normal=$(tput sgr0)
 
@@ -114,15 +114,15 @@ fi
             {
                 pushd ${TEMP_SUBDIR}
                         git clone --depth 1 git://github.com/yyuu/pyenv.git
-                        pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${TEMP_PYTHON}
+                        pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${SYS_PYTHON}
                 popd
 
                 # Install virtualenv and create a real python installation. Activate it
-                ${TEMP_PYBIN}/pip install virtualenv
-                ${TEMP_PYBIN}/virtualenv ${PYTHON} --always-copy --distribute --no-site-packages -p ${TEMP_PYBIN}/python
+                ${SYS_PYBIN}/pip install virtualenv
+                ${SYS_PYBIN}/virtualenv --always-copy --distribute --no-site-packages -p ${SYS_PYBIN}/python ${PYTHON}
 
                 # Delete the temporary files
-                #rm -rf ${TEMP_SUBDIR}
+                rm -rf ${TEMP_SUBDIR}
 
             } > ${OUTPUT_STREAM}
 
