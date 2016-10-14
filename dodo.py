@@ -73,10 +73,10 @@ def task_check_java():
     """
 
     def parse_java_version():
-        '''
+        """
         Parses the Java version and returns a tuple of (maj,min,build)
         :return:
-        '''
+        """
         output = subprocess.check_output(
             "java -version",
             stderr=subprocess.STDOUT,
