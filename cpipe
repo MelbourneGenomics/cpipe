@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
+
 # Set useful variables
 ROOT=$(readlink -f $(dirname $BASH_SOURCE))
-cd $ROOT
 
 # Load config groovy
 source pipeline/scripts/config_groovy_util.sh
@@ -10,8 +10,46 @@ load_config
 # Load environment, e.g. tools like python, R
 source environment.sh
 
-#ARGS=$(getopt -o e:c:g: --long "ensembl-release:,cache-type:l,usage,help,genome-build" -n $(basename $0) -- "$@")
-#eval set -- "$ARGS"
+# Printing utilities
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+#Parse command line arguments
+JAVA_CHECK=1
+ARGS=$(env POSIXLY_CORRECT=1 getopt -o j --long "no-java-check,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
+eval set -- "$ARGS"
+while true ; do
+    case "$1" in
+        -j|--no-java-check)
+            JAVA_CHECK=0
+            shift 1
+        ;;
+        --help|--usage)
+            echo "${normal}Usage: ./cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>"
+            echo "${bold}Commands (type --help after any command for more details):"
+            echo "  ${bold}pipeline${normal}: Runs the analysis pipeline"
+            echo "  ${bold}test${normal}: Runs the pipeline tests"
+            echo "  ${bold}batch${normal}: Creates and modifies analysis batches"
+            echo "  ${bold}genelist${normal}: Creates and modifies genelists"
+            echo "  ${bold}metadata${normal}: Creates and modifies sample metadata files"
+            echo "${bold}Cpipe Options"
+            echo "  ${bold}--help, --usage"
+            echo "    ${normal}Prints this help page"
+            echo "  ${bold}-j, --no-java-check"
+            echo "    ${normal}Disables the java version check. Only do this if you know what you're doing"
+            exit 0
+        ;;
+        --)
+            shift
+            break
+        ;;
+    esac
+done
+
+# Run the java check if necessary
+if (( $JAVA_CHECK )) ; then
+    doit check_java > /dev/null
+fi
 
 case "$1" in
     batch)
@@ -42,29 +80,40 @@ case "$1" in
         
         # Parse args
         shift 1
-        ARGS=$(getopt -o b:p: --long "batch:,bpipe-options:" -n $(basename $BASH_SOURCE) -- "$@")
+        ARGS=$(getopt -o b:p: --long "batch:,bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
         eval set -- "$ARGS"
 
         # Default args
         BATCH='batch'
 
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
-	while true ; do
-    		case "$1" in
-        	    -b|--batch)
-          	    	BATCH=$2
-          	    	shift 2
+        while true ; do
+                case "$1" in
+                    -b|--batch)
+                        BATCH=$2
+                        shift 2
                     ;;
                     -p|--bpipe-options)
-                    	BPIPE_OPTIONS=$2
-                    	shift 2
+                        BPIPE_OPTIONS=$2
+                        shift 2
+                    ;;
+                    --usage|--help)
+                        echo "${normal}Usage: ./cpipe pipeline <COMMAND OPTIONS>"
+                        echo "${bold}Pipeline Options"
+                        echo "  ${bold}--help, --usage"
+                        echo "    ${normal}Prints this help page"
+                        echo "  ${bold}-b, --batch <batch name>"
+                        echo "    ${normal}Specify a batch to run (a subdirectory inside batches). Defaults to a batch named 'batch'"
+                        echo "  ${bold}-p, --bpipe-options <options>"
+                        echo "    ${normal}Specify options to pass to bpipe. Refer to http://docs.bpipe.org/Commands/Commands/ for reference"
+                        exit 0
                     ;;
                     --)
                         shift
                         break
                     ;;
-    		esac
-	done
+                esac
+        done
 
         mkdir -p batches/${BATCH}/analysis
         cd batches/${BATCH}/analysis

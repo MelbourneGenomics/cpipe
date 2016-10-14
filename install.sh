@@ -13,14 +13,14 @@ SYS_PYBIN=${SYS_PYTHON}/bin
 PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
-# Printing utilitiesls t
+# Printing utilities
 bold=$(tput bold)
 normal=$(tput sgr0)
 
 # Usage function
 function usage {
   echo "${bold}Cpipe Installer"
-    echo "  ${bold}--help, --usage"
+  echo "  ${bold}--help, --usage"
   echo "    ${normal}Print this help page to stdout"
   echo "  ${bold}-n, --processes <process number>"
   echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"

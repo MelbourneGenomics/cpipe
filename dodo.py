@@ -7,6 +7,7 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
 
 from tasks.compile_tools import *
 from tasks.common import ROOT, has_swift_auth
+
 if has_swift_auth():
     from tasks.nectar_assets import *
 else:
@@ -29,7 +30,7 @@ def task_install():
 
     return {
         'actions': None,
-        'task_dep': ['copy_config', 'assets', 'check_java'],
+        'task_dep': ['copy_config', 'assets'],
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
@@ -71,28 +72,34 @@ def task_check_java():
     an exception
     """
 
-    def has_java_18():
-        try:
-            output = subprocess.check_output(
-                "java -version",
-                stderr=subprocess.STDOUT,
-                shell=True
-            )
+    def parse_java_version():
+        '''
+        Parses the Java version and returns a tuple of (maj,min,build)
+        :return:
+        '''
+        output = subprocess.check_output(
+            "java -version",
+            stderr=subprocess.STDOUT,
+            shell=True
+        )
 
-            # Parse the major and minor versions to see if they have at least 1.8
-            match = re.search(r'version "(?P<maj>\d+)\.(?P<min>\d+)\.(?P<build>[\d_]+)"', output)
-            if int(match.groupdict()['maj']) >= 1 and int(match.groupdict()['min']) >= 8:
-                return True
-            else:
-                return False
-        except:
-            return False
+        # Parse the major and minor versions using a regex
+        parsed = re.search(r'version "(?P<maj>\d+)\.(?P<min>\d+)\.(?P<build>[\d_]+)"', output).groupdict()
+        return (int(parsed['maj']), int(parsed['min']), parsed['build'])
 
     def check_java():
-        if has_java_18():
-            return True
-        else:
+        (maj, min, build) = parse_java_version()
+
+        if not maj >= 1 and min >= 8:
             raise OSError('Missing Java 1.8 or greater! Please install it to continue')
+
+        if build == '0_20':
+            raise OSError(
+                'You have Java 1.8 Build 20! This version of Java has compatibility issues with groovy bytecode.'
+                'Please either upgrade your version of java, or, if this is not possible, edit your pipeline/config.groovy'
+                'file and replace \'JAVA="java"\' with \'JAVA="java -noverify"\', then re-run this script with'
+                'the --no-java-check flag.'
+            )
 
     return {
         'actions': [check_java],
