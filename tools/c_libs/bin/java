@@ -1,2 +1,2 @@
-java $JAVA_OPTIONS $@
+$SYS_JAVA $JAVA_OPTS $@
 
