@@ -90,10 +90,10 @@ def task_check_java():
     def check_java():
         (maj, min, build) = parse_java_version()
 
-        if not maj >= 1 and min >= 8:
+        if not (maj >= 1 and min >= 8):
             raise OSError('Missing Java 1.8 or greater! Please install it to continue')
 
-        if build == '0_20':
+        if maj == 1 and min == 8 and build == '0_20':
             raise OSError(
                 'You have Java 1.8 Build 20! This version of Java has compatibility issues with groovy bytecode.'
                 ' Please either upgrade your version of java, or, if this is not possible, edit your pipeline/config.groovy'
