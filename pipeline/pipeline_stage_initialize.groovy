@@ -327,7 +327,7 @@ sample_similarity_report = {
 
     produce("similarity_report.txt") {
         exec """
-            $JAVA -noverify -Xmx4g -cp "${GROOVY_HOME}/embeddable/groovy-all-${GROOVY_VERSION}.jar:$BASE/tools/java_libs/*" VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -cp "${GROOVY_HOME}/embeddable/groovy-all-${GROOVY_VERSION}.jar:$BASE/tools/java_libs/*" VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }
