@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-    CONFIG_FILE=$(readlink -f $(dirname $BASH_SOURCE)/../config.groovy)
+CONFIG_FILE=$(readlink -f $(dirname $BASH_SOURCE)/../config.groovy)
 
 function load_config {
     CONFIG=`sed 's/\/\/.*$//' $CONFIG_FILE`

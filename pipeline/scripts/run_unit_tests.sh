@@ -24,21 +24,23 @@
 #
 ########################################################
 
-source $PWD/pipeline/scripts/load_config_groovy.sh $PWD/pipeline/config.groovy
-export GROOVY="$PWD/tools/groovy/$GROOVY_VERSION/bin/groovy"
-export GROOVY_NGS="$PWD/tools/groovy-ngs-utils"
-GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/lib/*:$PWD/tools/java_libs/*"
-GROOVYC="$PWD/tools/groovy/bin/groovyc"
+# Load paths from config.groovy
+source $PWD/pipeline/scripts/config_groovy_util.sh
+load_config
 
-# python tests
+# Variables
+GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/lib/*:$PWD/tools/java_libs/*"
+GROOVYC="${GROOVY}c"
+
+# Python tests
 pushd pipeline/tests
-python -m unittest discover -s . -p '*_test.py' -v
+    python -m unittest discover -s . -p '*_test.py' -v
 popd
 
-# groovy tests
+# Groovy tests
 pushd pipeline/tests
-# compile scripts and tests
-mkdir -p tmp
-sh $GROOVYC -cp $GROOVY_TEST_LIBRARIES -d tmp ../scripts/*.groovy ./*.groovy
-java -cp "$GROOVY_TEST_LIBRARIES:$PWD/tmp" RunAll
+    # compile scripts and tests
+    mkdir -p tmp
+    sh $GROOVYC -cp $GROOVY_TEST_LIBRARIES -d tmp ../scripts/*.groovy ./*.groovy
+    $JAVA -cp "$GROOVY_TEST_LIBRARIES:$PWD/tmp" RunAll
 popd
