@@ -29,3 +29,4 @@ export CFLAGS="$CFLAGS -I${TOOLS}/c_libs/include"
 export CPPFLAGS="$CPPFLAGS -I${TOOLS}/c_libs/include"
 export LDFLAGS="$LDFLAGS -L${TOOLS}/c_libs/lib"
 export LD_LIBRARY_PATH=${TOOLS}/c_libs/lib:${LD_LIBRARY_PATH}
+export $JAVA_OPTS #Pass JAVA_OPTS to the script in c_libs/bin/java
