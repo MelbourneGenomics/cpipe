@@ -50,7 +50,7 @@ def task_assets():
 
 
 def task_copy_config():
-    input = path.join(ROOT, 'pipeline', 'config.groovy.docker')
+    input = path.join(ROOT, 'pipeline', 'config.groovy.template')
     output = path.join(ROOT, 'pipeline', 'config.groovy')
 
     def action():
