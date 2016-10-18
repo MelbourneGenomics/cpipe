@@ -103,5 +103,4 @@ def task_check_java():
 
     return {
         'actions': [check_java],
-        'task_dep': ['java_docker'] if in_docker() else []
     }
