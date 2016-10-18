@@ -1,5 +1,4 @@
 from tasks.common import *
-from tasks.docker_dependencies import *
 from doit.tools import create_folder
 from tasks.compile_c_libs import *
 import os
@@ -61,8 +60,6 @@ def task_compile_r():
     task_dep.append('compile_pcre')
     task_dep.append('compile_libcurl')
     task_dep.append('compile_zlib')
-    if in_docker():
-        task_dep.append('r_docker_dependencies')
 
     def action(): 
         subprocess.check_call('source {env} && ./configure && make'.format(env=ENVIRONMENT_FILE), cwd=R_ROOT, env=get_c_env(), shell=True, executable='bash')
@@ -106,9 +103,6 @@ def task_compile_samtools():
     task_dep = ['download_nectar_assets'] if has_swift_auth() else ['download_samtools', 'download_htslib']
     task_dep.append('compile_zlib')
     task_dep.append('compile_htslib')
-
-    if in_docker():
-        task_dep.append('samtools_docker_dependencies')
 
     return {
         'actions': [
