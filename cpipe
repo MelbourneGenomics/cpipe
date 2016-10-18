@@ -1,6 +1,46 @@
 #!/usr/bin/env bash
 set -e
 
+function check_java {
+    # Run the java check if necessary
+    if (( $JAVA_CHECK )) ; then
+        doit check_java #> /dev/null
+    fi
+}
+
+function print_general_usage {
+    echo "${normal}Usage: ./cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>"
+    echo "${bold}Commands (type --help after any command for more details):"
+    echo "  ${bold}pipeline${normal}: Runs the analysis pipeline"
+    echo "  ${bold}test${normal}: Runs the pipeline tests"
+    echo "  ${bold}batch${normal}: Creates and modifies analysis batches"
+    echo "  ${bold}genelist${normal}: Creates and modifies genelists"
+    echo "  ${bold}metadata${normal}: Creates and modifies sample metadata files"
+    echo "${bold}Cpipe Options"
+    echo "  ${bold}-b, --batch <batch name>"
+    echo "    ${normal}Specify a batch (a subdirectory inside batches) to use for the run and bpipe commands. Defaults to a batch named 'batch'"
+    echo "  ${bold}--help, --usage"
+    echo "    ${normal}Prints this help page"
+    echo "  ${bold}-j, --no-java-check"
+    echo "    ${normal}Disables the java version check. Only do this if you know what you're doing"
+}
+
+function print_metadata_usage {
+    echo "${normal}Usage: ./cpipe <CPIPE OPTIONS> metadata <SUBCOMMAND>"
+    echo "${bold}metadata subcommands (use --help after each for usage options):"
+    echo "  ${bold}check${normal}: Check an existing metadata file"
+    echo "  ${bold}update${normal}: Update an existing metadata file"
+}
+
+function print_run_usage {
+    echo "${normal}Usage: ./cpipe pipeline <COMMAND OPTIONS>"
+    echo "${bold}Pipeline Options"
+    echo "  ${bold}--help, --usage"
+    echo "    ${normal}Prints this help page"
+    echo "  ${bold}-p, --bpipe-options <options>"
+    echo "    ${normal}Specify options to pass to bpipe. Refer to http://docs.bpipe.org/Commands/run/ for reference"
+}
+
 # Set useful variables
 ROOT=$(readlink -f $(dirname $BASH_SOURCE))
 
@@ -12,32 +52,30 @@ load_config
 source environment.sh
 
 # Printing utilities
-bold=$(tput bold)
-normal=$(tput sgr0)
+if [[ $- == *i* ]]; then
+    bold=$(tput bold)
+    normal=$(tput sgr0)
+else
+    bold=
+    normal=
+fi
 
 #Parse command line arguments
 JAVA_CHECK=1
-ARGS=$(env POSIXLY_CORRECT=1 getopt -o j --long "no-java-check,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
+ARGS=$(env POSIXLY_CORRECT=1 getopt -o jb: --long "no-java-check,help,usage,batch:" -n $(basename $BASH_SOURCE) -- "$@")
 eval set -- "$ARGS"
 while true ; do
     case "$1" in
+        -b|--batch)
+            BATCH=$2
+            shift 2
+        ;;
         -j|--no-java-check)
             JAVA_CHECK=0
             shift 1
         ;;
         --help|--usage)
-            echo "${normal}Usage: ./cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>"
-            echo "${bold}Commands (type --help after any command for more details):"
-            echo "  ${bold}pipeline${normal}: Runs the analysis pipeline"
-            echo "  ${bold}test${normal}: Runs the pipeline tests"
-            echo "  ${bold}batch${normal}: Creates and modifies analysis batches"
-            echo "  ${bold}genelist${normal}: Creates and modifies genelists"
-            echo "  ${bold}metadata${normal}: Creates and modifies sample metadata files"
-            echo "${bold}Cpipe Options"
-            echo "  ${bold}--help, --usage"
-            echo "    ${normal}Prints this help page"
-            echo "  ${bold}-j, --no-java-check"
-            echo "    ${normal}Disables the java version check. Only do this if you know what you're doing"
+            print_general_usage
             exit 0
         ;;
         --)
@@ -47,10 +85,6 @@ while true ; do
     esac
 done
 
-# Run the java check if necessary
-if (( $JAVA_CHECK )) ; then
-    doit check_java #> /dev/null
-fi
 
 case "$1" in
     batch)
@@ -66,22 +100,39 @@ case "$1" in
     metadata)
         shift 1
         case "$1" in
+            --help|--usage)
+                print_metadata_usage
+                exit 0
+            ;;
             check)
+                shift 1
                 #e.g. docker run cpipe metadata check < ./batches/batch_identifier/samples.txt
                 python pipeline/scripts/check_metadata.py "$@" < /dev/stdin
             ;;
             update)
+                shift 1
                 #e.g. docker run cpipe metadata update --sample sample_name --name prioritised_genes --value “4:ABC1,ABC2” --target ./batches/batch_identifier/samples.txt
                 python pipeline/scripts/update_metadata.py "$@" < /dev/stdin
             ;;
+            *)
+                print_metadata_usage
+                exit 1
+            ;;
+
         esac
     # e.g. docker run cpipe genelist show_bed --profile profile_name
     ;;
-    pipeline)
+    bpipe)
+        shift 1
+        cd ${ROOT}/batches/${BATCH}/analysis
+        echo `pwd`
+        ../../../bpipe $@
+    ;;
+    run)
         
         # Parse args
         shift 1
-        ARGS=$(getopt -o b:p: --long "batch:,bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
+        ARGS=$(getopt -o p: --long ",bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
         eval set -- "$ARGS"
 
         # Default args
@@ -90,23 +141,12 @@ case "$1" in
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
         while true ; do
                 case "$1" in
-                    -b|--batch)
-                        BATCH=$2
-                        shift 2
-                    ;;
                     -p|--bpipe-options)
                         BPIPE_OPTIONS=$2
                         shift 2
                     ;;
                     --usage|--help)
-                        echo "${normal}Usage: ./cpipe pipeline <COMMAND OPTIONS>"
-                        echo "${bold}Pipeline Options"
-                        echo "  ${bold}--help, --usage"
-                        echo "    ${normal}Prints this help page"
-                        echo "  ${bold}-b, --batch <batch name>"
-                        echo "    ${normal}Specify a batch to run (a subdirectory inside batches). Defaults to a batch named 'batch'"
-                        echo "  ${bold}-p, --bpipe-options <options>"
-                        echo "    ${normal}Specify options to pass to bpipe. Refer to http://docs.bpipe.org/Commands/Commands/ for reference"
+                        print_run_usage
                         exit 0
                     ;;
                     --)
@@ -116,12 +156,19 @@ case "$1" in
                 esac
         done
 
+        check_java
         mkdir -p batches/${BATCH}/analysis
-        cd batches/${BATCH}/analysis
+        cd ${ROOT}/batches/${BATCH}/analysis
         ../../../bpipe run ${BPIPE_OPTIONS} ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
     ;;
     test)
         shift 1
+        check_java
         pipeline/scripts/run_unit_tests.sh && pipeline/scripts/run_tests.sh detect_mutations_test
+    ;;
+    *)
+        echo "Invalid cpipe command!"
+        print_general_usage
+        exit 1
     ;;
 esac
