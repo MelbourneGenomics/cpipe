@@ -97,7 +97,7 @@ def task_check_java():
             raise OSError(
                 'You have Java 1.8 Build 20! This version of Java has compatibility issues with groovy bytecode.'
                 ' Please either upgrade your version of java, or, if this is not possible, edit your pipeline/config.groovy'
-                ' file and replace \'JAVA="java"\' with \'JAVA="java -noverify"\', then re-run this script with'
+                ' file and set the JAVA_OPTS variable to \'JAVA_OPTS="-noverify"\', then re-run this script with'
                 ' the --no-java-check flag.'
             )
 
