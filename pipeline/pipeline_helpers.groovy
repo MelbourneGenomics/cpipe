@@ -117,7 +117,7 @@ filter_variants = {
              -L $target_bed_file.${sample}.bed $pgx_flag --interval_padding $INTERVAL_PADDING_SNV
              --selectTypeToInclude SNP --selectTypeToInclude MIXED --selectTypeToInclude MNP --selectTypeToInclude SYMBOLIC --selectTypeToInclude NO_VARIATION
              -o $output.snv
-    """
+    """, "filter_variants"
 
     msg "Filtering variants - finding SNVs"
     exec """
@@ -128,7 +128,7 @@ filter_variants = {
              -L $target_bed_file.${sample}.bed $pgx_flag --interval_padding $INTERVAL_PADDING_INDEL
              --selectTypeToInclude INDEL
              -o $output.indel
-    """
+    """, "filter_variants"
     stage_status("filter_variants", "exit", sample)
 }
 
@@ -145,7 +145,7 @@ merge_variants_gvcf = {
             --variant:indel $input.indel
             --variant:snv $input.snv
             --out $output.combined.g.vcf
-        """
+        """, "merge_variants_gvcf"
     }
     stage_status("merge_variants_gvcf", "exit", sample)
 }
@@ -167,7 +167,7 @@ merge_variants = {
             --out $output.vcf
             --setKey set
             --genotypemergeoption UNSORTED
-         """
+         """, "merge_variants"
     }
     stage_status("merge_variants", "exit", "${sample} ${branch.analysis}")
 }
