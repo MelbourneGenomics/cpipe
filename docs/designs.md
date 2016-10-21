@@ -7,8 +7,8 @@ In Cpipe, a design specifies the analysed regions of the genome for a given set 
  for this disease.
  
 A design consists of the following files
-* A gene list (mandatory)
-* A regions BED file (optional)
+* [A gene list (mandatory)](#gene-list)
+* [A regions BED file (optional)](#regions-bed-file)
 
 ## Gene List
 A gene list is expressed as a tab-separated (TSV) text file named '<profile name>.genes.txt', located in the design directory 

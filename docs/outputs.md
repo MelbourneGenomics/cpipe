@@ -1,16 +1,16 @@
 # Outputs
 
 Cpipe produces a number of outputs in different formats:
-* A summary report, one for each sample
+* [A summary report, one for each sample](#summary-report)
 * A VCF, one for each sample
 
 ## Summary Report
 Cpipe generates a summary HTML for each analysed sample in a batch. It is of the form sample_name.summary.htm.
  
 The report contains three main sections:
-* Summary Data
-* Coverage Summary
-* Gene Summary
+* [Summary Data](#summary-data)
+* [Coverage Summary](#coverage-summary)
+* [Gene Summary](#gene-summary)
 
 ### Summary Data
 

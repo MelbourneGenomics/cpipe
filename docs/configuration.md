@@ -2,8 +2,8 @@
 
 The global configuration of Cpipe can be modified in 2 different ways:
 
-* By modifying the `config.groovy` or `config.batch.groovy` files
-* By modifying `bpipe.config`
+* [By modifying the `config.groovy` or `config.batch.groovy` files](#config.groovy)
+* [By modifying `bpipe.config`](#bpipe.config)
 
 We will explore these options one at a time.
 
