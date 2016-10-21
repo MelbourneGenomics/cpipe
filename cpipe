@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 set -e
 
 function check_java {
@@ -43,6 +43,9 @@ function print_run_usage {
 
 # Set useful variables
 ROOT=$(readlink -f $(dirname $BASH_SOURCE))
+
+# default batch name
+BATCH='batch'
 
 # Load config groovy
 source pipeline/scripts/config_groovy_util.sh
@@ -136,7 +139,6 @@ case "$1" in
         eval set -- "$ARGS"
 
         # Default args
-        BATCH='batch'
 
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
         while true ; do
