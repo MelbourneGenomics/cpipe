@@ -36,8 +36,8 @@ no space around the equals sign
 The most up-to-date list of config options can be found simply by looking through the pipeline/config.groovy file in the
 source code. However we will also document those variables here.
 
-| Option | Description | Editable
-| --- | --- |
+| Option | Description | Editable |
+| --- | --- | --- |
 | BASE | The base of everything - set this to the absolute path of the root of the pipeline distribution (most likely, parent folder of the folder this file is in) | No |
 | DATA | The base directory for reference data. This parameter isn't used directly by the pipeline, but most reference file locations are defined in terms of this variable | No |
 | TMPDIR | The directory in which to store temporary files | Yes |
