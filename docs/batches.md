@@ -36,6 +36,7 @@ example, `00NA12877_Coriell_000_TGx140395_TL140776_L001_R1.fastq.gz`. The compon
 The sample metadata is the `samples.txt` located in the batch directory (batches/<batch name>) of the batch you're 
 running. The file is a TSV (tab-separated text file), where each line corresponds to an input sample. Here you can set
 various options about each sample
+
 |Position | Name | Notes | Allowed Values | Availability|
 |---|---|---|---|---|
 |1 | Batch | Identifier for this batch (for Melbourne Genomics this is a 3-digit ID) | Unrestricted | 2.2+|
