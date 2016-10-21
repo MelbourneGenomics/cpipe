@@ -83,6 +83,7 @@ This section displays data for a list of genes. The list of genes comes from the
 from the disease cohort BED file.
 
 The table has the following fields:
+
 | Field Name | Source |
 | --- | --- |
 | Gene | The gene name from the coverage file |
