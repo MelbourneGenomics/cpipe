@@ -30,7 +30,7 @@ def task_install():
 
     return {
         'actions': None,
-        'task_dep': ['copy_config', 'assets'],
+        'task_dep': ['copy_main_config', 'copy_bpipe_config', 'assets'],
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
@@ -49,7 +49,7 @@ def task_assets():
     }
 
 
-def task_copy_config():
+def task_copy_main_config():
     input = path.join(ROOT, 'pipeline', 'config.groovy.template')
     output = path.join(ROOT, 'pipeline', 'config.groovy')
 
@@ -65,6 +65,16 @@ def task_copy_config():
         'uptodate': [True]
     }
 
+
+def task_copy_bpipe_config():
+    input = path.join(ROOT, 'pipeline', 'bpipe.config.template')
+    output = path.join(ROOT, 'pipeline', 'bpipe.config')
+
+    return {
+        'actions': ['cp {input} {output}'.format(input=input, output=output)],
+        'targets': [output],
+        'uptodate': [True]
+    }
 
 def task_check_java():
     """

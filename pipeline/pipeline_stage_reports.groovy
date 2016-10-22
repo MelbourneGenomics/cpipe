@@ -77,7 +77,7 @@ check_ontarget_perc = {
 
             [ $RAW_READ_COUNT -eq 0 -o $ONTARGET_PERC -lt $MIN_ONTARGET_PERCENTAGE ]
 
-             """
+             """, "check_ontarget_perc"
     } otherwise {
         send text {"On target read percentage for $sample < $MIN_ONTARGET_PERCENTAGE"} to channel: cpipe_operator 
     }
@@ -92,7 +92,7 @@ calculate_qc_statistics = {
     produce("${sample}.fragments.tsv") {
         exec """
             $SAMTOOLS/samtools view $input.recal.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
-        """
+        """, "calculate_qc_statistics"
     }
     stage_status("calculate_qc_statistics", "exit", sample)
 }
@@ -115,7 +115,7 @@ gatk_depth_of_coverage = {
                -I $input.recal.bam
                -ct 1 -ct 10 -ct 20 -ct 50 -ct 100
                -L $target_bed_file.${sample}.bed
-        """
+        """, "gatk_depth_of_coverage"
     }
     stage_status("gatk_depth_of_coverage", "exit", sample)
 }
@@ -132,7 +132,7 @@ insert_size_metrics = {
     output.dir="qc"
     exec """
         $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.recal.bam O=$output.txt H=$output.pdf
-    """
+    """, "insert_size_metrics"
 
     check {
         exec """
@@ -164,7 +164,7 @@ gap_report = {
         from("$input_coverage_file") {
             exec """
                 python $SCRIPTS/gap_annotator.py --max_low_coverage $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input_coverage_file --db $BASE/designs/genelists/refgene.txt --beds ${GAP_ANNOTATOR_CUSTOM_BEDS} > $output.csv
-            """
+            """, "gap_report"
         }
     }
     stage_status("gap_report", "exit", sample)
@@ -188,7 +188,7 @@ summary_report = {
                 python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold $QC_THRESHOLD --classes GOOD:$QC_GOOD:GREEN,PASS:$QC_PASS:ORANGE,FAIL:$QC_FAIL:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
                 python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
-            """
+            """, "summary_report"
         }
 
         branch.karyotype = output.tsv
@@ -286,7 +286,7 @@ exon_qc_report = {
                 -refgene $ANNOVAR_DB/hg19_refGene.txt 
                 -x $output.xlsx
                 -o $output.tsv
-        """
+        """, "exon_qc_report"
     }
     stage_status("exon_qc_report", "exit", sample)
 }
@@ -421,7 +421,7 @@ filtered_on_exons = {
                $SAMTOOLS/samtools index $output.bam
 
                rm "$safe_tmp"
-           """
+           """, "filtered_on_exons"
        } // produce
     } // skip
     stage_status("filtered_on_exons", "exit", sample)
@@ -451,7 +451,7 @@ variant_bams = {
         produce(branch.name + ".variant_bams_log.txt") {
             exec """
                 python $SCRIPTS/variant_bams.py --bam $input.recal.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
-            """
+            """, "variant_bams"
         }
     }
     stage_status("variant_bams", "exit", sample)
