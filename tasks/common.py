@@ -3,6 +3,8 @@ import tarfile
 import shutil
 from urllib import urlopen, urlretrieve
 from StringIO import StringIO
+
+import subprocess
 from doit.action import CmdAction
 from doit.tools import create_folder
 from zipfile import ZipFile
@@ -39,6 +41,8 @@ LIBCURL_VERSION = '7.50.3'
 ZLIB_VERSION = '1.2.8'
 
 # Tool paths
+INSTALL_ROOT = TOOLS_ROOT
+INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
 C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
 PERL_ROOT = os.path.join(TOOLS_ROOT, 'perl')
@@ -194,6 +198,17 @@ def cmd(command, **kwargs):
         **defaults
     )
 
+def sh(command, **kwargs):
+
+    # Set default options and override then with the user specified options
+    defaults = {
+        'executable': 'bash',
+        'shell': True,
+        'cwd': ROOT
+    }
+    defaults.update(kwargs)
+
+    subprocess.check_call('source {}\n'.format(ENVIRONMENT_FILE) + command, **defaults)
 
 def has_swift_auth():
     swift_credentials = {
