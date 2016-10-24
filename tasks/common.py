@@ -43,31 +43,12 @@ ZLIB_VERSION = '1.2.8'
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
 INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
-C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
-PERL_ROOT = os.path.join(TOOLS_ROOT, 'perl')
-R_ROOT = os.path.join(TOOLS_ROOT, 'r')
 JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
-GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')
 VEP_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'vep_libs')
 PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
-BWA_ROOT = os.path.join(TOOLS_ROOT, 'bwa')
-HTSLIB_ROOT = os.path.join(TOOLS_ROOT, 'htslib')
-SAMTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'samtools')
-BCFTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bcftools')
-BEDTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bedtools')
-GATK_ROOT = os.path.join(TOOLS_ROOT, 'gatk')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
-CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
-CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
-MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
-
-BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
-XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
-PCRE_ROOT = os.path.join(C_INCLUDE_ROOT, 'pcre')
-LIBCURL_ROOT = os.path.join(C_INCLUDE_ROOT, 'libcurl')
-ZLIB_ROOT = os.path.join(C_INCLUDE_ROOT, 'zlib')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

@@ -140,7 +140,6 @@ def task_download_bedtools():
         return nectar_task('bedtools')
     else:
         return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION),
-                             BEDTOOLS_ROOT,
                              'bedtools_dir')
 
 
@@ -174,6 +173,7 @@ def task_download_bpipe():
             cd {bpipe_dir}
             ./gradlew dist
             '''.format(bpipe_ver=BPIPE_VERSION, bpipe_dir=temp_dir))
+            return {'bpipe_dir': temp_dir}
 
         return {
             'actions': [action],
@@ -183,16 +183,17 @@ def task_download_bpipe():
 
 def task_download_gatk():
     if has_swift_auth():
-        return download_task('gatk', 'gatk_dir')
+        return nectar_task('gatk')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
             download_zip("https://codeload.github.com/broadgsa/gatk-protected/tar.gz/{}".format(GATK_VERSION),
-                         GATK_ROOT,
+                         temp_dir,
                          type='tgz')
             sh('''
                 mvn verify -P\!queue
            ''', cwd=temp_dir)
+            return {'gatk_dir': temp_dir}
 
         return {
             'actions': [action],
@@ -209,6 +210,7 @@ def task_download_picard():
             urlretrieve(
                 'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
                 temp_dir)
+            return {'picard_dir': temp_dir}
 
         return {
             'actions': [action],
@@ -233,75 +235,50 @@ def task_download_perl_libs():
             # Now, download archives of everything we need without installing them
             cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .
             '''.format(cpan=temp_dir, perl_lib=PERL_LIB_ROOT))
+            return {'perl_libs_dir': temp_dir}
 
         return {
             'task_dep': ['copy_config', 'download_perl', 'compile_perl', 'download_cpanm'],
             'uptodate': [True],
-            'actions': [
-                lambda: create_folder(CPAN_ROOT),
-                lambda: create_folder(PERL_LIB_ROOT),
-
-                # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
-                # (while also saving the archive so Module::Build will be bundled on NECTAR)
-                cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT,
-                                                                                   cpan=CPAN_ROOT),
-                    env=get_cpanm_env()),
-
-                # Now, download archives of everything we need without installing them
-                cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
-                    cwd=ROOT, env=get_cpanm_env())
-            ]
+            'actions': [action]
         }
 
 
 def task_download_vep_libs():
-    asset_key = 'htslib'
-
     if has_swift_auth():
-        return {
-            # Download the asset and return the directory as a doit arg
-            'actions': [lambda: {'cpanm_dir': download_nectar_asset(asset_key)}],
-            'uptodate': [nectar_asset_needs_update(asset_key)]
-        }
+        return nectar_task('vep_libs')
     else:
-        return {
-            'targets': [VEP_LIBS_ROOT],
-            'task_dep': ['copy_config', 'install_perl_libs'],
-            'actions': [
-                cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(
-                    vep_dir=VEP_ROOT,
-                    vep_libs=VEP_LIBS_ROOT
-                ))
-            ],
-            'uptodate': [True]
-        }
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
+                                                                                            vep_libs=temp_dir))
+            return {'vep_libs_dir': temp_dir}
+    return {
+        'task_dep': ['copy_config', 'install_perl_libs', 'install_perl', 'install_vep'],
+        'actions': [action],
+        'uptodate': [run_once]
+    }
 
 
 def task_download_vep_plugins():
-    asset_key = 'htslib'
-
     if has_swift_auth():
-        return {
-            # Download the asset and return the directory as a doit arg
-            'actions': [lambda: {'cpanm_dir': download_nectar_asset(asset_key)}],
-            'uptodate': [nectar_asset_needs_update(asset_key)]
-        }
+        return nectar_task('vep_plugins')
     else:
-        VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+                git init
+                git remote add origin https://github.com/Ensembl/VEP_plugins
+                git fetch
+                git checkout -t origin/master
+                git reset --hard {vep_plugin_commit}
+                rm -rf .git
+            '''.format(vep_plugin_commit=VEP_PLUGIN_COMMIT), cwd=temp_dir)
+            return {'vep_plugins_dir': temp_dir}
     return {
-        'targets': [os.path.join(VEP_PLUGIN_ROOT, 'Condel.pm')],
-        'actions': [
-            cmd('''
-            git init\
-            && git remote add origin https://github.com/Ensembl/VEP_plugins\
-            && git fetch\
-            && git checkout -t origin/master\
-            && git reset --hard $VEP_PLUGIN_COMMIT\
-            && rm -rf .git
-            ''', cwd=VEP_PLUGIN_ROOT)
-        ],
+        'actions': [action],
         'task_dep': ['copy_config'],
-        'uptodate': [True]
+        'uptodate': [run_once]
     }
 
 
@@ -327,17 +304,16 @@ def task_make_java_libs_dir():
 
 
 def task_download_junit_xml_formatter():
+    def action():
+        temp_dir = tempfile.mkdtemp()
+        sh('''
+                git clone https://github.com/barrypitman/JUnitXmlFormatter
+                pushd JUnitXmlFormatter
+                mvn install
+            ''', cwd=temp_dir)
+        return {'junit_xml_dir': temp_dir}
     return {
-        'actions': [
-            cmd('''
-                git clone https://github.com/barrypitman/JUnitXmlFormatter\
-                && pushd JUnitXmlFormatter\
-                    && mvn install\
-                    && mv target/JUnitXmlFormatter* {java_libs_dir}\
-                && popd\
-                && rm -rf JUnitXmlFormatter
-            '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
-        ],
+        'action': [action],
         'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
         'uptodate': [
             lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter*.jar'))) > 0
