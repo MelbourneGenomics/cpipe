@@ -30,7 +30,7 @@ def task_install():
 
     return {
         'actions': None,
-        'task_dep': ['copy_main_config', 'copy_bpipe_config', 'assets'],
+        'task_dep': ['copy_config', 'assets'],
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
@@ -46,6 +46,14 @@ def task_assets():
     return {
         'actions': None,
         'task_dep': [task]
+    }
+
+
+def task_copy_config():
+    return {
+        'actions': None,
+        'task_dep': ['copy_main_config', 'copy_bpipe_config'],
+        'uptodate': [True]
     }
 
 
@@ -75,6 +83,7 @@ def task_copy_bpipe_config():
         'targets': [output],
         'uptodate': [True]
     }
+
 
 def task_check_java():
     """
