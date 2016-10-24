@@ -22,7 +22,7 @@ def download_task(url, param_name, type='tgz'):
         }
 
     return {
-        'action': [action],
+        'actions': [action],
         'uptodate': [run_once]
     }
 
@@ -92,7 +92,7 @@ def task_download_r():
     if has_swift_auth():
         return nectar_task('r')
     else:
-        return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION), R_ROOT)
+        return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION), 'r_dir')
 
 
 def task_download_groovy():
@@ -272,7 +272,7 @@ def task_download_vep_plugins():
                 git fetch
                 git checkout -t origin/master
                 git reset --hard {vep_plugin_commit}
-                rm -rf .git
+                m -rf .git
             '''.format(vep_plugin_commit=VEP_PLUGIN_COMMIT), cwd=temp_dir)
             return {'vep_plugins_dir': temp_dir}
     return {
@@ -288,7 +288,7 @@ def task_download_java_libs():
         'task_dep': [
             'download_junit_xml_formatter',
             'download_groovy_ngs_utils',
-            'download_takari_cpisuite'
+            'download_takari_cpsuite'
         ]
     }
 
@@ -304,136 +304,111 @@ def task_make_java_libs_dir():
 
 
 def task_download_junit_xml_formatter():
-    def action():
-        temp_dir = tempfile.mkdtemp()
-        sh('''
-                git clone https://github.com/barrypitman/JUnitXmlFormatter
-                pushd JUnitXmlFormatter
-                mvn install
-            ''', cwd=temp_dir)
-        return {'junit_xml_dir': temp_dir}
-    return {
-        'action': [action],
-        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
-        'uptodate': [
-            lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter*.jar'))) > 0
-        ]
-    }
+    if has_swift_auth():
+        nectar_task('junit_xml_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+                    git clone https://github.com/barrypitman/JUnitXmlFormatter
+                    pushd JUnitXmlFormatter
+                    mvn install
+                ''', cwd=temp_dir)
+            return {'junit_xml_dir': temp_dir}
+
+        return {
+            'actions': [action],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_groovy_ngs_utils():
-    return {
-        'targets': [os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')],
-        'actions': [
-            cmd('''
-              git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet\
-                && pushd groovy-ngs-utils\
-                && ./gradlew jar \
-                && popd\
-                && mv {java_libs_dir}/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar {java_libs_dir}\
-                && rm -rf groovy-ngs-utils
-            '''.format(java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
-        ],
-        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
-        'uptodate': [True],
-    }
+    if has_swift_auth():
+        return nectar_task('groovy_ngs_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+                  git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet
+                  pushd groovy-ngs-utils
+                  ./gradlew jar
+                  popd
+                  mv {java_libs_dir}/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar {java_libs_dir}
+                  rm -rf groovy-ngs-utils
+            ''', cwd=temp_dir)
+            return {'groovy_ngs_dir': temp_dir}
+
+        return {
+            'actions': [action],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'uptodate': [run_once],
+        }
 
 
-def task_download_takari_cpisuite():
-    return {
-        'actions': [
-            cmd('''
-             mvn dependency:copy \
-                    -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}\
-                    -DoutputDirectory={java_libs_dir}\
+def task_download_takari_cpsuite():
+    if has_swift_auth():
+        return nectar_task('takari_cpsuite_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+             mvn dependency:copy
+                    -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}
+                    -DoutputDirectory={java_libs_dir}
                     -DstripVersion=true
-            '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=JAVA_LIBS_ROOT)
-        ],
-        'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
-        'uptodate': [
-            lambda: len(glob.glob(os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite*'))) > 0
-        ],
-    }
+            '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=temp_dir)
+            return {'takari_cpsuite_dir': temp_dir}
+
+        return {
+            'actions': [action],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'uptodate': [run_once],
+        }
 
 
 def task_download_c_libs():
     return {
         'actions': None,
-        'task_dep': ['download_bzip2', 'download_xz', 'download_pcre', 'download_libcurl', 'download_zlib'],
+        'task_dep': ['download_bzip2', 'download_xz', 'download_pcre', 'download_libcurl', 'download_zlib']
     }
 
 
 def task_download_bzip2():
-    def action():
-        create_folder(BZIP_ROOT)
-        download_zip(
-            'http://www.bzip.org/{0}/bzip2-{0}.tar.gz'.format(BZIP_VERSION),
-            BZIP_ROOT
-        )
-
-    return {
-        'targets': [BZIP_ROOT],
-        'actions': [action],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('bzip2')
+    else:
+        return download_task(
+            'http://www.bzip.org/{0}/bzip2-{0}.tar.gz'.format(BZIP_VERSION), 'bzip2_dir')
 
 
 def task_download_xz():
-    def action():
-        create_folder(XZ_ROOT)
-        download_zip(
-            'http://tukaani.org/xz/xz-{}.tar.gz'.format(XZ_VERSION),
-            XZ_ROOT
-        )
-
-    return {
-        'targets': [XZ_ROOT],
-        'actions': [action],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('xz')
+    else:
+        return download_task(
+            'http://tukaani.org/xz/xz-{}.tar.gz'.format(XZ_VERSION), 'xz_dir')
 
 
 def task_download_pcre():
-    def action():
-        create_folder(PCRE_ROOT)
-        download_zip(
-            'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-{}.tar.gz'.format(PCRE_VERSION),
-            PCRE_ROOT
-        )
-
-    return {
-        'targets': [PCRE_ROOT],
-        'actions': [action],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('pcre')
+    else:
+        return download_task(
+            'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-{}.tar.gz'.format(PCRE_VERSION), 'pcre_dir')
 
 
 def task_download_libcurl():
-    def action():
-        create_folder(LIBCURL_ROOT)
-        download_zip(
-            'https://curl.haxx.se/download/curl-{}.tar.gz'.format(LIBCURL_VERSION),
-            LIBCURL_ROOT
-        )
-
-    return {
-        'targets': [LIBCURL_ROOT],
-        'actions': [action],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('libcurl')
+    else:
+        return download_task(
+            'https://curl.haxx.se/download/curl-{}.tar.gz'.format(LIBCURL_VERSION), 'libcurl_dir')
 
 
 def task_download_zlib():
-    def action():
-        create_folder(ZLIB_ROOT)
-        download_zip(
-            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION),
-            ZLIB_ROOT,
-            type='tgz'
-        )
-
-    return {
-        'targets': [ZLIB_ROOT],
-        'actions': [action],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('zlib')
+    else:
+        return download_task(
+            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION), 'zlib_dir')

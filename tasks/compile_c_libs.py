@@ -6,66 +6,76 @@ include, lib, bin etc. These will then be set to the path
 
 from tasks.common import *
 
-def task_compile_bzip2():
+def task_install_bzip2():
+    def action(bzip2_dir):
+        sh('''
+            make -f Makefile-libbz2_so'
+            make
+            make install PREFIX={}
+        '''.format(INSTALL_ROOT), cwd=bzip2_dir)
     return {
-        'actions': [
-            cmd('make -f Makefile-libbz2_so', cwd=BZIP_ROOT),
-            cmd('make', cwd=BZIP_ROOT),
-            cmd('make install PREFIX={}'.format(C_INCLUDE_ROOT), cwd=BZIP_ROOT),
-        ],
+        'actions': [action],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bzip2'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'bzip2')],
+        'targets': [os.path.join(INSTALL_BIN, 'bzip2')],
         'uptodate': [True]
     }
 
-def task_compile_xz():
+def task_install_xz():
+    def action(xz_dir):
+        sh('''
+            ./configure --prefix={}
+            make
+            make install
+        '''.format(INSTALL_ROOT), cwd=xz_dir)
     return {
-        'actions': [
-            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=XZ_ROOT),
-            cmd('make', cwd=XZ_ROOT),
-            cmd('make install'.format(C_INCLUDE_ROOT), cwd=XZ_ROOT),
-        ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_xz'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'xz')],
+        'actions': [action],
+        'task_dep': ['download_xz'],
+        'targets': [os.path.join(INSTALL_BIN, 'xz')],
         'uptodate': [True]
     }
 
-def task_compile_pcre():
+def task_install_pcre():
+    def action(pcre_dir):
+       sh('''
+            ./configure --enable-utf8 --prefix={}
+            make
+            make install
+       '''.format(INSTALL_ROOT), cwd=pcre_dir)
     return {
-        'actions': [
-            cmd('./configure --enable-utf8 --prefix={}'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
-            cmd('make', cwd=PCRE_ROOT),
-            cmd('make install'.format(C_INCLUDE_ROOT), cwd=PCRE_ROOT),
-        ],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_pcre'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'pcregrep')],
+        'actions': [action],
+        'task_dep': ['download_pcre'],
+        'targets': [os.path.join(INSTALL_BIN, 'pcregrep')],
         'uptodate': [True]
     }
 
 
 
-def task_compile_libcurl():
+def task_install_libcurl():
+    def action(libcurl_dir):
+        sh('''
+            ./configure --prefix={}
+            make
+            make install
+        '''.format(INSTALL_ROOT), cwd=libcurl_dir)
     return {
-        'actions': [
-            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=LIBCURL_ROOT),
-            cmd('make', cwd=LIBCURL_ROOT),
-            cmd('make install'.format(C_INCLUDE_ROOT), cwd=LIBCURL_ROOT),
-        ],
+        'actions': [action],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_libcurl'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'bin', 'curl')],
+        'targets': [os.path.join(INSTALL_BIN, 'curl')],
         'uptodate': [True]
     }
 
 
-def task_compile_zlib():
+def task_install_zlib():
+    def action(zlib_dir):
+        sh('''
+            ./configure --prefix={}
+            make
+            make install
+        '''.format(INSTALL_ROOT), cwd=zlib_dir)
     return {
-        'actions': [
-            cmd('./configure --prefix={}'.format(C_INCLUDE_ROOT), cwd=ZLIB_ROOT),
-            cmd('make', cwd=ZLIB_ROOT),
-            cmd('make install'.format(C_INCLUDE_ROOT), cwd=ZLIB_ROOT),
-        ],
+        'actions': [action],
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_zlib'],
-        'targets': [os.path.join(C_INCLUDE_ROOT, 'lib', 'libz.so')],
+        'targets': [os.path.join(INSTALL_BIN, 'libz.so')],
         'uptodate': [True]
     }
 

@@ -43,6 +43,7 @@ ZLIB_VERSION = '1.2.8'
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
 INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
+INSTALL_LIB = os.path.join(INSTALL_ROOT, 'lib')
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
 JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
 VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')

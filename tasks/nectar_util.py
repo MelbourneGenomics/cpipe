@@ -83,9 +83,8 @@ def download_nectar_asset(asset_key):
                 return download_dir
 
 def nectar_task(asset_key):
-    if has_swift_auth():
-        return {
-            # Download the asset and return the directory as a doit arg
-            'actions': [lambda: {asset_key + '_dir': download_nectar_asset(asset_key)}],
-            'uptodate': [nectar_asset_needs_update(asset_key)]
-        }
+    return {
+        # Download the asset and return the directory as a doit arg
+        'actions': [lambda: {asset_key + '_dir': download_nectar_asset(asset_key)}],
+        'uptodate': [nectar_asset_needs_update(asset_key)]
+    }

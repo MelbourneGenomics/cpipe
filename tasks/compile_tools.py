@@ -42,9 +42,9 @@ def task_install_nectar():
 def task_install_perl():
     def action(perl_root):
         sh('''
-                  ./Configure -de -Dprefix={}
-                  make
-                  make install
+              ./Configure -de -Dprefix={}
+              make
+              make install
         '''.format(INSTALL_ROOT),
            cwd=perl_root
            )
@@ -59,15 +59,12 @@ def task_install_perl():
 
 
 def task_install_r():
-    # def action(r_source):
-    #    subprocess.check_call('source {env} && ./configure && make'.format(env=ENVIRONMENT_FILE), cwd=R_ROOT,
-    #                          env=get_c_env(), shell=True, executable='bash')
-
-    def action(r_source):
+    def action(r_dir):
         sh('''
             ./configure
              make
-        ''', cwd=r_source)
+             make prefix={} install
+        '''.format(r_dir), cwd=r_dir)
 
     return {
         'actions': [action],
@@ -87,7 +84,7 @@ def task_install_bwa():
         'actions': [action],
         'getargs': {'bwa_dir': ('download_bwa', 'dir')},
         'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bwa'],
-        'targets': [os.path.join(BWA_ROOT, 'bwa')],
+        'targets': [os.path.join(INSTALL_BIN, 'bwa')],
         'uptodate': [True]
     }
 
@@ -115,7 +112,7 @@ def task_install_samtools():
                 ./configure --prefix={0} --with-htslib={1}
                 make
                 make prefix={0} install
-        '''.format(INSTALL_ROOT, HTSLIB_ROOT), cwd=samtools_dir)
+        '''.format(INSTALL_ROOT, INSTALL_LIB), cwd=samtools_dir)
 
     return {
         'task_dep': ['install_zlib', 'install_htslib', 'download_samtools'],
@@ -130,14 +127,14 @@ def task_install_bcftools():
     def action(bcftools_dir):
         sh('''
                 make
-                make prefix={0} install
+                make prefix={} install
         '''.format(INSTALL_ROOT), cwd=bcftools_dir)
 
     return {
         'actions': [action],
         'task_dep': ['download_bcftools', 'download_htslib', 'install_zlib'],
         'getargs': {'bcftools_dir': ('download_bcftools', 'dir')},
-        'targets': [os.path.join(BCFTOOLS_ROOT, 'bcftools')],
+        'targets': [os.path.join(INSTALL_BIN, 'bcftools')],
         'uptodate': [True]
     }
 
