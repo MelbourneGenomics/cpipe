@@ -58,8 +58,6 @@ def assets_needing_update():
                 to_download.append('{path}/{version}.tar.gz'.format(**target_json[key]))
 
         return to_download
-
-
 def download_nectar_assets():
     print('Updating Cpipe assets...')
 

@@ -1,10 +1,30 @@
+'''
+The download_* tasks are different from the install tasks because they
+ - Do something that is platform independent (no compiling C code)
+ - Remain all in one directory so we can zip it up
+'''
 from doit.tools import create_folder
 import tempfile
 import glob
 import re
 from urllib import urlopen, urlretrieve
+from doit.tools import run_once
 
 from tasks.common import *
+from tasks.nectar_util import *
+
+
+def download_task(url, param_name, type='tgz'):
+    def action():
+        temp_dir = tempfile.mkdtemp()
+        return {
+            param_name: download_zip(url, temp_dir, type=type)
+        }
+
+    return {
+        'action': [action],
+        'uptodate': [run_once]
+    }
 
 
 def task_tool_assets():
@@ -37,210 +57,163 @@ def task_tool_assets():
 
 
 def task_download_maven():
-    return {
-        'targets': [MAVEN_ROOT],
-        'actions': [
-            lambda: create_folder(MAVEN_ROOT),
-            lambda: download_zip(
-                'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(
-                    version=MAVEN_VERSION),
-                MAVEN_ROOT
-            )
-        ],
-        'uptodate': [True]
-    }
+    return download_task(
+        'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(
+            version=MAVEN_VERSION),
+        'maven_dir')
 
 
 def task_download_cpanm():
-    return {
-        'targets': [CPANM_ROOT],
-        'actions': [
-            lambda: create_folder(CPANM_ROOT),
-            cmd('''
-                curl -L https://cpanmin.us/ -o cpanm
-                chmod +x cpanm
-            ''', cwd=CPANM_ROOT),
-        ],
-        'task_dep': ['copy_config'],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('cpanm')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+                    curl -L https://cpanmin.us/ -o cpanm
+                    chmod +x cpanm
+            ''', cwd=temp_dir)
+
+        return {
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_perl():
-    return {
-        'targets': [PERL_ROOT],
-        'actions': [
-            lambda: download_zip("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION), PERL_ROOT),
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('perl')
+    else:
+        return download_task("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION),
+                             'perl_dir')
 
 
 def task_download_r():
-    return {
-        'targets': [R_ROOT],
-        'actions': [
-            lambda: download_zip("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION), R_ROOT),
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('r')
+    else:
+        return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION), R_ROOT)
 
 
 def task_download_groovy():
-    return {
-        'targets': [GROOVY_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION), GROOVY_ROOT)
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('groovy')
+    else:
+        return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION),
+                             'groovy_dir')
 
 
 def task_download_bwa():
-    BWA_ROOT = os.path.join(TOOLS_ROOT, 'bwa')
-    return {
-        'targets': [BWA_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION), BWA_ROOT, type='tgz')
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('bwa')
+    else:
+        return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION), 'bwa_dir')
 
 
 def task_download_htslib():
-    HTSLIB_ROOT = os.path.join(TOOLS_ROOT, 'htslib')
-    return {
-        'targets': [HTSLIB_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "https://github.com/samtools/htslib/releases/download/{0}/htslib-{0}.tar.bz2".format(HTSLIB_VERSION), HTSLIB_ROOT
-            )
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('htslib')
+    else:
+        return download_task("https://github.com/samtools/htslib/releases/download/{0}/htslib-{0}.tar.bz2".format(
+            HTSLIB_VERSION), 'htslib_dir')
 
 
 def task_download_samtools():
-    SAMTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'samtools')
-    return {
-        'targets': [SAMTOOLS_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "https://github.com/samtools/samtools/releases/download/{0}/samtools-{0}.tar.bz2".format(HTSLIB_VERSION),
-                SAMTOOLS_ROOT
-            )
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('samtools')
+    else:
+        return download_task("https://github.com/samtools/samtools/releases/download/{0}/samtools-{0}.tar.bz2".format(
+            HTSLIB_VERSION), 'samtools_dir')
 
 
 def task_download_bcftools():
-    BCFTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bcftools')
-    return {
-        'targets': [BCFTOOLS_ROOT],
-        'actions': [
-            lambda: download_zip(
-                'https://github.com/samtools/bcftools/releases/download/{0}/bcftools-{0}.tar.bz2'.format(HTSLIB_VERSION),
-                BCFTOOLS_ROOT
-            )
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('bcftools')
+    else:
+        return download_task('https://github.com/samtools/bcftools/releases/download/{0}/bcftools-{0}.tar.bz2'.format(
+            HTSLIB_VERSION),
+            'bcftools_dir')
 
 
 def task_download_bedtools():
-    BEDTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bedtools')
-    return {
-        'targets': [BEDTOOLS_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION), BEDTOOLS_ROOT,
-                type='tgz')
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('bedtools')
+    else:
+        return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION),
+                             BEDTOOLS_ROOT,
+                             'bedtools_dir')
 
+
+# VEP_SUBDIR = os.path.join(VEP_TEMP, 'scripts', 'variant_effect_predictor')
 
 def task_download_vep():
-    def extract_vep():
-        """Download ensembl tools and move VEP out of the tools directory"""
-
-        VEP_TEMP = tempfile.mkdtemp()
-        VEP_SUBDIR = os.path.join(VEP_TEMP, 'scripts', 'variant_effect_predictor')
-
-        download_zip("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION), VEP_TEMP)
-        os.rename(VEP_SUBDIR, VEP_ROOT)
-        shutil.rmtree(VEP_TEMP)
-
-    return {
-        'targets': [VEP_ROOT],
-        'actions': [extract_vep],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('vep')
+    else:
+        return download_task("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION),
+                             'vep_dir')
 
 
 def task_download_fastqc():
-    FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
-    FASTQC_EXE = os.path.join(FASTQC_ROOT, 'fastqc')
-
-    return {
-        'targets': [FASTQC_ROOT],
-        'actions': [
-            lambda: download_zip(
-                "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION),
-                FASTQC_ROOT),
-            'chmod +x {fastqc}'.format(fastqc=FASTQC_EXE)
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return nectar_task('fastqc')
+    else:
+        return download_task(
+            "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION),
+            'fastqc_dir')
 
 
 def task_download_bpipe():
-    BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
-    return {
-        'targets': [BPIPE_ROOT],
-        'actions': [
-            cmd('''
-            git clone -c advice.detachedHead=false -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}\
-            && cd {bpipe_dir}\
-            && ./gradlew dist
-            '''.format(bpipe_dir=BPIPE_ROOT, bpipe_ver=BPIPE_VERSION), cwd=TOOLS_ROOT)
-        ],
-        'task_dep': ['copy_config'],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return download_task('bpipe', 'bpipe_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
+            git clone -c advice.detachedHead=false -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}
+            cd {bpipe_dir}
+            ./gradlew dist
+            '''.format(bpipe_ver=BPIPE_VERSION, bpipe_dir=temp_dir))
+
+        return {
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_gatk():
-    GATK_ROOT = os.path.join(TOOLS_ROOT, 'gatk')
-    return {
-        'targets': [GATK_ROOT],
-        'actions': [
-            lambda: download_zip("https://codeload.github.com/broadgsa/gatk-protected/tar.gz/{}".format(GATK_VERSION),
-                                 GATK_ROOT,
-                                 type='tgz')
-        ],
-        'uptodate': [True]
-    }
+    if has_swift_auth():
+        return download_task('gatk', 'gatk_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            download_zip("https://codeload.github.com/broadgsa/gatk-protected/tar.gz/{}".format(GATK_VERSION),
+                         GATK_ROOT,
+                         type='tgz')
+            sh('''
+                mvn verify -P\!queue
+           ''', cwd=temp_dir)
+
+        return {
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_picard():
-    PICARD_ROOT = os.path.join(TOOLS_ROOT, 'picard')
+    if has_swift_auth():
+        return download_task('picard', 'picard_dir')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            urlretrieve(
+                'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
+                temp_dir)
 
-    def action():
-        create_folder(PICARD_ROOT)
-        urlretrieve(
-            'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
-            os.path.join(PICARD_ROOT, 'picard.jar')
-        )
-
-    return {
-        'targets': [os.path.join(PICARD_ROOT, 'picard.jar')],
-        'actions': [action],
-        'uptodate': [True]
-    }
+        return {
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_perl_libs():
@@ -248,43 +221,73 @@ def task_download_perl_libs():
     Downloads all cpan libs into the cpan directory. Each dependency is a subtask
     :return:
     """
-
-    return {
-        'targets': [CPAN_ROOT],
-        'task_dep': ['copy_config', 'download_perl', 'compile_perl', 'download_cpanm'],
-        'uptodate': [True],
-        'actions': [
-            lambda: create_folder(CPAN_ROOT),
-            lambda: create_folder(PERL_LIB_ROOT),
-
+    if has_swift_auth():
+        return nectar_task('perl_libs')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('''
             # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
             # (while also saving the archive so Module::Build will be bundled on NECTAR)
-            cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT, cpan=CPAN_ROOT),
-                env=get_cpanm_env()),
-
+            cpanm -l {perl_lib} --save-dists {cpan} Module::Build
             # Now, download archives of everything we need without installing them
-            cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
-                cwd=ROOT, env=get_cpanm_env())
-        ]
-    }
+            cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .
+            '''.format(cpan=temp_dir, perl_lib=PERL_LIB_ROOT))
+
+        return {
+            'task_dep': ['copy_config', 'download_perl', 'compile_perl', 'download_cpanm'],
+            'uptodate': [True],
+            'actions': [
+                lambda: create_folder(CPAN_ROOT),
+                lambda: create_folder(PERL_LIB_ROOT),
+
+                # Module::Build has to be installed to even work out the dependencies of perl modules, so we do that first
+                # (while also saving the archive so Module::Build will be bundled on NECTAR)
+                cmd('cpanm -l {perl_lib} --save-dists {cpan} Module::Build'.format(perl_lib=PERL_LIB_ROOT,
+                                                                                   cpan=CPAN_ROOT),
+                    env=get_cpanm_env()),
+
+                # Now, download archives of everything we need without installing them
+                cmd('cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .'.format(cpan=CPAN_ROOT),
+                    cwd=ROOT, env=get_cpanm_env())
+            ]
+        }
 
 
 def task_download_vep_libs():
-    return {
-        'targets': [VEP_LIBS_ROOT],
-        'task_dep': ['copy_config', 'install_perl_libs'],
-        'actions': [
-            cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(
-                vep_dir=VEP_ROOT,
-                vep_libs=VEP_LIBS_ROOT
-            ))
-        ],
-        'uptodate': [True]
-    }
+    asset_key = 'htslib'
+
+    if has_swift_auth():
+        return {
+            # Download the asset and return the directory as a doit arg
+            'actions': [lambda: {'cpanm_dir': download_nectar_asset(asset_key)}],
+            'uptodate': [nectar_asset_needs_update(asset_key)]
+        }
+    else:
+        return {
+            'targets': [VEP_LIBS_ROOT],
+            'task_dep': ['copy_config', 'install_perl_libs'],
+            'actions': [
+                cmd('yes | perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(
+                    vep_dir=VEP_ROOT,
+                    vep_libs=VEP_LIBS_ROOT
+                ))
+            ],
+            'uptodate': [True]
+        }
 
 
 def task_download_vep_plugins():
-    VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
+    asset_key = 'htslib'
+
+    if has_swift_auth():
+        return {
+            # Download the asset and return the directory as a doit arg
+            'actions': [lambda: {'cpanm_dir': download_nectar_asset(asset_key)}],
+            'uptodate': [nectar_asset_needs_update(asset_key)]
+        }
+    else:
+        VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
     return {
         'targets': [os.path.join(VEP_PLUGIN_ROOT, 'Condel.pm')],
         'actions': [
@@ -448,7 +451,7 @@ def task_download_zlib():
     def action():
         create_folder(ZLIB_ROOT)
         download_zip(
-           'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION),
+            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION),
             ZLIB_ROOT,
             type='tgz'
         )
