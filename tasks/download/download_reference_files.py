@@ -138,7 +138,7 @@ TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.h
 
 def task_obtain_trio_refinement():
     if has_swift_auth():
-        return nectar_task('trio_refinement')
+        return nectar_task('1000G_phase3')
     else:
         return {
             'actions': None,
@@ -221,7 +221,7 @@ def task_download_refinement_liftover():
 
 def task_download_chromosome_sizes():
     if has_swift_auth():
-        return nectar_task('chromosome_size')
+        return nectar_task('1000G_phase3')
     else:
         CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
         CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')

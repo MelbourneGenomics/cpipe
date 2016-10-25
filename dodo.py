@@ -42,7 +42,7 @@ def task_data_assets():
         'task_dep': [
             'download_dbnsfp',
             'install_vep_cache',
-            'download_ucsc',
+            'obtain_ucsc',
             'download_mills_and_1000g',
             'download_dbsnp',
             'obtain_trio_refinement',
