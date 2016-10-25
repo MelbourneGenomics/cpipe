@@ -1,5 +1,6 @@
 import os
 import glob
+from tasks.nectar.nectar_util import *
 
 from tasks.install.install_c_libs import *
 
@@ -13,6 +14,8 @@ def task_install_perl():
         '''.format(INSTALL_ROOT),
            cwd=perl_dir
            )
+        if has_swift_auth():
+            add_to_manifest('perl')
 
     return {
         'actions': [action],
@@ -30,6 +33,8 @@ def task_install_r():
              make
              make prefix={} install
         '''.format(r_dir), cwd=r_dir)
+        if has_swift_auth():
+            add_to_manifest('r')
 
     return {
         'actions': [action],
@@ -44,6 +49,8 @@ def task_install_r():
 def task_install_bwa():
     def action(bwa_dir):
         sh('make', cwd=bwa_dir)
+        if has_swift_auth():
+            add_to_manifest('bwa')
 
     return {
         'actions': [action],
@@ -61,6 +68,8 @@ def task_install_htslib():
         make
         make prefix={0} install
         '''.format(INSTALL_ROOT), cwd=htslib_dir)
+        if has_swift_auth():
+            add_to_manifest('htslib')
 
     return {
         'task_dep': ['download_htslib', 'install_zlib'],
@@ -78,6 +87,8 @@ def task_install_samtools():
                 make
                 make prefix={0} install
         '''.format(INSTALL_ROOT, INSTALL_LIB), cwd=samtools_dir)
+        if has_swift_auth():
+            add_to_manifest('samtools')
 
     return {
         'task_dep': ['install_zlib', 'install_htslib', 'download_samtools'],
@@ -94,6 +105,8 @@ def task_install_bcftools():
                 make
                 make prefix={} install
         '''.format(INSTALL_ROOT), cwd=bcftools_dir)
+        if has_swift_auth():
+            add_to_manifest('bcftools')
 
     return {
         'actions': [action],
@@ -110,6 +123,8 @@ def task_install_bedtools():
         make
         make prefix={} install
         '''.format(INSTALL_ROOT), cwd=bedtools_dir)
+        if has_swift_auth():
+            add_to_manifest('bedtools')
 
     return {
         'actions': [action],
@@ -126,6 +141,8 @@ def task_install_gatk():
             GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
             cp GenomeAnalysisTK.jar {}
         '''.format(JAVA_LIBS_ROOT), cwd=gatk_dir)
+        if has_swift_auth():
+            add_to_manifest('gatk')
 
     return {
         'actions': [action],
@@ -147,6 +164,8 @@ def task_install_perl_libs():
         sh('cpanm -l {perl_lib} --mirror file://{cpan} --installdeps .'.format(perl_lib=PERL_LIB_ROOT,
                                                                                cpan=cpan_mirror_dir),
            cwd=ROOT)
+        if has_swift_auth():
+            add_to_manifest('perl_libs')
 
     return {
         'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
@@ -161,7 +180,8 @@ def task_install_vep():
     def action(vep_dir):
         vep = os.path.join(vep_dir, 'scripts', 'variant_effect_predictor')
         delete_and_copy(vep, VEP_ROOT)
-
+        if has_swift_auth():
+            add_to_manifest('vep')
     return {
         'actions': [action],
         'targets': [VEP_ROOT, os.path.join(VEP_ROOT, 'variant_effect_predictor.pl')],
@@ -175,6 +195,8 @@ def task_install_fastqc():
     def action(fastqc_dir):
         fastqc_script = os.path.join(fastqc_dir, 'fastqc')
         delete_and_copy(fastqc_script, script_bin)
+        if has_swift_auth():
+            add_to_manifest('fastqc')
 
     return {
         'actions': [action],
@@ -186,6 +208,8 @@ def task_install_fastqc():
 def task_install_bpipe():
     def action(bpipe_dir):
         delete_and_copy(bpipe_dir, BPIPE_ROOT)
+        if has_swift_auth():
+            add_to_manifest('bpipe')
 
     return {
         'actions': [action],
@@ -198,6 +222,8 @@ def task_install_picard():
     def action(picard_dir):
         picard_jar = os.path.join(picard_dir, 'picard.jar')
         delete_and_copy(picard_jar, picard_target)
+        if has_swift_auth():
+            add_to_manifest('picard')
 
     return {
         'actions': [action],
@@ -209,6 +235,8 @@ def task_install_picard():
 def task_install_vep_libs():
     def action(vep_libs_dir):
         delete_and_copy(vep_libs_dir, VEP_LIBS_ROOT)
+        if has_swift_auth():
+            add_to_manifest('vep_libs')
 
     return {
         'actions': [action],
@@ -220,6 +248,8 @@ def task_install_vep_libs():
 def task_install_vep_plugins():
     def action(vep_plugins_dir):
         delete_and_copy(vep_plugins_dir, VEP_PLUGIN_ROOT)
+        if has_swift_auth():
+            add_to_manifest('vep_plugins')
 
     return {
         'actions': [action],
@@ -233,6 +263,8 @@ def task_install_junit_xml_formatter():
     def action(junit_xml_dir):
         jar = glob.glob(os.path.join(junit_xml_dir, 'target/JUnitXmlFormatter*'))[0]
         delete_and_copy(jar, target)
+        if has_swift_auth():
+            add_to_manifest('junit_xml_formatter')
 
     return {
         'actions': [action],
@@ -246,6 +278,8 @@ def task_install_groovy_ngs_utils():
     def action(groovy_ngs_dir):
         jar = os.path.join(groovy_ngs_dir, 'build' 'libs' 'groovy-ngs-utils.jar')
         delete_and_copy(jar, target)
+        if has_swift_auth():
+            add_to_manifest('groovy_ngs_utils')
 
     return {
         'actions': [action],
@@ -259,6 +293,8 @@ def task_install_takari_cpsuite():
     def action(takari_cpsuite_dir):
         jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite.jar'))[0]
         delete_and_copy(jar, target)
+        if has_swift_auth():
+            add_to_manifest('takari_cpsuite')
 
     return {
         'actions': [action],
@@ -271,6 +307,8 @@ def task_install_maven():
     target = os.path.join(MAVEN_ROOT, 'bin', 'mvn')
     def action(maven_dir):
         delete_and_copy(maven_dir, MAVEN_ROOT)
+        if has_swift_auth():
+            add_to_manifest('maven')
 
     return {
         'actions': [action],

@@ -115,10 +115,6 @@ def download_nectar_assets():
         # Delete the temp dir
         shutil.rmtree(download_dir)
 
-        # Write out the updated list
-        current.seek(0)
-        current.write(json.dumps(current_json, indent=4))
-
 
 def task_nectar_assets():
     return {

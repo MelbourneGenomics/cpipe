@@ -11,6 +11,16 @@ current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
 target_manifest = path.join(current_dir, 'target.manifest.json')
 
+def add_to_manifest(key):
+    with open(target_manifest, 'r') as target, \
+            open(current_manifest, 'r+') as current:
+        target_json = json.load(target)
+        current_json = json.load(current)
+        current_json[key] = target_json[key]
+        current.seek(0)
+        current.truncate()
+        json.dump(current_json, current, indent=4)
+
 
 def create_current_manifest():
     # Create the current manifest if it doesn't exist
@@ -41,10 +51,6 @@ def download_nectar_asset(asset_key):
         # Open the input and output json files
         current.seek(0)
         target_json = json.load(target)
-        try:
-            current_json = json.load(current)
-        except:
-            current_json = {}
 
         # Do the download and update the list of downloaded assets
         download_dir = tempfile.mkdtemp()
@@ -75,18 +81,8 @@ def download_nectar_asset(asset_key):
                 # And delete the zip file
                 os.remove(zip_file)
 
-                # Update the list of currently installed assets
-                current_json[asset_key] = target_json[asset_key]
-
-                # Log sucess
+                # Log success
                 print('\t' + asset_key + '... done.')
-
-                # Delete the temp dir
-                # shutil.rmtree(download_dir)
-
-                # Write out the updated list
-                current.seek(0)
-                current.write(json.dumps(current_json, indent=4))
 
                 # Return the download location so we can pass it to the install tasks
                 return download_dir
@@ -94,6 +90,6 @@ def download_nectar_asset(asset_key):
 def nectar_task(asset_key):
     return {
         # Download the asset and return the directory as a doit arg
-        'actions': [lambda: {asset_key + '_dir': download_nectar_asset(asset_key)}],
+        'actions': [lambda: {'dir': download_nectar_asset(asset_key)}],
         'uptodate': [not nectar_asset_needs_update(asset_key)]
     }

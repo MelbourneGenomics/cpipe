@@ -5,6 +5,7 @@ include, lib, bin etc. These will then be set to the path
 """
 
 from tasks.common import *
+from tasks.nectar.nectar_util import *
 
 def task_install_bzip2():
     def action(bzip2_dir):
@@ -13,6 +14,8 @@ def task_install_bzip2():
             make
             make install PREFIX={}
         '''.format(INSTALL_ROOT), cwd=bzip2_dir)
+        if has_swift_auth():
+            add_to_manifest('bzip2')
     return {
         'actions': [action],
         'task_dep': ['download_bzip2'],
@@ -28,6 +31,8 @@ def task_install_xz():
             make
             make install
         '''.format(INSTALL_ROOT), cwd=xz_dir)
+        if has_swift_auth():
+            add_to_manifest('xz')
     return {
         'actions': [action],
         'task_dep': ['download_xz'],
@@ -43,6 +48,9 @@ def task_install_pcre():
             make
             make install
        '''.format(INSTALL_ROOT), cwd=pcre_dir)
+       if has_swift_auth():
+           add_to_manifest('pcre')
+
     return {
         'actions': [action],
         'task_dep': ['download_pcre'],
@@ -60,6 +68,8 @@ def task_install_libcurl():
             make
             make install
         '''.format(INSTALL_ROOT), cwd=libcurl_dir)
+        if has_swift_auth():
+            add_to_manifest('libcurl')
     return {
         'actions': [action],
         'task_dep': ['download_libcurl'],
@@ -76,6 +86,8 @@ def task_install_zlib():
             make
             make install
         '''.format(INSTALL_ROOT), cwd=zlib_dir)
+        if has_swift_auth():
+            add_to_manifest('zlib')
     return {
         'actions': [action],
         'task_dep': ['download_zlib'],
