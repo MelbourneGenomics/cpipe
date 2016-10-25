@@ -25,9 +25,9 @@ export SYS_JAVA=`which $JAVA` # Export the old system java before we override it
 export PATH=${TOOLS}/bin:${TOOLS}/maven/bin:${TOOLS}/bpipe/bin:${PATH}
 export HTSLIB_DIR=$TOOLS/htslib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins:${TOOLS}/vep_libs
-export CPATH="${TOOLS}/c_libs/include"
-export CFLAGS="$CFLAGS -I${TOOLS}/c_libs/include"
-export CPPFLAGS="$CPPFLAGS -I${TOOLS}/c_libs/include"
-export LDFLAGS="$LDFLAGS -L${TOOLS}/c_libs/lib"
-export LD_LIBRARY_PATH=${TOOLS}/c_libs/lib:${LD_LIBRARY_PATH}
+export CPATH="${TOOLS}/include"
+export CFLAGS="$CFLAGS -I${TOOLS}/include"
+export CPPFLAGS="$CPPFLAGS -I${TOOLS}/include"
+export LDFLAGS="$LDFLAGS -L${TOOLS}/lib"
+export LD_LIBRARY_PATH=${TOOLS}/lib:${LD_LIBRARY_PATH}
 export JAVA_OPTS #Pass JAVA_OPTS to the script in c_libs/bin/java
