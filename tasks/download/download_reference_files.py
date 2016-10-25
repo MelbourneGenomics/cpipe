@@ -221,7 +221,7 @@ def task_download_refinement_liftover():
 
 def task_download_chromosome_sizes():
     if has_swift_auth():
-        return nectar_task('1000G_phase3', to_temp=False)
+        return nectar_task('chromosomes', to_temp=False)
     else:
         CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
         CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
