@@ -9,15 +9,16 @@ from tasks.common import *
 def task_install_bzip2():
     def action(bzip2_dir):
         sh('''
-            make -f Makefile-libbz2_so'
+            make -f Makefile-libbz2_so
             make
             make install PREFIX={}
         '''.format(INSTALL_ROOT), cwd=bzip2_dir)
     return {
         'actions': [action],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bzip2'],
+        'task_dep': ['download_bzip2'],
         'targets': [os.path.join(INSTALL_BIN, 'bzip2')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'bzip2_dir': ('download_bzip2', 'dir')},
     }
 
 def task_install_xz():
@@ -31,7 +32,8 @@ def task_install_xz():
         'actions': [action],
         'task_dep': ['download_xz'],
         'targets': [os.path.join(INSTALL_BIN, 'xz')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'xz_dir': ('download_xz', 'dir')},
     }
 
 def task_install_pcre():
@@ -45,7 +47,8 @@ def task_install_pcre():
         'actions': [action],
         'task_dep': ['download_pcre'],
         'targets': [os.path.join(INSTALL_BIN, 'pcregrep')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'pcre_dir': ('download_pcre', 'dir')},
     }
 
 
@@ -59,9 +62,10 @@ def task_install_libcurl():
         '''.format(INSTALL_ROOT), cwd=libcurl_dir)
     return {
         'actions': [action],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_libcurl'],
+        'task_dep': ['download_libcurl'],
         'targets': [os.path.join(INSTALL_BIN, 'curl')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'libcurl_dir': ('download_libcurl', 'dir')},
     }
 
 
@@ -74,9 +78,10 @@ def task_install_zlib():
         '''.format(INSTALL_ROOT), cwd=zlib_dir)
     return {
         'actions': [action],
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_zlib'],
+        'task_dep': ['download_zlib'],
         'targets': [os.path.join(INSTALL_BIN, 'libz.so')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'zlib_dir': ('download_zlib', 'dir')},
     }
 
 

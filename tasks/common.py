@@ -48,11 +48,17 @@ PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
 JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
 VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')
 VEP_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'vep_libs')
+VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
 PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
+BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
+def delete_and_copy(src, dest):
+    if os.path.isdir(dest):
+        shutil.rmtree(dest)
+    shutil.move(src, dest)
 
 def unzip_todir(input, directory, type):
     """

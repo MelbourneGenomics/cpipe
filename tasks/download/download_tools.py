@@ -3,22 +3,18 @@ The download_* tasks are different from the install tasks because they
  - Do something that is platform independent (no compiling C code)
  - Remain all in one directory so we can zip it up
 '''
-from doit.tools import create_folder
-import tempfile
-import glob
-import re
-from urllib import urlopen, urlretrieve
 from doit.tools import run_once
 
 from tasks.common import *
-from tasks.nectar_util import *
+from tasks.nectar.nectar_util import *
 
 
-def download_task(url, param_name, type='tgz'):
+def download_task(url, type='tgz'):
     def action():
         temp_dir = tempfile.mkdtemp()
+        download_zip(url, temp_dir, type=type)
         return {
-            param_name: download_zip(url, temp_dir, type=type)
+            'dir': temp_dir
         }
 
     return {
@@ -59,8 +55,7 @@ def task_tool_assets():
 def task_download_maven():
     return download_task(
         'http://apache.mirror.serversaustralia.com.au/maven/maven-3/{version}/binaries/apache-maven-{version}-bin.tar.gz'.format(
-            version=MAVEN_VERSION),
-        'maven_dir')
+            version=MAVEN_VERSION))
 
 
 def task_download_cpanm():
@@ -84,30 +79,28 @@ def task_download_perl():
     if has_swift_auth():
         return nectar_task('perl')
     else:
-        return download_task("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION),
-                             'perl_dir')
+        return download_task("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION))
 
 
 def task_download_r():
     if has_swift_auth():
         return nectar_task('r')
     else:
-        return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION), 'r_dir')
+        return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION))
 
 
 def task_download_groovy():
     if has_swift_auth():
         return nectar_task('groovy')
     else:
-        return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION),
-                             'groovy_dir')
+        return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION))
 
 
 def task_download_bwa():
     if has_swift_auth():
         return nectar_task('bwa')
     else:
-        return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION), 'bwa_dir')
+        return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION))
 
 
 def task_download_htslib():
@@ -123,7 +116,7 @@ def task_download_samtools():
         return nectar_task('samtools')
     else:
         return download_task("https://github.com/samtools/samtools/releases/download/{0}/samtools-{0}.tar.bz2".format(
-            HTSLIB_VERSION), 'samtools_dir')
+            HTSLIB_VERSION))
 
 
 def task_download_bcftools():
@@ -131,36 +124,27 @@ def task_download_bcftools():
         return nectar_task('bcftools')
     else:
         return download_task('https://github.com/samtools/bcftools/releases/download/{0}/bcftools-{0}.tar.bz2'.format(
-            HTSLIB_VERSION),
-            'bcftools_dir')
+            HTSLIB_VERSION))
 
 
 def task_download_bedtools():
     if has_swift_auth():
         return nectar_task('bedtools')
     else:
-        return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION),
-                             'bedtools_dir')
-
-
-# VEP_SUBDIR = os.path.join(VEP_TEMP, 'scripts', 'variant_effect_predictor')
+        return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION))
 
 def task_download_vep():
     if has_swift_auth():
         return nectar_task('vep')
     else:
-        return download_task("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION),
-                             'vep_dir')
-
+        return download_task("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION))
 
 def task_download_fastqc():
     if has_swift_auth():
         return nectar_task('fastqc')
     else:
         return download_task(
-            "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION),
-            'fastqc_dir')
-
+            "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION))
 
 def task_download_bpipe():
     if has_swift_auth():
@@ -173,7 +157,7 @@ def task_download_bpipe():
             cd {bpipe_dir}
             ./gradlew dist
             '''.format(bpipe_ver=BPIPE_VERSION, bpipe_dir=temp_dir))
-            return {'bpipe_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
@@ -193,10 +177,11 @@ def task_download_gatk():
             sh('''
                 mvn verify -P\!queue
            ''', cwd=temp_dir)
-            return {'gatk_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
+            'task_dep': ['install_maven'],
             'uptodate': [run_once]
         }
 
@@ -210,7 +195,7 @@ def task_download_picard():
             urlretrieve(
                 'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
                 temp_dir)
-            return {'picard_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
@@ -235,10 +220,10 @@ def task_download_perl_libs():
             # Now, download archives of everything we need without installing them
             cpanm --save-dists {cpan} -L /dev/null --scandeps --installdeps .
             '''.format(cpan=temp_dir, perl_lib=PERL_LIB_ROOT))
-            return {'perl_libs_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
-            'task_dep': ['copy_config', 'download_perl', 'compile_perl', 'download_cpanm'],
+            'task_dep': ['copy_config', 'download_perl', 'install_perl', 'download_cpanm'],
             'uptodate': [True],
             'actions': [action]
         }
@@ -252,12 +237,12 @@ def task_download_vep_libs():
             temp_dir = tempfile.mkdtemp()
             sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
                                                                                             vep_libs=temp_dir))
-            return {'vep_libs_dir': temp_dir}
-    return {
-        'task_dep': ['copy_config', 'install_perl_libs', 'install_perl', 'install_vep'],
-        'actions': [action],
-        'uptodate': [run_once]
-    }
+            return {'dir': temp_dir}
+        return {
+            'task_dep': ['copy_config', 'install_perl_libs', 'install_perl', 'install_vep'],
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_vep_plugins():
@@ -274,7 +259,7 @@ def task_download_vep_plugins():
                 git reset --hard {vep_plugin_commit}
                 m -rf .git
             '''.format(vep_plugin_commit=VEP_PLUGIN_COMMIT), cwd=temp_dir)
-            return {'vep_plugins_dir': temp_dir}
+            return {'dir': temp_dir}
     return {
         'actions': [action],
         'task_dep': ['copy_config'],
@@ -305,7 +290,7 @@ def task_make_java_libs_dir():
 
 def task_download_junit_xml_formatter():
     if has_swift_auth():
-        nectar_task('junit_xml_dir')
+        return nectar_task('junit_xml_dir')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
@@ -314,11 +299,11 @@ def task_download_junit_xml_formatter():
                     pushd JUnitXmlFormatter
                     mvn install
                 ''', cwd=temp_dir)
-            return {'junit_xml_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
             'uptodate': [run_once]
         }
 
@@ -337,11 +322,11 @@ def task_download_groovy_ngs_utils():
                   mv {java_libs_dir}/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar {java_libs_dir}
                   rm -rf groovy-ngs-utils
             ''', cwd=temp_dir)
-            return {'groovy_ngs_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
             'uptodate': [run_once],
         }
 
@@ -358,11 +343,11 @@ def task_download_takari_cpsuite():
                     -DoutputDirectory={java_libs_dir}
                     -DstripVersion=true
             '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=temp_dir)
-            return {'takari_cpsuite_dir': temp_dir}
+            return {'dir': temp_dir}
 
         return {
             'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'download_maven'],
+            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
             'uptodate': [run_once],
         }
 
@@ -379,7 +364,7 @@ def task_download_bzip2():
         return nectar_task('bzip2')
     else:
         return download_task(
-            'http://www.bzip.org/{0}/bzip2-{0}.tar.gz'.format(BZIP_VERSION), 'bzip2_dir')
+            'http://www.bzip.org/{0}/bzip2-{0}.tar.gz'.format(BZIP_VERSION))
 
 
 def task_download_xz():
@@ -387,7 +372,7 @@ def task_download_xz():
         return nectar_task('xz')
     else:
         return download_task(
-            'http://tukaani.org/xz/xz-{}.tar.gz'.format(XZ_VERSION), 'xz_dir')
+            'http://tukaani.org/xz/xz-{}.tar.gz'.format(XZ_VERSION))
 
 
 def task_download_pcre():
@@ -395,7 +380,7 @@ def task_download_pcre():
         return nectar_task('pcre')
     else:
         return download_task(
-            'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-{}.tar.gz'.format(PCRE_VERSION), 'pcre_dir')
+            'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-{}.tar.gz'.format(PCRE_VERSION))
 
 
 def task_download_libcurl():
@@ -403,7 +388,7 @@ def task_download_libcurl():
         return nectar_task('libcurl')
     else:
         return download_task(
-            'https://curl.haxx.se/download/curl-{}.tar.gz'.format(LIBCURL_VERSION), 'libcurl_dir')
+            'https://curl.haxx.se/download/curl-{}.tar.gz'.format(LIBCURL_VERSION))
 
 
 def task_download_zlib():
@@ -411,4 +396,4 @@ def task_download_zlib():
         return nectar_task('zlib')
     else:
         return download_task(
-            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION), 'zlib_dir')
+            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION))

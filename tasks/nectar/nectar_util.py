@@ -12,7 +12,14 @@ current_manifest = path.join(current_dir, 'current.manifest.json')
 target_manifest = path.join(current_dir, 'target.manifest.json')
 
 
+def create_current_manifest():
+    # Create the current manifest if it doesn't exist
+    if not path.exists(current_manifest):
+        with open(current_manifest, 'w') as current:
+            json.dump({}, current)
+
 def nectar_asset_needs_update(asset_key):
+    create_current_manifest()
     with open(target_manifest, 'r') as target, \
             open(current_manifest, 'r') as current:
 
@@ -26,6 +33,7 @@ def nectar_asset_needs_update(asset_key):
     return False
 
 def download_nectar_asset(asset_key):
+    create_current_manifest()
     with SwiftService() as swift, \
             open(target_manifest, 'r') as target, \
             open(current_manifest, 'r+') as current:
@@ -40,9 +48,10 @@ def download_nectar_asset(asset_key):
 
         # Do the download and update the list of downloaded assets
         download_dir = tempfile.mkdtemp()
+        file = os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')
         for result in swift.download(
                 container='cpipe-2.4-assets',
-                objects=target_manifest[asset_key],
+                objects=[file],
                 options={'out_directory': download_dir}
         ):
             zip_file = result['path']
@@ -86,5 +95,5 @@ def nectar_task(asset_key):
     return {
         # Download the asset and return the directory as a doit arg
         'actions': [lambda: {asset_key + '_dir': download_nectar_asset(asset_key)}],
-        'uptodate': [nectar_asset_needs_update(asset_key)]
+        'uptodate': [not nectar_asset_needs_update(asset_key)]
     }

@@ -1,42 +1,7 @@
-from tasks.common import *
-from doit.tools import create_folder
-from tasks.compile_c_libs import *
 import os
-import subprocess
+import glob
 
-
-def task_install_all():
-    'Compiles all assets including java assets; this is only needed for a manual install'
-    return {
-        'actions': None,
-        'task_dep': [
-            'install_perl',
-            'install_r',
-            'install_bwa',
-            'install_htslib',
-            'install_samtools',
-            'install_bcftools',
-            'install_bedtools',
-            'install_gatk',
-            'install_perl_libs'
-        ]
-    }
-
-
-def task_install_nectar():
-    'Compiles assets downloaded from nectar; excludes java compilation since this should already have been done'
-    return {
-        'actions': None,
-        'task_dep': [
-            'install_perl',
-            'install_r',
-            'install_bwa', 'install_htslib',
-            'install_samtools',
-            'install_bcftools',
-            'install_bedtools',
-            'install_perl_libs'
-        ]
-    }
+from tasks.install.install_c_libs import *
 
 
 def task_install_perl():
@@ -52,7 +17,7 @@ def task_install_perl():
     return {
         'actions': [action],
         'getargs': {'perl_dir': ('download_perl', 'dir')},
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_perl'],
+        'task_dep': ['download_perl'],
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'perl')],
         'uptodate': [True]
     }
@@ -83,7 +48,7 @@ def task_install_bwa():
     return {
         'actions': [action],
         'getargs': {'bwa_dir': ('download_bwa', 'dir')},
-        'task_dep': ['download_nectar_assets' if has_swift_auth() else 'download_bwa'],
+        'task_dep': ['download_bwa'],
         'targets': [os.path.join(INSTALL_BIN, 'bwa')],
         'uptodate': [True]
     }
@@ -180,7 +145,7 @@ def task_install_perl_libs():
     def action(cpan_mirror_dir):
         # Use the cpan directory we made in download_perl_libs as a cpan mirror and install from there
         sh('cpanm -l {perl_lib} --mirror file://{cpan} --installdeps .'.format(perl_lib=PERL_LIB_ROOT,
-                                                                                         cpan=cpan_mirror_dir),
+                                                                               cpan=cpan_mirror_dir),
            cwd=ROOT)
 
     return {
@@ -189,4 +154,128 @@ def task_install_perl_libs():
         'actions': [action],
         'getargs': {'cpan_mirror_dir': ('download_perl_libs', 'dir')},
         'uptodate': [True]
+    }
+
+
+def task_install_vep():
+    def action(vep_dir):
+        vep = os.path.join(vep_dir, 'scripts', 'variant_effect_predictor')
+        delete_and_copy(vep, VEP_ROOT)
+
+    return {
+        'actions': [action],
+        'targets': [VEP_ROOT, os.path.join(VEP_ROOT, 'variant_effect_predictor.pl')],
+        'uptodate': [True],
+        'getargs': {'vep_dir': ('download_vep', 'dir')},
+    }
+
+def task_install_fastqc():
+    script_bin = os.path.join(INSTALL_BIN, 'fastqc')
+
+    def action(fastqc_dir):
+        fastqc_script = os.path.join(fastqc_dir, 'fastqc')
+        delete_and_copy(fastqc_script, script_bin)
+
+    return {
+        'actions': [action],
+        'targets': [script_bin],
+        'uptodate': [True],
+        'getargs': {'fastqc_dir': ('download_fastqc', 'dir')},
+    }
+
+def task_install_bpipe():
+    def action(bpipe_dir):
+        delete_and_copy(bpipe_dir, BPIPE_ROOT)
+
+    return {
+        'actions': [action],
+        'targets': [BPIPE_ROOT, os.path.join(BPIPE_ROOT, 'bin', 'bpipe')],
+        'uptodate': [True]
+    }
+
+def task_install_picard():
+    picard_target = os.path.join(JAVA_LIBS_ROOT, 'picard.jar')
+    def action(picard_dir):
+        picard_jar = os.path.join(picard_dir, 'picard.jar')
+        delete_and_copy(picard_jar, picard_target)
+
+    return {
+        'actions': [action],
+        'targets': [picard_target],
+        'uptodate': [True],
+        'getargs': {'picard_dir': ('download_picard', 'dir')},
+    }
+
+def task_install_vep_libs():
+    def action(vep_libs_dir):
+        delete_and_copy(vep_libs_dir, VEP_LIBS_ROOT)
+
+    return {
+        'actions': [action],
+        'uptodate': [True],
+        'targets': [VEP_LIBS_ROOT, os.path.join(VEP_LIBS_ROOT, 'Bio', 'TreeIO.pm')],
+        'getargs': {'vep_libs_dir': ('download_vep_libs', 'dir')},
+    }
+
+def task_install_vep_plugins():
+    def action(vep_plugins_dir):
+        delete_and_copy(vep_plugins_dir, VEP_PLUGIN_ROOT)
+
+    return {
+        'actions': [action],
+        'uptodate': [True],
+        'targets': [VEP_PLUGIN_ROOT, os.path.join(VEP_PLUGIN_ROOT, 'GO.pm')],
+        'getargs': {'vep_plugins_dir': ('download_vep_plugins', 'dir')},
+    }
+
+def task_install_junit_xml_formatter():
+    target = os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter.jar')
+    def action(junit_xml_dir):
+        jar = glob.glob(os.path.join(junit_xml_dir, 'target/JUnitXmlFormatter*'))[0]
+        delete_and_copy(jar, target)
+
+    return {
+        'actions': [action],
+        'targets': [target],
+        'uptodate': [True],
+        'getargs': {'junit_xml_dir': ('download_junit_xml_formatter', 'dir')},
+    }
+
+def task_install_groovy_ngs_utils():
+    target = os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')
+    def action(groovy_ngs_dir):
+        jar = os.path.join(groovy_ngs_dir, 'build' 'libs' 'groovy-ngs-utils.jar')
+        delete_and_copy(jar, target)
+
+    return {
+        'actions': [action],
+        'targets': [target],
+        'uptodate': [True],
+        'getargs': {'groovy_ngs_utils_dir': ('download_groovy_ngs_utils', 'dir')},
+    }
+
+def task_install_takari_cpsuite():
+    target = os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite.jar')
+    def action(takari_cpsuite_dir):
+        jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite.jar'))[0]
+        delete_and_copy(jar, target)
+
+    return {
+        'actions': [action],
+        'targets': [target],
+        'uptodate': [True],
+        'getargs': {'takari_cpsuite_dir': ('download_takari_cpsuite', 'dir')},
+    }
+
+def task_install_maven():
+    target = os.path.join(INSTALL_BIN, 'mvn')
+    def action(maven_dir):
+        exe = os.path.join(maven_dir, 'mvn')
+        delete_and_copy(exe, target)
+
+    return {
+        'actions': [action],
+        'targets': [target],
+        'uptodate': [True],
+        'getargs': {'maven_dir': ('download_maven', 'dir')},
     }

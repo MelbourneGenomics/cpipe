@@ -10,7 +10,7 @@ import hashlib
 from os import path
 from subprocess import check_call
 from swiftclient.service import SwiftService
-from tasks.nectar_assets.dependencies import *
+from tasks.nectar.dependencies import *
 from tasks.common import ROOT, unzip_todir
 import tempfile
 import shutil

@@ -13,21 +13,6 @@ def download_ftp_list(ftp, files, target_dir):
         )
 
 
-def task_data_assets():
-    return {
-        'actions': None,
-        'task_dep': [
-            'download_dbnsfp',
-            'install_vep_cache',
-            'download_ucsc',
-            'download_mills_and_1000g',
-            'download_dbsnp',
-            'convert_trio_refinement',
-            'download_chromosome_sizes',
-            'index_reference_files'
-        ]
-    }
-
 
 def task_download_dbnsfp():
     DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
@@ -47,8 +32,7 @@ def task_download_dbnsfp():
             '''.format(data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
         ],
         'task_dep': [
-            'download_nectar_assets' if has_swift_auth() else 'download_htslib',
-            'compile_htslib',
+            'install_htslib',
             'copy_config'
         ],
         'uptodate': [True],
@@ -69,8 +53,7 @@ def task_install_vep_cache():
             --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
         ],
         'task_dep': [
-            'download_nectar_assets' if has_swift_auth() else 'download_htslib',
-            'compile_htslib',
+            'install_htslib',
             'install_perl_libs',
             'copy_config'
         ],
@@ -163,7 +146,7 @@ def task_convert_trio_refinement():
             'download_trio_refinement',
             'download_refinement_liftover',
             'download_htslib',
-            'compile_htslib',
+            'install_htslib',
             'copy_config'
         ],
         'uptodate': [True]
