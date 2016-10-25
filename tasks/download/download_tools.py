@@ -148,7 +148,7 @@ def task_download_fastqc():
 
 def task_download_bpipe():
     if has_swift_auth():
-        return download_task('bpipe', 'bpipe_dir')
+        return nectar_task('bpipe')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()

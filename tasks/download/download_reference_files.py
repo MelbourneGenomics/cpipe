@@ -17,7 +17,7 @@ def download_ftp_list(ftp, files, target_dir):
 
 def task_download_dbnsfp():
     if has_swift_auth():
-        return nectar_task('dbnsfp')
+        return nectar_task('dbnsfp', to_temp=False)
     else:
         DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
 
@@ -45,7 +45,7 @@ def task_download_dbnsfp():
 
 def task_install_vep_cache():
     if has_swift_auth():
-        return nectar_task('vep_cache')
+        return nectar_task('vep_cache', to_temp=False)
     else:
         VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
         return {
@@ -69,7 +69,7 @@ def task_install_vep_cache():
 
 def task_obtain_ucsc():
     if has_swift_auth():
-        return nectar_task('ucsc')
+        return nectar_task('ucsc', to_temp=False)
     else:
         return {
             'actions': None,
@@ -95,7 +95,7 @@ def task_download_ucsc():
 
 def task_download_mills_and_1000g():
     if has_swift_auth():
-        return nectar_task('mills_and_1000g')
+        return nectar_task('mills_and_1000g', to_temp=False)
     else:
         MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
 
@@ -116,7 +116,7 @@ def task_download_mills_and_1000g():
 
 def task_download_dbsnp():
     if has_swift_auth():
-        return nectar_task('dbsnp')
+        return nectar_task('dbsnp', to_temp=False)
     else:
         DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
 
@@ -138,7 +138,7 @@ TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.h
 
 def task_obtain_trio_refinement():
     if has_swift_auth():
-        return nectar_task('1000G_phase3')
+        return nectar_task('1000G_phase3', to_temp=False)
     else:
         return {
             'actions': None,
@@ -221,7 +221,7 @@ def task_download_refinement_liftover():
 
 def task_download_chromosome_sizes():
     if has_swift_auth():
-        return nectar_task('1000G_phase3')
+        return nectar_task('1000G_phase3', to_temp=False)
     else:
         CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
         CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')

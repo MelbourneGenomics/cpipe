@@ -2,6 +2,8 @@ import os
 import hashlib
 from os import path
 import json
+
+import shutil
 from swiftclient.service import SwiftService
 import tempfile
 
@@ -42,7 +44,7 @@ def nectar_asset_needs_update(asset_key):
             return True
     return False
 
-def download_nectar_asset(asset_key):
+def download_nectar_asset(asset_key, to_temp=True):
     create_current_manifest()
     with SwiftService() as swift, \
             open(target_manifest, 'r') as target, \
@@ -52,12 +54,18 @@ def download_nectar_asset(asset_key):
         current.seek(0)
         target_json = json.load(target)
 
-        # Do the download and update the list of downloaded assets
-        download_dir = tempfile.mkdtemp()
-        file = os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')
+        # If we're downloading to a temp directory, do so. Otherwise use the path listed in the manifest,
+        # clearing the directory if it exists
+        if to_temp:
+            download_dir = tempfile.mkdtemp()
+        else:
+            download_dir = target_json[asset_key]['path']
+            shutil.rmtree(download_dir)
+            os.makedirs(download_dir)
+
         for result in swift.download(
                 container='cpipe-2.4-assets',
-                objects=[file],
+                objects=[os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')],
                 options={'out_directory': download_dir}
         ):
             zip_file = result['path']
@@ -87,9 +95,9 @@ def download_nectar_asset(asset_key):
                 # Return the download location so we can pass it to the install tasks
                 return download_dir
 
-def nectar_task(asset_key):
+def nectar_task(asset_key, to_temp=True):
     return {
         # Download the asset and return the directory as a doit arg
-        'actions': [lambda: {'dir': download_nectar_asset(asset_key)}],
+        'actions': [lambda: {'dir': download_nectar_asset(asset_key, to_temp)}],
         'uptodate': [not nectar_asset_needs_update(asset_key)]
     }
