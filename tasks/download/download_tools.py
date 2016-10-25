@@ -176,6 +176,10 @@ def task_download_gatk():
                          type='tgz')
             sh('''
                 mvn verify -P\!queue
+                GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`
+                unlink target/GenomeAnalysisTK.jar
+                mv $GATK_JAR ./GenomeAnalysisTK.jar
+                bash -O extglob -O dotglob -c 'rm -rf !(GenomeAnalysisTK.jar)'
            ''', cwd=temp_dir)
             return {'dir': temp_dir}
 

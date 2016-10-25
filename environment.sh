@@ -22,7 +22,7 @@ source ${TOOLS}/python/bin/activate
 
 # Add all tool directories and bin folders to PATH
 export SYS_JAVA=`which $JAVA` # Export the old system java before we override it 
-export PATH=`join ':' $TOOLS/*/`:`join ':' $TOOLS/*/bin/`:$PATH
+export PATH=${TOOLS}/bin:${TOOLS}/maven/bin:${TOOLS}/bpipe/bin:${PATH}
 export HTSLIB_DIR=$TOOLS/htslib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins:${TOOLS}/vep_libs
 export CPATH="${TOOLS}/c_libs/include"

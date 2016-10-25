@@ -52,6 +52,7 @@ VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
 PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
+MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 

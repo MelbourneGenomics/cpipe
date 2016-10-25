@@ -1,2 +1,0 @@
-$SYS_JAVA $JAVA_OPTS "$@"
-

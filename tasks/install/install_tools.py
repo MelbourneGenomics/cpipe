@@ -124,7 +124,7 @@ def task_install_gatk():
     def action(gatk_dir):
         sh('''
             GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
-            cp $GATK_JAR {}
+            cp GenomeAnalysisTK.jar {}
         '''.format(JAVA_LIBS_ROOT), cwd=gatk_dir)
 
     return {
@@ -268,10 +268,9 @@ def task_install_takari_cpsuite():
     }
 
 def task_install_maven():
-    target = os.path.join(INSTALL_BIN, 'mvn')
+    target = os.path.join(MAVEN_ROOT, 'bin', 'mvn')
     def action(maven_dir):
-        exe = os.path.join(maven_dir, 'mvn')
-        delete_and_copy(exe, target)
+        delete_and_copy(maven_dir, MAVEN_ROOT)
 
     return {
         'actions': [action],
