@@ -5,13 +5,13 @@ from tasks.install.install_c_libs import *
 
 
 def task_install_perl():
-    def action(perl_root):
+    def action(perl_dir):
         sh('''
               ./Configure -de -Dprefix={}
               make
               make install
         '''.format(INSTALL_ROOT),
-           cwd=perl_root
+           cwd=perl_dir
            )
 
     return {

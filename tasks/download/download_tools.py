@@ -228,7 +228,7 @@ def task_download_perl_libs():
 
         return {
             'task_dep': ['copy_config', 'download_perl', 'install_perl', 'download_cpanm'],
-            'uptodate': [True],
+            'uptodate': [run_once],
             'actions': [action]
         }
 
@@ -319,7 +319,7 @@ def task_download_groovy_ngs_utils():
         def action():
             temp_dir = tempfile.mkdtemp()
             sh('''
-                  git clone https://github.com/ssadedin/groovy-ngs-utils -b upgrade-biojava --depth=1 --quiet
+                  git clone https://github.com/ssadedin/groovy-ngs-utils -b b982218 -biojava --depth=1 --quiet
                   pushd groovy-ngs-utils
                   ./gradlew jar
                   popd
@@ -342,9 +342,9 @@ def task_download_takari_cpsuite():
         def action():
             temp_dir = tempfile.mkdtemp()
             sh('''
-             mvn dependency:copy
-                    -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}
-                    -DoutputDirectory={java_libs_dir}
+             mvn dependency:copy\
+                    -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}\
+                    -DoutputDirectory={java_libs_dir}\
                     -DstripVersion=true
             '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=temp_dir)
             return {'dir': temp_dir}
