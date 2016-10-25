@@ -137,7 +137,14 @@ def task_download_vep():
     if has_swift_auth():
         return nectar_task('vep')
     else:
-        return download_task("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION))
+        def action():
+            # Make two temporary dirs, one for the whole enseml suite, one for just VEP
+            temp_dir = tempfile.mkdtemp()
+            temp_vep_dir = tempfile.mkdtemp()
+            download_zip("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION), temp_dir)
+            vep_subdir = os.path.join(temp_dir, 'scripts', 'variant_effect_predictor')
+            shutil.move(vep_subdir, temp_vep_dir)
+            return {'dir': temp_vep_dir}
 
 def task_download_fastqc():
     if has_swift_auth():
@@ -192,7 +199,7 @@ def task_download_gatk():
 
 def task_download_picard():
     if has_swift_auth():
-        return download_task('picard', 'picard_dir')
+       return nectar_task('picard')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
@@ -294,7 +301,7 @@ def task_make_java_libs_dir():
 
 def task_download_junit_xml_formatter():
     if has_swift_auth():
-        return nectar_task('junit_xml_dir')
+        return nectar_task('junit_xml_formatter')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
@@ -314,7 +321,7 @@ def task_download_junit_xml_formatter():
 
 def task_download_groovy_ngs_utils():
     if has_swift_auth():
-        return nectar_task('groovy_ngs_dir')
+        return nectar_task('groovy_ngs_utils')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
@@ -337,7 +344,7 @@ def task_download_groovy_ngs_utils():
 
 def task_download_takari_cpsuite():
     if has_swift_auth():
-        return nectar_task('takari_cpsuite_dir')
+        return nectar_task('takari_cpsuite')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()

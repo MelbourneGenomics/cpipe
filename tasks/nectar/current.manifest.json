@@ -1,7 +1,0 @@
-{
-    "bzip2": {
-        "path": "tools/bzip2", 
-        "version": "1.0.6", 
-        "hash": "3da91428ec4dbe6acb40c381a64a5097949209a4"
-    }
-}

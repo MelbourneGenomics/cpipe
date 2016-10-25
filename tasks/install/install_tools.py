@@ -178,8 +178,7 @@ def task_install_perl_libs():
 
 def task_install_vep():
     def action(vep_dir):
-        vep = os.path.join(vep_dir, 'scripts', 'variant_effect_predictor')
-        delete_and_copy(vep, VEP_ROOT)
+        delete_and_copy(vep_dir, VEP_ROOT)
         if has_swift_auth():
             add_to_manifest('vep')
     return {

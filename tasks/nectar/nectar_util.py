@@ -7,7 +7,7 @@ import shutil
 from swiftclient.service import SwiftService
 import tempfile
 
-from tasks.common import unzip_todir, has_swift_auth
+from tasks.common import unzip_todir, has_swift_auth, ROOT
 
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
@@ -59,8 +59,9 @@ def download_nectar_asset(asset_key, to_temp=True):
         if to_temp:
             download_dir = tempfile.mkdtemp()
         else:
-            download_dir = target_json[asset_key]['path']
-            shutil.rmtree(download_dir)
+            download_dir = os.path.join(ROOT, target_json[asset_key]['path'])
+            if os.path.isdir(download_dir):
+                shutil.rmtree(download_dir)
             os.makedirs(download_dir)
 
         for result in swift.download(
@@ -96,8 +97,18 @@ def download_nectar_asset(asset_key, to_temp=True):
                 return download_dir
 
 def nectar_task(asset_key, to_temp=True):
+    def action():
+        # Download the asset from nectar
+        dir = download_nectar_asset(asset_key, to_temp)
+        # If it's not being downloaded to a temporary directory, its already installed, so update the manifest
+        if not to_temp:
+            add_to_manifest(asset_key)
+
+        # If it is being downloaded to a temporary directory, it's going to be installed, so save the download directory for the installer
+        else:
+            return {'dir': dir}
     return {
         # Download the asset and return the directory as a doit arg
-        'actions': [lambda: {'dir': download_nectar_asset(asset_key, to_temp)}],
+        'actions': [action],
         'uptodate': [not nectar_asset_needs_update(asset_key)]
     }
