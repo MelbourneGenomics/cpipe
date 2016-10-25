@@ -2,7 +2,8 @@ from ftplib import FTP
 from tasks.common import *
 from doit.tools import create_folder
 import pymysql
-
+from tasks.nectar.nectar_util import *
+from doit.tools import run_once
 
 def download_ftp_list(ftp, files, target_dir):
     ftp.login()
@@ -15,106 +16,134 @@ def download_ftp_list(ftp, files, target_dir):
 
 
 def task_download_dbnsfp():
-    DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
+    if has_swift_auth():
+        return nectar_task('dbnsfp')
+    else:
+        DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
 
-    return {
-        'targets': [os.path.join(DATA_ROOT, 'dbnsfp', 'dbNSFP.gz')],
-        'actions': [
-            lambda: download_zip("ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv{}.zip".format(DBNSFP_VERSION),
-                                 DBNSFP_ROOT),
-            cmd('''
-            mkdir -p dbnsfp\
-            && pushd {data_dir}/dbnsfp\
-                && head -n1 dbNSFP*chr1 > h\
-                && cat dbNSFP*chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
-                && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
-                && bash -O extglob -c 'rm -rf !(dbNSFP.gz*)'
-            '''.format(data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
-        ],
-        'task_dep': [
-            'install_htslib',
-            'copy_config'
-        ],
-        'uptodate': [True],
-    }
+        return {
+            'targets': [os.path.join(DATA_ROOT, 'dbnsfp', 'dbNSFP.gz')],
+            'actions': [
+                lambda: download_zip("ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv{}.zip".format(DBNSFP_VERSION),
+                                     DBNSFP_ROOT),
+                cmd('''
+                mkdir -p dbnsfp\
+                && pushd {data_dir}/dbnsfp\
+                    && head -n1 dbNSFP*chr1 > h\
+                    && cat dbNSFP*chr* | grep -v ^#chr | sort -k1,1 -k2,2n - | cat h - | bgzip -c > dbNSFP.gz\
+                    && tabix -s 1 -b 2 -e 2 dbNSFP.gz\
+                    && bash -O extglob -c 'rm -rf !(dbNSFP.gz*)'
+                '''.format(data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
+            ],
+            'task_dep': [
+                'install_htslib',
+                'copy_config'
+            ],
+            'uptodate': [run_once],
+        }
 
 
 def task_install_vep_cache():
-    VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
-    return {
-        'targets': [VEP_CACHE],
-        'actions': [
-            lambda: create_folder(VEP_CACHE),
-            '''perl {tools_dir}/vep/INSTALL.pl\
-            --NO_HTSLIB\
-            --CACHEDIR $VEP_CACHE\
-            --AUTO cf\
-            --SPECIES homo_sapiens_refseq\
-            --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
-        ],
-        'task_dep': [
-            'install_htslib',
-            'install_perl_libs',
-            'copy_config'
-        ],
-        'uptodate': [True],
-    }
+    if has_swift_auth():
+        return nectar_task('vep_cache')
+    else:
+        VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
+        return {
+            'targets': [VEP_CACHE],
+            'actions': [
+                lambda: create_folder(VEP_CACHE),
+                '''perl {tools_dir}/vep/INSTALL.pl\
+                --NO_HTSLIB\
+                --CACHEDIR $VEP_CACHE\
+                --AUTO cf\
+                --SPECIES homo_sapiens_refseq\
+                --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
+            ],
+            'task_dep': [
+                'install_htslib',
+                'install_perl_libs',
+                'copy_config'
+            ],
+            'uptodate': [run_once],
+        }
 
+def task_obtain_ucsc():
+    if has_swift_auth():
+        return nectar_task('ucsc')
+    else:
+        return {
+            'actions': None,
+            'task_dep': ['download_ucsc', 'index_reference_files']
+        }
 
 def task_download_ucsc():
-    UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
+        UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
 
-    return {
-        'targets': [UCSC_ROOT],
-        'actions': [
-            lambda: download_ftp_list(
-                FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                    user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
-                UCSC_ROOT
-            )
-        ],
-        'uptodate': [True],
-    }
+        return {
+            'targets': [UCSC_ROOT],
+            'actions': [
+                lambda: download_ftp_list(
+                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
+                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
+                    UCSC_ROOT
+                )
+            ],
+            'uptodate': [run_once],
+        }
 
 
 def task_download_mills_and_1000g():
-    MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
+    if has_swift_auth():
+        return nectar_task('mills_and_1000g')
+    else:
+        MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
 
-    return {
-        'targets': [MILLS_ROOT],
-        'actions': [
-            lambda: download_ftp_list(
-                FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                    user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz",
-                 "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"],
-                MILLS_ROOT
-            )
-        ],
-        'uptodate': [True],
-    }
+        return {
+            'targets': [MILLS_ROOT],
+            'actions': [
+                lambda: download_ftp_list(
+                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
+                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz",
+                     "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"],
+                    MILLS_ROOT
+                )
+            ],
+            'uptodate': [run_once],
+        }
 
 
 def task_download_dbsnp():
-    DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
+    if has_swift_auth():
+        return nectar_task('dbsnp')
+    else:
+        DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
 
-    return {
-        'targets': [DBSNP_ROOT],
-        'actions': [
-            lambda: download_ftp_list(
-                FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                    user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"],
-                DBSNP_ROOT
-            )
-        ],
-        'uptodate': [True],
-    }
+        return {
+            'targets': [DBSNP_ROOT],
+            'actions': [
+                lambda: download_ftp_list(
+                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
+                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"],
+                    DBSNP_ROOT
+                )
+            ],
+            'uptodate': [run_once],
+        }
 
 
 TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz'.format(data_dir=DATA_ROOT)
 
+def task_obtain_trio_refinement():
+    if has_swift_auth():
+        return nectar_task('trio_refinement')
+    else:
+        return {
+            'actions': None,
+            'task_dep': ['convert_trio_refinement']
+        }
 
 def task_convert_trio_refinement():
     """
@@ -149,7 +178,7 @@ def task_convert_trio_refinement():
             'install_htslib',
             'copy_config'
         ],
-        'uptodate': [True]
+        'uptodate': [run_once]
     }
 
 
@@ -191,25 +220,28 @@ def task_download_refinement_liftover():
 
 
 def task_download_chromosome_sizes():
-    CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
-    CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
+    if has_swift_auth():
+        return nectar_task('chromosome_size')
+    else:
+        CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
+        CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
 
-    def download_chromosome_size():
-        create_folder(CHROMOSOME_DIR)
+        def download_chromosome_size():
+            create_folder(CHROMOSOME_DIR)
 
-        connection = pymysql.connect(host='genome-mysql.cse.ucsc.edu', user='genome')
-        with connection.cursor() as cursor, open(CHROMOSOME_FILE, 'w') as chrom_file:
-            cursor.execute('select chrom, size from hg19.chromInfo')
-            for line in cursor.fetchall():
-                chrom_file.write('\t'.join([str(el) for el in line]) + '\n')
+            connection = pymysql.connect(host='genome-mysql.cse.ucsc.edu', user='genome')
+            with connection.cursor() as cursor, open(CHROMOSOME_FILE, 'w') as chrom_file:
+                cursor.execute('select chrom, size from hg19.chromInfo')
+                for line in cursor.fetchall():
+                    chrom_file.write('\t'.join([str(el) for el in line]) + '\n')
 
-    return {
-        #'targets': [CHROMOSOME_FILE],
-        'actions': [
-            download_chromosome_size
-        ],
-        'uptodate': [True]
-    }
+        return {
+            #'targets': [CHROMOSOME_FILE],
+            'actions': [
+                download_chromosome_size
+            ],
+            'uptodate': [run_once]
+        }
 
 
 def task_index_reference_files():
@@ -231,7 +263,7 @@ def task_bwa_index_ucsc_reference():
             '{tools}/bwa/bwa index -a bwtsw {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
         ],
         'task_dep': [
-            'download_bwa',
+            'install_bwa',
             'download_ucsc',
             'copy_config'
         ],
@@ -248,7 +280,7 @@ def task_samtools_index_ucsc_reference():
             '{tools}/samtools/samtools faidx {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
         ],
         'task_dep': [
-            'download_samtools',
+            'install_samtools',
             'download_ucsc',
             'copy_config'
         ],

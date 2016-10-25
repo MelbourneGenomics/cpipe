@@ -214,7 +214,8 @@ def task_install_bpipe():
     return {
         'actions': [action],
         'targets': [BPIPE_ROOT, os.path.join(BPIPE_ROOT, 'bin', 'bpipe')],
-        'uptodate': [True]
+        'uptodate': [True],
+        'getargs': {'bpipe_dir': ('download_bpipe', 'dir')},
     }
 
 def task_install_picard():

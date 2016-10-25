@@ -45,7 +45,7 @@ def task_data_assets():
             'download_ucsc',
             'download_mills_and_1000g',
             'download_dbsnp',
-            'convert_trio_refinement',
+            'obtain_trio_refinement',
             'download_chromosome_sizes',
             'index_reference_files'
         ]

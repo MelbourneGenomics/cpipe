@@ -15,8 +15,6 @@ ROOT=$(readlink -f $(dirname $BASH_SOURCE))
 source $ROOT/pipeline/scripts/config_groovy_util.sh
 load_config
 
-CROOT=${TOOLS}/c_libs
-
 # Load virtualenv
 source ${TOOLS}/python/bin/activate
 
