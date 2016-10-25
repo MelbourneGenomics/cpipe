@@ -145,6 +145,10 @@ def task_download_vep():
             vep_subdir = os.path.join(temp_dir, 'scripts', 'variant_effect_predictor')
             shutil.move(vep_subdir, temp_vep_dir)
             return {'dir': temp_vep_dir}
+        return {
+            'actions': [action],
+            'uptodate': [run_once]
+        }
 
 def task_download_fastqc():
     if has_swift_auth():
@@ -308,7 +312,10 @@ def task_download_junit_xml_formatter():
             sh('''
                     git clone https://github.com/barrypitman/JUnitXmlFormatter
                     pushd JUnitXmlFormatter
-                    mvn install
+                        mvn install
+                    popd
+                    mv JUnitXmlFormatter/target/JUnitXmlFormatter* .
+                    bash -O extglob -O dotglob -c 'rm -rf !(JUnitXmlFormatter*.jar)'
                 ''', cwd=temp_dir)
             return {'dir': temp_dir}
 
