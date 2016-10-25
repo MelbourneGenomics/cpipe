@@ -61,7 +61,7 @@ ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 def delete_and_copy(src, dest):
     if os.path.isdir(dest):
         shutil.rmtree(dest)
-    shutil.move(src, dest)
+    shutil.copytree(src, dest)
 
 def unzip_todir(input, directory, type):
     """
