@@ -22,7 +22,7 @@ def task_install_perl():
         'getargs': {'perl_dir': ('download_perl', 'dir')},
         'task_dep': ['download_perl'],
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'perl')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('perl')],
     }
 
 
@@ -42,7 +42,7 @@ def task_install_r():
                      'install_zlib'],
         'getargs': {'r_dir': ('download_r', 'dir')},
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'R')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('r')],
     }
 
 
@@ -57,7 +57,7 @@ def task_install_bwa():
         'getargs': {'bwa_dir': ('download_bwa', 'dir')},
         'task_dep': ['download_bwa'],
         'targets': [os.path.join(INSTALL_BIN, 'bwa')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('bwa')],
     }
 
 
@@ -76,7 +76,7 @@ def task_install_htslib():
         'actions': [action],
         'getargs': {'htslib_dir': ('download_htslib', 'dir')},
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'htsfile')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('htslib')],
     }
 
 
@@ -95,7 +95,7 @@ def task_install_samtools():
         'actions': [action],
         'getargs': {'samtools_dir': ('download_samtools', 'dir')},
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'samtools')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('samtools')],
     }
 
 
@@ -113,7 +113,7 @@ def task_install_bcftools():
         'task_dep': ['download_bcftools', 'download_htslib', 'install_zlib'],
         'getargs': {'bcftools_dir': ('download_bcftools', 'dir')},
         'targets': [os.path.join(INSTALL_BIN, 'bcftools')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('bcftools')],
     }
 
 
@@ -131,7 +131,7 @@ def task_install_bedtools():
         'getargs': {'bedtools_dir': ('download_bedtools', 'dir')},
         'task_dep': ['download_bedtools', 'install_zlib'],
         'targets': [os.path.join(INSTALL_BIN, 'bedtools')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('bedtools')],
     }
 
 
@@ -149,7 +149,7 @@ def task_install_gatk():
         'task_dep': ['download_maven', 'download_gatk'],
         'getargs': {'gatk_dir': ('download_gatk', 'dir')},
         'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('gatk')],
     }
 
 
@@ -172,7 +172,7 @@ def task_install_perl_libs():
         'task_dep': ['install_perl', 'download_perl_libs', 'download_cpanm'],
         'actions': [action],
         'getargs': {'cpan_mirror_dir': ('download_perl_libs', 'dir')},
-        'uptodate': [True]
+        'uptodate': [not nectar_asset_needs_update('perl_libs')],
     }
 
 
@@ -184,7 +184,7 @@ def task_install_vep():
     return {
         'actions': [action],
         'targets': [VEP_ROOT, os.path.join(VEP_ROOT, 'variant_effect_predictor.pl')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('vep')],
         'getargs': {'vep_dir': ('download_vep', 'dir')},
     }
 
@@ -200,7 +200,7 @@ def task_install_fastqc():
     return {
         'actions': [action],
         'targets': [script_bin],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('fastqc')],
         'getargs': {'fastqc_dir': ('download_fastqc', 'dir')},
     }
 
@@ -213,7 +213,7 @@ def task_install_bpipe():
     return {
         'actions': [action],
         'targets': [BPIPE_ROOT, os.path.join(BPIPE_ROOT, 'bin', 'bpipe')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('bpipe')],
         'getargs': {'bpipe_dir': ('download_bpipe', 'dir')},
     }
 
@@ -228,7 +228,7 @@ def task_install_picard():
     return {
         'actions': [action],
         'targets': [picard_target],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('picard')],
         'getargs': {'picard_dir': ('download_picard', 'dir')},
     }
 
@@ -240,7 +240,7 @@ def task_install_vep_libs():
 
     return {
         'actions': [action],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('vep_libs')],
         'targets': [VEP_LIBS_ROOT, os.path.join(VEP_LIBS_ROOT, 'Bio', 'TreeIO.pm')],
         'getargs': {'vep_libs_dir': ('download_vep_libs', 'dir')},
     }
@@ -253,7 +253,7 @@ def task_install_vep_plugins():
 
     return {
         'actions': [action],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('vep_plugins')],
         'targets': [VEP_PLUGIN_ROOT, os.path.join(VEP_PLUGIN_ROOT, 'GO.pm')],
         'getargs': {'vep_plugins_dir': ('download_vep_plugins', 'dir')},
     }
@@ -269,7 +269,7 @@ def task_install_junit_xml_formatter():
     return {
         'actions': [action],
         'targets': [target],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('junit_xml_formatter')],
         'getargs': {'junit_xml_dir': ('download_junit_xml_formatter', 'dir')},
     }
 
@@ -284,7 +284,7 @@ def task_install_groovy_ngs_utils():
     return {
         'actions': [action],
         'targets': [target],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('groovy_ngs_utils')],
         'getargs': {'groovy_ngs_utils_dir': ('download_groovy_ngs_utils', 'dir')},
     }
 
@@ -299,7 +299,7 @@ def task_install_takari_cpsuite():
     return {
         'actions': [action],
         'targets': [target],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('takari_cpsuite')],
         'getargs': {'takari_cpsuite_dir': ('download_takari_cpsuite', 'dir')},
     }
 

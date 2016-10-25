@@ -20,7 +20,7 @@ def task_install_bzip2():
         'actions': [action],
         'task_dep': ['download_bzip2'],
         'targets': [os.path.join(INSTALL_BIN, 'bzip2')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('bzip2')],
         'getargs': {'bzip2_dir': ('download_bzip2', 'dir')},
     }
 
@@ -37,7 +37,7 @@ def task_install_xz():
         'actions': [action],
         'task_dep': ['download_xz'],
         'targets': [os.path.join(INSTALL_BIN, 'xz')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('xz')],
         'getargs': {'xz_dir': ('download_xz', 'dir')},
     }
 
@@ -55,7 +55,7 @@ def task_install_pcre():
         'actions': [action],
         'task_dep': ['download_pcre'],
         'targets': [os.path.join(INSTALL_BIN, 'pcregrep')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('pcre')],
         'getargs': {'pcre_dir': ('download_pcre', 'dir')},
     }
 
@@ -74,7 +74,7 @@ def task_install_libcurl():
         'actions': [action],
         'task_dep': ['download_libcurl'],
         'targets': [os.path.join(INSTALL_BIN, 'curl')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('libcurl')],
         'getargs': {'libcurl_dir': ('download_libcurl', 'dir')},
     }
 
@@ -92,7 +92,7 @@ def task_install_zlib():
         'actions': [action],
         'task_dep': ['download_zlib'],
         'targets': [os.path.join(INSTALL_BIN, 'libz.so')],
-        'uptodate': [True],
+        'uptodate': [not nectar_asset_needs_update('zlib')],
         'getargs': {'zlib_dir': ('download_zlib', 'dir')},
     }
 

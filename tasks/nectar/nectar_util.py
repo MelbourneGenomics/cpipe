@@ -96,19 +96,31 @@ def download_nectar_asset(asset_key, to_temp=True):
                 # Return the download location so we can pass it to the install tasks
                 return download_dir
 
-def nectar_task(asset_key, to_temp=True):
+def nectar_download(asset_key):
+    """
+    Downloads the asset to a temporary directory for later installation
+    """
+    return {
+        # Download the asset and return the directory as a doit arg
+        'actions': [lambda: {'dir': download_nectar_asset(asset_key, to_temp=True)}],
+        'uptodate': [not nectar_asset_needs_update(asset_key)]
+    }
+
+def nectar_install(asset_key):
+    """
+    Downloads the asset to its final destination in the cpipe installation, not using a temporary file
+    or requiring installation
+    """
     def action():
         # Download the asset from nectar
-        dir = download_nectar_asset(asset_key, to_temp)
-        # If it's not being downloaded to a temporary directory, its already installed, so update the manifest
-        if not to_temp:
-            add_to_manifest(asset_key)
+        download_nectar_asset(asset_key, to_temp=False)
 
-        # If it is being downloaded to a temporary directory, it's going to be installed, so save the download directory for the installer
-        else:
-            return {'dir': dir}
+        # This is an installation, so update the manifest to reflect that
+        add_to_manifest(asset_key)
+
     return {
         # Download the asset and return the directory as a doit arg
         'actions': [action],
         'uptodate': [not nectar_asset_needs_update(asset_key)]
     }
+
