@@ -16,13 +16,14 @@ def download_ftp_list(ftp, files, target_dir):
 
 
 def task_download_dbnsfp():
+    targets = [os.path.join(DATA_ROOT, 'dbnsfp', 'dbNSFP.gz')]
     if has_swift_auth():
-        return nectar_install('dbnsfp')
+        return nectar_install('dbnsfp', {'targets': targets})
     else:
         DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
 
         return {
-            'targets': [os.path.join(DATA_ROOT, 'dbnsfp', 'dbNSFP.gz')],
+            'targets': targets,
             'actions': [
                 lambda: download_zip("ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv{}.zip".format(DBNSFP_VERSION),
                                      DBNSFP_ROOT),
@@ -43,13 +44,14 @@ def task_download_dbnsfp():
         }
 
 
+VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
 def task_install_vep_cache():
+    targets = [VEP_CACHE]
     if has_swift_auth():
-        return nectar_install('vep_cache')
+        return nectar_install('vep_cache', {'targets': targets})
     else:
-        VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
         return {
-            'targets': [VEP_CACHE],
+            'targets': targets,
             'actions': [
                 lambda: create_folder(VEP_CACHE),
                 '''perl {tools_dir}/vep/INSTALL.pl\
@@ -67,20 +69,19 @@ def task_install_vep_cache():
             'uptodate': [run_once],
         }
 
+UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
 def task_obtain_ucsc():
     if has_swift_auth():
-        return nectar_install('ucsc')
+        return nectar_install('ucsc', {'targets': [UCSC_ROOT]})#, UCSC_SAMTOOLS_INDEX, UCSC_BWA_INDEX]})
     else:
         return {
             'actions': None,
+            'targets': [UCSC_ROOT],
             'task_dep': ['download_ucsc', 'index_reference_files']
         }
 
 def task_download_ucsc():
-        UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
-
         return {
-            'targets': [UCSC_ROOT],
             'actions': [
                 lambda: download_ftp_list(
                     FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
@@ -93,14 +94,14 @@ def task_download_ucsc():
         }
 
 
+MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
 def task_download_mills_and_1000g():
+    targets = [MILLS_ROOT]
     if has_swift_auth():
-        return nectar_install('mills_and_1000g')
+        return nectar_install('mills_and_1000g', {'targets': targets})
     else:
-        MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
-
         return {
-            'targets': [MILLS_ROOT],
+            'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
                     FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
@@ -113,15 +114,14 @@ def task_download_mills_and_1000g():
             'uptodate': [run_once],
         }
 
-
+DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
 def task_download_dbsnp():
+    targets = [DBSNP_ROOT]
     if has_swift_auth():
-        return nectar_install('dbsnp')
+        return nectar_install('dbsnp', {'targets': targets})
     else:
-        DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
-
         return {
-            'targets': [DBSNP_ROOT],
+            'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
                     FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
@@ -138,11 +138,12 @@ TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.h
 
 def task_obtain_trio_refinement():
     if has_swift_auth():
-        return nectar_install('1000G_phase3')
+        return nectar_install('1000G_phase3', {'targets': [TRIO_REFINEMENT_FILE]})
     else:
         return {
             'actions': None,
-            'task_dep': ['convert_trio_refinement']
+            'task_dep': ['convert_trio_refinement'],
+            'targets': [TRIO_REFINEMENT_FILE],
         }
 
 def task_convert_trio_refinement():
@@ -170,7 +171,6 @@ def task_convert_trio_refinement():
             ),
             ''.format(DATA_ROOT)
         ],
-        'targets': [TRIO_REFINEMENT_FILE],
         'task_dep': [
             'download_trio_refinement',
             'download_refinement_liftover',
@@ -219,13 +219,14 @@ def task_download_refinement_liftover():
     }
 
 
-def task_download_chromosome_sizes():
-    if has_swift_auth():
-        return nectar_install('chromosomes')
-    else:
-        CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
-        CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
+CHROMOSOME_DIR = os.path.join(DATA_ROOT, 'chromosomes')
+CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
 
+def task_download_chromosome_sizes():
+    targets = [CHROMOSOME_DIR, CHROMOSOME_FILE]
+    if has_swift_auth():
+        return nectar_install('chromosomes', {'targets': targets})
+    else:
         def download_chromosome_size():
             create_folder(CHROMOSOME_DIR)
 
@@ -236,7 +237,7 @@ def task_download_chromosome_sizes():
                     chrom_file.write('\t'.join([str(el) for el in line]) + '\n')
 
         return {
-            #'targets': [CHROMOSOME_FILE],
+            'targets': targets,
             'actions': [
                 download_chromosome_size
             ],
@@ -254,9 +255,8 @@ def task_index_reference_files():
     }
 
 
+UCSC_BWA_INDEX = '{data}/ucsc/ucsc.hg19.fasta.bwt'.format(data=DATA_ROOT)
 def task_bwa_index_ucsc_reference():
-    UCSC_BWA_INDEX = '{data}/ucsc/ucsc.hg19.fasta.bwt'.format(data=DATA_ROOT)
-
     return {
         'targets': [UCSC_BWA_INDEX],
         'actions': [
@@ -271,9 +271,8 @@ def task_bwa_index_ucsc_reference():
     }
 
 
+UCSC_SAMTOOLS_INDEX = '{data}/ucsc/ucsc.hg19.fasta.fai'.format(data=DATA_ROOT)
 def task_samtools_index_ucsc_reference():
-    UCSC_SAMTOOLS_INDEX = '{data}/ucsc/ucsc.hg19.fasta.fai'.format(data=DATA_ROOT)
-
     return {
         'targets': [UCSC_SAMTOOLS_INDEX],
         'actions': [

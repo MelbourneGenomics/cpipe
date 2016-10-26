@@ -57,13 +57,14 @@ def download_nectar_asset(asset_key, to_temp=True):
         # If we're downloading to a temp directory, do so. Otherwise use the path listed in the manifest,
         # clearing the directory if it exists
         if to_temp:
-            download_dir = tempfile.mkdtemp()
+            unzip_dir = tempfile.mkdtemp()
         else:
-            download_dir = os.path.join(ROOT, target_json[asset_key]['path'])
-            if os.path.isdir(download_dir):
-                shutil.rmtree(download_dir)
-            os.makedirs(download_dir)
+            unzip_dir = os.path.join(ROOT, target_json[asset_key]['path'])
+            if os.path.isdir(unzip_dir):
+                shutil.rmtree(unzip_dir)
+            os.makedirs(unzip_dir)
 
+        download_dir = tempfile.mkdtemp()
         for result in swift.download(
                 container='cpipe-2.4-assets',
                 objects=[os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')],
@@ -83,16 +84,14 @@ def download_nectar_asset(asset_key, to_temp=True):
                     raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
                         asset_key)
 
-                # Unzip into the temporary folder removing the outer directory
+                # Rewind the zip handle
                 zip_handle.seek(0)
-                unzip_dir = tempfile.mkdtemp()
+
+                # Do the actual unzipping
                 unzip_todir(zip_handle, unzip_dir, 'tgz')
 
-                # And delete the zip file
+                # And delete the zip file + parent directories
                 shutil.rmtree(download_dir)
-
-                # Log success
-                print('\t' + asset_key + '... done.')
 
                 # Return the download location so we can pass it to the install tasks
                 return unzip_dir
@@ -107,7 +106,7 @@ def nectar_download(asset_key):
         'uptodate': [False]
     }
 
-def nectar_install(asset_key):
+def nectar_install(asset_key, extra_keys={}):
     """
     Downloads the asset to its final destination in the cpipe installation, not using a temporary file
     or requiring installation
@@ -119,9 +118,12 @@ def nectar_install(asset_key):
         # This is an installation, so update the manifest to reflect that
         add_to_manifest(asset_key)
 
-    return {
+    # Allow the user to add extra keys to the task dictionary
+    task = {
         # Download the asset and return the directory as a doit arg
         'actions': [action],
         'uptodate': [not nectar_asset_needs_update(asset_key)]
     }
+    task.update(extra_keys)
+    return task
 
