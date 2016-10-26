@@ -264,7 +264,7 @@ def task_bwa_index_ucsc_reference():
         ],
         'task_dep': [
             'install_bwa',
-            'download_ucsc',
+            'obtain_ucsc',
             'copy_config'
         ],
         'uptodate': [True]
@@ -281,7 +281,7 @@ def task_samtools_index_ucsc_reference():
         ],
         'task_dep': [
             'install_samtools',
-            'download_ucsc',
+            'obtain_ucsc',
             'copy_config'
         ],
         'uptodate': [True]

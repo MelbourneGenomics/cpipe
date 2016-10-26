@@ -285,7 +285,7 @@ def task_install_groovy_ngs_utils():
         'actions': [action],
         'targets': [target],
         'uptodate': [not nectar_asset_needs_update('groovy_ngs_utils')],
-        'getargs': {'groovy_ngs_utils_dir': ('download_groovy_ngs_utils', 'dir')},
+        'getargs': {'groovy_ngs_dir': ('download_groovy_ngs_utils', 'dir')},
     }
 
 def task_install_takari_cpsuite():

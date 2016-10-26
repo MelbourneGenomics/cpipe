@@ -47,7 +47,6 @@ def task_data_assets():
             'download_dbsnp',
             'obtain_trio_refinement',
             'download_chromosome_sizes',
-            'index_reference_files'
         ]
     }
 
