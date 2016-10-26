@@ -192,14 +192,14 @@ def task_install_fastqc():
     script_bin = os.path.join(INSTALL_BIN, 'fastqc')
 
     def action(fastqc_dir):
-        fastqc_script = os.path.join(fastqc_dir, 'fastqc')
-        delete_and_copy(fastqc_script, script_bin)
+        delete_and_copy(fastqc_dir, FASTQC_ROOT)
+        os.symlink(os.path.join(FASTQC_ROOT, 'fastqc'), script_bin)
         if has_swift_auth():
             add_to_manifest('fastqc')
 
     return {
         'actions': [action],
-        'targets': [script_bin],
+        'targets': [script_bin, FASTQC_ROOT],
         'uptodate': [not nectar_asset_needs_update('fastqc')],
         'getargs': {'fastqc_dir': ('download_fastqc', 'dir')},
     }
