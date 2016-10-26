@@ -85,16 +85,17 @@ def download_nectar_asset(asset_key, to_temp=True):
 
                 # Unzip into the temporary folder removing the outer directory
                 zip_handle.seek(0)
-                unzip_todir(zip_handle, download_dir, 'tgz')
+                unzip_dir = tempfile.mkdtemp()
+                unzip_todir(zip_handle, unzip_dir, 'tgz')
 
                 # And delete the zip file
-                os.remove(zip_file)
+                shutil.rmtree(download_dir)
 
                 # Log success
                 print('\t' + asset_key + '... done.')
 
                 # Return the download location so we can pass it to the install tasks
-                return download_dir
+                return unzip_dir
 
 def nectar_download(asset_key):
     """
@@ -103,7 +104,7 @@ def nectar_download(asset_key):
     return {
         # Download the asset and return the directory as a doit arg
         'actions': [lambda: {'dir': download_nectar_asset(asset_key, to_temp=True)}],
-        'uptodate': [False]
+        'uptodate': [not nectar_asset_needs_update(asset_key)]
     }
 
 def nectar_install(asset_key):

@@ -20,7 +20,6 @@ def task_install_perl():
     return {
         'actions': [action],
         'getargs': {'perl_dir': ('download_perl', 'dir')},
-        'task_dep': ['download_perl'],
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'perl')],
         'uptodate': [not nectar_asset_needs_update('perl')],
     }
@@ -29,19 +28,19 @@ def task_install_perl():
 def task_install_r():
     def action(r_dir):
         sh('''
-            ./configure
+            ./configure --prefix={0}
              make
-             make prefix={} install
-        '''.format(r_dir), cwd=r_dir)
+             make prefix={0} install
+        '''.format(INSTALL_ROOT), cwd=r_dir)
         if has_swift_auth():
             add_to_manifest('r')
 
     return {
         'actions': [action],
-        'task_dep': ['download_perl', 'download_r', 'install_bzip2', 'install_xz', 'install_pcre', 'install_libcurl',
+        'task_dep': ['install_perl', 'install_bzip2', 'install_xz', 'install_pcre', 'install_libcurl',
                      'install_zlib'],
         'getargs': {'r_dir': ('download_r', 'dir')},
-        'targets': [os.path.join(INSTALL_ROOT, 'bin', 'R')],
+        'targets': [os.path.join(INSTALL_BIN, 'R')],
         'uptodate': [not nectar_asset_needs_update('r')],
     }
 
@@ -56,7 +55,6 @@ def task_install_bwa():
     return {
         'actions': [action],
         'getargs': {'bwa_dir': ('download_bwa', 'dir')},
-        'task_dep': ['download_bwa'],
         'targets': [os.path.join(INSTALL_BIN, 'bwa')],
         'uptodate': [not nectar_asset_needs_update('bwa')],
     }
@@ -73,7 +71,7 @@ def task_install_htslib():
             add_to_manifest('htslib')
 
     return {
-        'task_dep': ['download_htslib', 'install_zlib'],
+        'task_dep': ['install_zlib'],
         'actions': [action],
         'getargs': {'htslib_dir': ('download_htslib', 'dir')},
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'htsfile')],
@@ -92,7 +90,7 @@ def task_install_samtools():
             add_to_manifest('samtools')
 
     return {
-        'task_dep': ['install_zlib', 'install_htslib', 'download_samtools'],
+        'task_dep': ['install_zlib', 'install_htslib'],
         'actions': [action],
         'getargs': {'samtools_dir': ('download_samtools', 'dir')},
         'targets': [os.path.join(INSTALL_ROOT, 'bin', 'samtools')],
@@ -111,8 +109,8 @@ def task_install_bcftools():
 
     return {
         'actions': [action],
-        'task_dep': ['download_bcftools', 'download_htslib', 'install_zlib'],
-        'getargs': {'bcftools_dir': ('download_bcftools', 'dir')},
+        'task_dep': ['install_zlib'],
+        'getargs': {'bcftools_dir': ('download_bcftools', 'dir'), 'htslib_dir': ('download_htslib', 'dir')},
         'targets': [os.path.join(INSTALL_BIN, 'bcftools')],
         'uptodate': [not nectar_asset_needs_update('bcftools')],
     }
@@ -130,7 +128,7 @@ def task_install_bedtools():
     return {
         'actions': [action],
         'getargs': {'bedtools_dir': ('download_bedtools', 'dir')},
-        'task_dep': ['download_bedtools', 'install_zlib'],
+        'task_dep': ['install_zlib'],
         'targets': [os.path.join(INSTALL_BIN, 'bedtools')],
         'uptodate': [not nectar_asset_needs_update('bedtools')],
     }
@@ -147,7 +145,7 @@ def task_install_gatk():
 
     return {
         'actions': [action],
-        'task_dep': ['download_maven', 'download_gatk'],
+        'task_dep': ['download_maven'],
         'getargs': {'gatk_dir': ('download_gatk', 'dir')},
         'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
         'uptodate': [not nectar_asset_needs_update('gatk')],
@@ -170,12 +168,21 @@ def task_install_perl_libs():
 
     return {
         'targets': [os.path.join(PERL_LIB_ROOT, 'bin')],
-        'task_dep': ['install_perl', 'download_perl_libs', 'download_cpanm'],
+        'task_dep': ['install_perl', 'install_cpanm', 'install_htslib'],
         'actions': [action],
         'getargs': {'cpan_mirror_dir': ('download_perl_libs', 'dir')},
         'uptodate': [not nectar_asset_needs_update('perl_libs')],
     }
 
+def task_install_cpanm():
+    target = os.path.join(INSTALL_BIN, 'cpanm')
+    def action(cpanm_dir):
+        delete_and_copy(os.path.join(cpanm_dir, 'cpanm'), target)
+    return {
+        'actions': [action],
+        'uptodate': [not nectar_asset_needs_update('cpanm')],
+        'getargs': {'cpanm_dir': ('download_cpanm', 'dir')}
+    }
 
 def task_install_vep():
     def action(vep_dir):
