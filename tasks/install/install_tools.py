@@ -261,7 +261,7 @@ def task_install_vep_plugins():
 def task_install_junit_xml_formatter():
     target = os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter.jar')
     def action(junit_xml_dir):
-        jar = glob.glob(os.path.join(junit_xml_dir, 'target/JUnitXmlFormatter*'))[0]
+        jar = glob.glob(os.path.join(junit_xml_dir, 'JUnitXmlFormatter*'))[0]
         delete_and_copy(jar, target)
         if has_swift_auth():
             add_to_manifest('junit_xml_formatter')
