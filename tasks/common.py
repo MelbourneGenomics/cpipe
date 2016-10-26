@@ -61,7 +61,8 @@ ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
 def delete_and_copy(src, dest):
     if os.path.isdir(src):
-        shutil.rmtree(dest)
+        if os.path.isdir(dest):
+            shutil.rmtree(dest)
         shutil.copytree(src, dest)
     else:
         shutil.copy(src, dest)

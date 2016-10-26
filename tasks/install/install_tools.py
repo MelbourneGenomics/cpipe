@@ -49,6 +49,7 @@ def task_install_r():
 def task_install_bwa():
     def action(bwa_dir):
         sh('make', cwd=bwa_dir)
+        delete_and_copy(os.path.join(bwa_dir, 'bwa'), INSTALL_BIN)
         if has_swift_auth():
             add_to_manifest('bwa')
 
@@ -281,7 +282,7 @@ def task_install_junit_xml_formatter():
 def task_install_groovy_ngs_utils():
     target = os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')
     def action(groovy_ngs_dir):
-        jar = os.path.join(groovy_ngs_dir, 'build' 'libs' 'groovy-ngs-utils.jar')
+        jar = os.path.join(groovy_ngs_dir, 'groovy-ngs-utils.jar')
         delete_and_copy(jar, target)
         if has_swift_auth():
             add_to_manifest('groovy_ngs_utils')

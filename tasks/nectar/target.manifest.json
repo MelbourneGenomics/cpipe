@@ -79,10 +79,10 @@
         "version": "hg19", 
         "hash": "3dd6aefbf60f2e5d5b58241d34d7591ca12bc6d5"
     }, 
-    "bpipe": {
-        "path": "tools/bpipe", 
-        "version": "0.9.9.2", 
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+    "r": {
+        "path": "tools/r", 
+        "version": "3.3.1", 
+        "hash": "c86465e481ad23bf8949ea2a83507bce0e9b6103"
     }, 
     "gatk": {
         "path": "tools/gatk", 
@@ -99,10 +99,10 @@
         "version": "hg19", 
         "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
     }, 
-    "vep_cache": {
-        "path": "data/vep_cache", 
-        "version": "GRCh37.85", 
-        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    "perl_libs": {
+        "path": "tools/perl_libs", 
+        "version": "1", 
+        "hash": "61e16e084289abdd31d0fb7f0c09485b68c408c4"
     }, 
     "bzip2": {
         "path": "tools/bzip2", 
@@ -119,11 +119,6 @@
         "version": "1.3", 
         "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     }, 
-    "r": {
-        "path": "tools/r", 
-        "version": "3.3.1", 
-        "hash": "c86465e481ad23bf8949ea2a83507bce0e9b6103"
-    }, 
     "dbsnp": {
         "path": "data/dbsnp", 
         "version": "138.hg19", 
@@ -133,6 +128,11 @@
         "path": "tools/groovy", 
         "version": "2.4.7", 
         "hash": "1cfcb19b6b2056e24c438101cc0fafe4cb06311e"
+    }, 
+    "groovy_ngs_utils": {
+        "path": "tools/groovy_ngs_utils", 
+        "version": "b982218", 
+        "hash": "28e3d9ba083dc67d803ab049dc674a2093206c5a"
     }, 
     "zlib": {
         "path": "tools/zlib", 
@@ -144,24 +144,24 @@
         "version": "9893370", 
         "hash": "20992592b0dd85767b2e6f5f997ccc8ff35102cc"
     }, 
-    "perl_libs": {
-        "path": "tools/perl_libs", 
-        "version": "1", 
-        "hash": "61e16e084289abdd31d0fb7f0c09485b68c408c4"
-    }, 
-    "bcftools": {
-        "path": "tools/bcftools", 
-        "version": "1.3", 
-        "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
-    }, 
-    "groovy_ngs_utils": {
-        "path": "tools/groovy_ngs_utils", 
-        "version": "b982218", 
-        "hash": "2aadeb6f33a4c46faba6983715692fcb676d6e8f"
+    "bpipe": {
+        "path": "tools/bpipe", 
+        "version": "0.9.9.2", 
+        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
     "java_libs": {
         "path": "tools/java_libs", 
         "version": 1, 
         "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
+    }, 
+    "vep_cache": {
+        "path": "data/vep_cache", 
+        "version": "GRCh37.85", 
+        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    }, 
+    "bcftools": {
+        "path": "tools/bcftools", 
+        "version": "1.3", 
+        "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
     }
 }

@@ -19,7 +19,7 @@ def download_task(url, type='tgz'):
 
     return {
         'actions': [action],
-        'uptodate': [run_once]
+        'uptodate': [False]
     }
 
 
@@ -71,7 +71,7 @@ def task_download_cpanm():
 
         return {
             'actions': [action],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -147,7 +147,7 @@ def task_download_vep():
             return {'dir': temp_vep_dir}
         return {
             'actions': [action],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 def task_download_fastqc():
@@ -172,7 +172,7 @@ def task_download_bpipe():
 
         return {
             'actions': [action],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -197,7 +197,7 @@ def task_download_gatk():
         return {
             'actions': [action],
             'task_dep': ['install_maven'],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -214,7 +214,7 @@ def task_download_picard():
 
         return {
             'actions': [action],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -239,7 +239,7 @@ def task_download_perl_libs():
 
         return {
             'task_dep': ['copy_config', 'download_perl', 'install_perl', 'download_cpanm'],
-            'uptodate': [run_once],
+            'uptodate': [False],
             'actions': [action]
         }
 
@@ -256,7 +256,7 @@ def task_download_vep_libs():
         return {
             'task_dep': ['copy_config', 'install_perl_libs', 'install_perl', 'install_vep'],
             'actions': [action],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -278,7 +278,7 @@ def task_download_vep_plugins():
         return {
             'actions': [action],
             'task_dep': ['copy_config'],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -322,7 +322,7 @@ def task_download_junit_xml_formatter():
         return {
             'actions': [action],
             'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
-            'uptodate': [run_once]
+            'uptodate': [False]
         }
 
 
@@ -333,19 +333,21 @@ def task_download_groovy_ngs_utils():
         def action():
             temp_dir = tempfile.mkdtemp()
             sh('''
-                  git clone https://github.com/ssadedin/groovy-ngs-utils -b b982218 -biojava --depth=1 --quiet
-                  pushd groovy-ngs-utils
-                  ./gradlew jar
-                  popd
-                  mv {java_libs_dir}/groovy-ngs-utils/build/libs/groovy-ngs-utils.jar {java_libs_dir}
-                  rm -rf groovy-ngs-utils
-            ''', cwd=temp_dir)
+                git init
+                git remote add origin https://github.com/ssadedin/groovy-ngs-utils
+                git fetch
+                git checkout -t origin/master
+                git reset --hard {ngs_commit}
+                ./gradlew jar
+                mv build/libs/groovy-ngs-utils.jar . 
+                bash -O extglob -O dotglob -c 'rm -rf !(*.jar)'
+            '''.format(ngs_commit=GROOVY_NGS_COMMIT), cwd=temp_dir)
             return {'dir': temp_dir}
 
         return {
             'actions': [action],
             'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
-            'uptodate': [run_once],
+            'uptodate': [False],
         }
 
 
@@ -368,7 +370,7 @@ def task_download_takari_cpsuite():
         return {
             'actions': [action],
             'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
-            'uptodate': [run_once],
+            'uptodate': [False],
         }
 
 
