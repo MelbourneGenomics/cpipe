@@ -83,7 +83,7 @@ TOOLS="$BASE/tools"
 SCRIPTS="$BASE/pipeline/scripts"
 
 // Location of Picard tools here
-PICARD_HOME="$BASE/tools/picard"
+PICARD_HOME="$BASE/tools/java_libs"
 
 HTSLIB="$BASE/tools"
 
@@ -107,8 +107,8 @@ EXCEL="$TOOLS/excel"
 BEDTOOLS="$TOOLS"
 
 // Location of Samtools
-BCFTOOLS="$TOOLS"
-SAMTOOLS="$TOOLS"
+BCFTOOLS="$TOOLS/bin"
+SAMTOOLS="$TOOLS/bin"
 
 // FastQC tool
 FASTQC="$TOOLS/fastqc"
@@ -170,7 +170,7 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 // Use default Java installed in PATH
 JAVA="java"
 // Command line arguments to pass to java whenever it is called
-JAVA_OPTS=""
+JAVA_OPTS="-noverify"
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
