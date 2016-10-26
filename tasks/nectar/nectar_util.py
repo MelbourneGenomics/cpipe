@@ -104,7 +104,7 @@ def nectar_download(asset_key):
     return {
         # Download the asset and return the directory as a doit arg
         'actions': [lambda: {'dir': download_nectar_asset(asset_key, to_temp=True)}],
-        'uptodate': [not nectar_asset_needs_update(asset_key)]
+        'uptodate': [False]
     }
 
 def nectar_install(asset_key):

@@ -56,8 +56,14 @@ CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
 BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
 FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
+GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
+
+def replace_symlink(target, link):
+    if os.path.islink(link) or os.path.isfile(link):
+        os.unlink(link)
+    os.symlink(target, link)
 
 def delete_and_copy(src, dest):
     if os.path.isdir(src):

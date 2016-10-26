@@ -65,6 +65,7 @@ def task_tool_assets():
             'install_perl_libs',
             'install_vep',
             'install_fastqc',
+            'install_groovy',
             'install_bpipe',
             'install_picard',
             'install_vep_libs',
