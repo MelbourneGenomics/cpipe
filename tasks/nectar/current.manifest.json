@@ -1,7 +1,0 @@
-{
-    "vep_plugins": {
-        "path": "tools/vep_plugins", 
-        "version": "3be3889", 
-        "hash": "e6d90e02a58519c50a8cd90dfba9e71fefe11bae"
-    }
-}
