@@ -60,7 +60,7 @@ FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
 def delete_and_copy(src, dest):
-    if os.path.isdir(dest):
+    if os.path.isdir(src):
         shutil.rmtree(dest)
         shutil.copytree(src, dest)
     else:

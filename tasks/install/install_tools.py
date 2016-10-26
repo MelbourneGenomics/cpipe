@@ -193,7 +193,12 @@ def task_install_fastqc():
 
     def action(fastqc_dir):
         delete_and_copy(fastqc_dir, FASTQC_ROOT)
+
+        # Symlink bin/fastqc to fastqc, deleting the existing symlink if there is one
+        if os.path.exists(script_bin):
+            os.remove(script_bin)
         os.symlink(os.path.join(FASTQC_ROOT, 'fastqc'), script_bin)
+
         if has_swift_auth():
             add_to_manifest('fastqc')
 
