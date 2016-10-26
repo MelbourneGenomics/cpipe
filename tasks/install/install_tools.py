@@ -291,7 +291,7 @@ def task_install_groovy_ngs_utils():
 def task_install_takari_cpsuite():
     target = os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite.jar')
     def action(takari_cpsuite_dir):
-        jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite.jar'))[0]
+        jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite*.jar'))[0]
         delete_and_copy(jar, target)
         if has_swift_auth():
             add_to_manifest('takari_cpsuite')

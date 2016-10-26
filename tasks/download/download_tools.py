@@ -272,14 +272,14 @@ def task_download_vep_plugins():
                 git fetch
                 git checkout -t origin/master
                 git reset --hard {vep_plugin_commit}
-                m -rf .git
+                rm -rf .git
             '''.format(vep_plugin_commit=VEP_PLUGIN_COMMIT), cwd=temp_dir)
             return {'dir': temp_dir}
-    return {
-        'actions': [action],
-        'task_dep': ['copy_config'],
-        'uptodate': [run_once]
-    }
+        return {
+            'actions': [action],
+            'task_dep': ['copy_config'],
+            'uptodate': [run_once]
+        }
 
 
 def task_download_java_libs():
@@ -360,7 +360,9 @@ def task_download_takari_cpsuite():
                     -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}\
                     -DoutputDirectory={java_libs_dir}\
                     -DstripVersion=true
-            '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=JAVA_LIBS_ROOT), cwd=temp_dir)
+             bash -O extglob -O dotglob -c 'rm -rf !(takari-cpsuite*.jar)'
+
+            '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=temp_dir), cwd=temp_dir)
             return {'dir': temp_dir}
 
         return {
