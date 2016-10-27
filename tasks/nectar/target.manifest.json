@@ -79,10 +79,10 @@
         "version": "hg19", 
         "hash": "3dd6aefbf60f2e5d5b58241d34d7591ca12bc6d5"
     }, 
-    "r": {
-        "path": "tools/r", 
-        "version": "3.3.1", 
-        "hash": "438c3759a550f37e2e185d12f9b93c0dba84f350"
+    "bpipe": {
+        "path": "tools/bpipe", 
+        "version": "0.9.9.2", 
+        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
     "gatk": {
         "path": "tools/gatk", 
@@ -119,15 +119,15 @@
         "version": "1.3", 
         "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     }, 
+    "r": {
+        "path": "tools/r", 
+        "version": "3.3.1", 
+        "hash": "438c3759a550f37e2e185d12f9b93c0dba84f350"
+    }, 
     "dbsnp": {
         "path": "data/dbsnp", 
         "version": "138.hg19", 
-        "hash": "6ede859381ed28194dcb7a41425d562c4aaa8214"
-    }, 
-    "bpipe": {
-        "path": "tools/bpipe", 
-        "version": "0.9.9.2", 
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+        "hash": "d16cfdc1da79019baf4755a97b11f3022bae0447"
     }, 
     "groovy": {
         "path": "tools/groovy", 
