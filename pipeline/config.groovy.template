@@ -170,7 +170,7 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 // Use default Java installed in PATH
 JAVA="java"
 // Command line arguments to pass to java whenever it is called
-JAVA_OPTS="-noverify"
+JAVA_OPTS=""
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
