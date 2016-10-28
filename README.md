@@ -13,6 +13,7 @@ To set up Cpipe, clone this repository and then run the install script:
 
     git clone https://github.com/MelbourneGenomics/cpipe.git
     cd cpipe
+    cp /path/to/swift_credentials.sh .
     ./install.sh
     
 For more detailed instructions, have a look at the [installation documentation](docs/install.md).
@@ -31,4 +32,4 @@ For more detailed instructions, have a look at the [installation documentation](
 
 ## Running the Pipeline
 
-Now, all you need to do is run `./cpipe run --batch <batch_identifier>`
+Now, all you need to do is run `./cpipe --batch <batch_identifier>` run

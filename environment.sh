@@ -29,3 +29,7 @@ export CPPFLAGS="$CPPFLAGS -I${TOOLS}/include"
 export LDFLAGS="$LDFLAGS -L${TOOLS}/lib"
 export LD_LIBRARY_PATH=${TOOLS}/lib:${LD_LIBRARY_PATH}
 export JAVA_OPTS #Pass JAVA_OPTS to the script in c_libs/bin/java
+export TMPDIR #TMPDIR is set in config.groovy.
+#TODO: Load this in install after config.groovy has been copied
+# Fix manage batch, metadata scripts
+# Update docs
