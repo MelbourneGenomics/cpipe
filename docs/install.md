@@ -6,6 +6,7 @@ are very common packages and probably came pre-installed on your machine. Howeve
 
 ### Runtimes
 * Java 1.8 (preferably a build later than 1.8.0_20, since Cpipe has issues with this build)
+
 ### Libraries:
 * SQLite 3
 * zlib
@@ -15,10 +16,12 @@ are very common packages and probably came pre-installed on your machine. Howeve
 * xorg
 * curl
 * ncurses
+
 ### Build Tools:
 * gcc
 * gfortran
 * make
+
 ### Utilities:
 * curl
 * git 
