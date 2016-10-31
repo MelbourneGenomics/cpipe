@@ -3,27 +3,30 @@
 After completion of the pipeline (after a successful `run` command), cpipe will produces results in the cpipe/batches/
 <batch identifier>/analysis directory. This directory has the following important subdirectories:
 
-* **align**: Contains the sequence alignment (BAM) files generated when aligning the fastq sample files to the 
+* `align`: Contains the sequence alignment (BAM) files generated when aligning the fastq sample files to the 
 reference genome. 
-* **fastqc**: Contains quality control information on the fastq sample files
-* **qc**: Contains miscellaneous quality control on the sequence alignment
-* **results**: The main results directory. Contains all of the final cpipe outputs. The important files in this directory
- are:
+* `fastqc`: Contains quality control information on the fastq sample files
+* `qc`: Contains miscellaneous quality control on the sequence alignment
+* `results`: The main results directory. Contains all of the final cpipe outputs. The important files in this directory
+ are these (documented below):
     * [Batch validation files](#batch-validation-files)
     * [Summmary reports](#summary-report)
     * [Tab Separated Variant File](#tab-separated-variant-file)
     * [Provenance Report](#provenance-report)
     * [Gap Report](#gap-report)
-* **variants**: Contains the raw variant (VCF) files. The latest of these end in `genotype.soi.vep.post_filter.vcf`, and
+* `variants`: Contains the raw variant (VCF) files. The latest of these end in `genotype.soi.vep.post_filter.vcf`, and
 these are likely to be the most interesting files to view in this directory.
+
+Note that the following types of outputs have variable file names, all of which include the pipeline run ID. If you wish
+to understand the meaning of this, refer to the [terminology](./terminology.md) section.
 
 ## Batch Validation Files
 The batch validation report summarizes common sanity checks performed on a batch to quickly verify that sample results
  appear valid.
 
-These files end in `batch_validation.html/md`. The .md markdown files are designed to be read as plain text (e.g. in a 
-terminal), while the .html files are designed to be viewed graphically (e.g. from a web browser), although they present
-the same content.
+These files are named `<pipeline run ID>_batch_validation.html/md`. The .md markdown files are designed to be read as 
+plain text (e.g. in a terminal), while the .html files are designed to be viewed graphically (e.g. from a web browser),
+ although they present the same content.
 
 The report consists of the following sections:
 
@@ -51,7 +54,8 @@ Genes that were requested in the cohort or in the sample metadata file that are 
 (deprecated since Annovar is no longer used by Cpipe).
 
 ## Summary Report
-Cpipe generates a summary HTML for each analysed sample in a batch. It is of the form sample_name.summary.htm.
+Cpipe generates a summary HTML for each analysed sample in a batch. It is of the form 
+`<sample_run_id>_<sample_name>.summary.htm`(or `.md`).
  
 The report contains three main sections:
 * [Summary Data](#summary-data)
@@ -139,7 +143,8 @@ The table has the following fields:
 | OK? | Based on “Perc > 20X”: >95%: Good, >80%: Pass, Otherwise: Fail |
 
 ## Tab Separated Variant File
-A compilation of all the variant-level data is found in the files ending in `.lovd.tsv`. This file has one row per 
+A compilation of all the variant-level data is found in the files named 
+`<pipeline run ID>_<sample ID>.<individual|trio>.lovd.tsv`. This file has one row per 
 variant in the individual, with the following columns:
 
 ID | Description | Present in Individual | Present in Trio | Imported into LOVD | Annotation Source
@@ -314,7 +319,7 @@ Grantham | Grantham Matrix score - Grantham, R. Amino Acid Difference Formula to
 ## Provenance Report
 The provenance report is designed to ensure reproducibility of processing by documenting the details of the input and
 output files and the versions of software tools applied to them. The provenance report is named 
-`<sample name>.provenance.pdf`, and documents the following:
+`<pipeline run ID>_<sample name>.provenance.pdf`, and documents the following:
 
 * The time and date of the beginning and end of processing the sample
 * The patient identifier
@@ -330,7 +335,7 @@ output files and the versions of software tools applied to them. The provenance 
 ## Gap Report
 
 The gap report shows additional annotated information regarding overlapping coding regions for each sample. This report
- is entitled `<sample name>.gap.csv` in the `results` directory.
+ is entitled `<pipeline run ID>_<sample name>.gap.csv` in the `results` directory.
  
 The gap report has the following fields:
 
