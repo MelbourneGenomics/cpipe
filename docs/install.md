@@ -68,3 +68,15 @@ The Cpipe installer has a number of command line flags that can be used to custo
   -p, --no-pip
     Don't update pip modules. Don't use this unless you know what you're doing
  ```
+ 
+ ## Set Installation Name (optional)
+ At this point you can set the name of your installation, which will become a prefix on all of the pipeline output files,
+ ensuring they are unique to your installation. 
+ 
+ To do this, create a file named `pipeline_id` in the root of your Cpipe installation, and inside the file write something like
+ `<sitename>_<version>` where `sitename` is the name of your system/site, and version is the release version of Cpipe you
+ are using. For example, `vlsci_2.3`. You can do this in with the following command:
+ ```bash
+ echo "vlsci_2.3" > pipeline_id
+ ```
+ 
