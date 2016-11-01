@@ -10,7 +10,7 @@
 
 ## Introduction
 In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
- cpipe/batches. For example, a batch named batch_001 would mean creating a cpipe/batches/batch_001 directory.
+ `cpipe/batches`. For example, a batch named `batch_001` would mean creating a `cpipe/batches/batch_001`gi directory.
  
 ## Manipulating Batches
 ### Creating a Batch
@@ -27,6 +27,7 @@ Once you have your fastq files, follow these steps to create a new analysis batc
     ```
 
   For more information on this command, refer to the (`add_batch` documentation)[commands.md#add-batch]
+  
 ### Adding More Samples
 
 To add more samples to an existing batch, use the `./cpipe batch add_samples` command. Refer to 
