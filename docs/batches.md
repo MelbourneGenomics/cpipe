@@ -16,16 +16,17 @@ In Cpipe, a batch is a group of samples to be analysed at the same time. In the 
 ### Creating a Batch
 Once you have your fastq files, follow these steps to create a new analysis batch:
 * Create the batch directory and copy in the fastq data:
+
     ```bash
     mkdir -p batches/batch_identifier/data
     cp  your_fastq_files batches/batch_identifier/data
     ```
-* Creates the metadata file
-    `python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name`
-e.g. python ./pipeline/scripts/manage_batch.py add_batch --batch test150422 --profile CARDIOM
-To specify a capture region:
-python ./pipeline/scripts/manage_batch.py add_batch --batch batch_identifier --profile profile_name --exome nextera.bed
+* Create the metadata file using:
+    ```bash
+      python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name
+    ```
 
+  For more information on this command, refer to the (`add_batch` documentation)[commands.md#add-batch]
 ### Adding More Samples
 
 To add more samples to an existing batch, use the `./cpipe batch add_samples` command. Refer to 
