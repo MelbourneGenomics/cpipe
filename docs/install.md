@@ -2,9 +2,9 @@
 
 * [Prerequisites](#prerequisites)
   * [Runtimes](#runtimes)
-  * [Libraries:](#libraries)
-  * [Build Tools:](#build-tools)
-  * [Utilities:](#utilities)
+  * [Libraries](#libraries)
+  * [Build Tools](#build-tools)
+  * [Utilities](#utilities)
 * [Swift Credentials](#swift-credentials)
 * [Installation](#installation-1)
   * [Install Script Options](#install-script-options)
@@ -17,7 +17,7 @@ are very common packages and probably came pre-installed on your machine. Howeve
 ### Runtimes
 * Java 1.8 (preferably a build later than 1.8.0_20, since Cpipe has issues with this build)
 
-### Libraries:
+### Libraries
 * SQLite 3
 * zlib
 * bzip2
@@ -27,12 +27,12 @@ are very common packages and probably came pre-installed on your machine. Howeve
 * curl
 * ncurses
 
-### Build Tools:
+### Build Tools
 * gcc
 * gfortran
 * make
 
-### Utilities:
+### Utilities
 * curl
 * git 
 

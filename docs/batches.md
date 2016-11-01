@@ -1,5 +1,6 @@
 # Batches
 
+* [Introduction](#introduction)
 * [Manipulating Batches](#manipulating-batches)
   * [Creating a Batch](#creating-a-batch)
 * [Files](#files)
@@ -7,9 +8,13 @@
   * [Sample Metadata](#sample-metadata)
 * [config.batch.groovy](#configbatchgroovy)
 
+## Introduction
+In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
+ cpipe/batches. For example, a batch named batch_001 would mean creating a cpipe/batches/batch_001 directory.
+ 
 ## Manipulating Batches
 ### Creating a Batch
-Once you have your fastq files, following these steps to create a new analysis batch:
+Once you have your fastq files, follow these steps to create a new analysis batch:
 * Create the batch directory and copy in the fastq data:
     ```bash
     mkdir -p batches/batch_identifier/data
@@ -21,12 +26,21 @@ e.g. python ./pipeline/scripts/manage_batch.py add_batch --batch test150422 --pr
 To specify a capture region:
 python ./pipeline/scripts/manage_batch.py add_batch --batch batch_identifier --profile profile_name --exome nextera.bed
 
-## Files
+### Adding More Samples
 
-In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
- cpipe/batches. For example, a batch named batch_001 would mean creating a cpipe/batches/batch_001 directory.
- 
-Inside this directory are three fundamental elements:
+To add more samples to an existing batch, use the `./cpipe batch add_samples` command. Refer to 
+[its documentation](./commands.md#add-sample)
+
+### Viewing Batch Information
+
+Cpipe provides two utility commands for viewing batch information:
+* `./cpipe batch show_batches` lists all the batches in the current installation. Refer to 
+[its documentation](commands.md#show-batches) for more information
+* `./cpipe batch show_batch --batch <batch name>` will list information about an existing batch. Refer to
+[its documentation](commands.md#show-batch) for more information.
+
+## Files
+Inside the batch directory (`batches/<batch name>`) are three fundamental elements. Here they are covered in more detail.
  * The `data` subdirectory (mandatory) 
  * The sample metadata file (mandatory)
  * A `config.batch.groovy` configuration file (optional)
