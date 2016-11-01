@@ -11,7 +11,7 @@ In Cpipe, a design specifies the analysed regions of the genome for a given set 
  for this disease.
  
 The design used to analyse a given sample is specified in the cohort column of the sample metadata file. See the [sample 
-metadata documentation](configuration.md#sample-metadata) for more information.
+metadata documentation](batches.md#sample-metadata) for more information.
  
 However, our current recommendation is that you use the existing ALL design, which contains all genes in the UCSC database
  as this will save you having to re-analyse the data in case your gene list changes.
@@ -33,4 +33,4 @@ This conversion is performed automatically by Cpipe.
 ## Regions BED file
 If a BED named `<profile name>.bed` is present in the profile root (`designs/<profile name>`), then it will be used
 to determine the analysed regions instead of the gene list. However, the gene list must still be present in order to
-generate QC reports.
+generate QC reports, so this cannot be used entirely instead of a gene list.

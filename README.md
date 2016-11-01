@@ -30,6 +30,10 @@ For more detailed instructions, have a look at the [installation documentation](
 * Lastly, create a metadata file for your batch using:
 `./cpipe batch add_batch --batch <batch_identifier> --profile ALL`
 
+For more information about this stage, refer to the [batches documentation](docs/batches.md) for more information.
+
 ## Running the Pipeline
 
 Now, all you need to do is run `./cpipe --batch <batch_identifier>` run
+
+The run command is documented in the [command documentation](docs/commands.md#run) for more information.
