@@ -6,6 +6,7 @@ are very common packages and probably came pre-installed on your machine. Howeve
 
 ### Runtimes
 * Java 1.8 (preferably a build later than 1.8.0_20, since Cpipe has issues with this build)
+
 ### Libraries:
 * SQLite 3
 * zlib
@@ -15,10 +16,12 @@ are very common packages and probably came pre-installed on your machine. Howeve
 * xorg
 * curl
 * ncurses
+
 ### Build Tools:
 * gcc
 * gfortran
 * make
+
 ### Utilities:
 * curl
 * git 
@@ -69,8 +72,8 @@ The Cpipe installer has a number of command line flags that can be used to custo
     Don't update pip modules. Don't use this unless you know what you're doing
  ```
  
- ## Set Installation Name (optional)
- At this point you can set the name of your installation, which will become a prefix on all of the pipeline output files,
+## Set Installation Name (optional)
+At this point you can set the name of your installation, which will become a prefix on all of the pipeline output files,
  ensuring they are unique to your installation. 
  
  To do this, create a file named `pipeline_id` in the root of your Cpipe installation, and inside the file write something like
