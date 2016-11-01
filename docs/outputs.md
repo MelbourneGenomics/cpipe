@@ -1,5 +1,24 @@
 # Outputs
 
+* [Batch Validation Files](#batch-validation-files)
+  * [Gender Validation](#gender-validation)
+  * [Gene Coverage By Sample](#gene-coverage-by-sample)
+  * [Observed mean coverage by sample](#observed-mean-coverage-by-sample)
+  * [Individual genes with &gt;80\x fail across samples](#individual-genes-with-80-fail-across-samples)
+  * [Requested Genes not found in Reference](#requested-genes-not-found-in-reference)
+  * [Requested Genes not found in Annovar](#requested-genes-not-found-in-annovar)
+* [Summary Report](#summary-report)
+  * [Summary Data](#summary-data)
+    * [Inferred Sex Calculation](#inferred-sex-calculation)
+  * [Coverage Summary](#coverage-summary)
+    * [Mean Coverage Calculation](#mean-coverage-calculation)
+  * [Gene Summary](#gene-summary)
+* [Tab Separated Variant File](#tab-separated-variant-file)
+* [Provenance Report](#provenance-report)
+* [Gap Report](#gap-report)
+
+***
+
 After completion of the pipeline (after a successful `run` command), cpipe will produces results in the cpipe/batches/
 <batch identifier>/analysis directory. This directory has the following important subdirectories:
 

@@ -1,4 +1,12 @@
 # Batches
+
+* [Manipulating Batches](#manipulating-batches)
+  * [Creating a Batch](#creating-a-batch)
+* [Files](#files)
+  * [Data Directory](#data-directory)
+  * [Sample Metadata](#sample-metadata)
+* [config.batch.groovy](#configbatchgroovy)
+
 ## Manipulating Batches
 ### Creating a Batch
 Once you have your fastq files, following these steps to create a new analysis batch:

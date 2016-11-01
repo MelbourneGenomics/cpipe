@@ -1,10 +1,16 @@
 # Designs
 
+* [Introduction](#introduction)
+* [Gene List](#gene-list)
+* [Regions BED file](#regions-bed-file)
+
 ## Introduction
 
 In Cpipe, a design specifies the analysed regions of the genome for a given set of samples. For instance, a given disease might
  associated with a group of genes, which we then group into a design and re-use for analysis of patients being tested
  for this disease.
+ 
+However, current
  
 A design consists of the following files
 * [A gene list (mandatory)](#gene-list)

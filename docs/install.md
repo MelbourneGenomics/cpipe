@@ -1,5 +1,15 @@
 # Installation
 
+* [Prerequisites](#prerequisites)
+  * [Runtimes](#runtimes)
+  * [Libraries:](#libraries)
+  * [Build Tools:](#build-tools)
+  * [Utilities:](#utilities)
+* [Swift Credentials](#swift-credentials)
+* [Installation](#installation-1)
+  * [Install Script Options](#install-script-options)
+* [Set Installation Name (optional)](#set-installation-name-optional)
+
 ## Prerequisites
 Before installing Cpipe, you need to make sure you have the following packages installed on your system. Most of these
 are very common packages and probably came pre-installed on your machine. However this is an exhaustive list:

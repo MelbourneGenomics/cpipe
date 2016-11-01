@@ -1,5 +1,10 @@
 # Configuration
 
+* [config.groovy](#configgroovy)
+  * [Syntax](#syntax)
+  * [Options](#options)
+* [bpipe.config](#bpipeconfig)
+
 The global configuration of Cpipe can be modified in 2 different ways:
 
 * [By modifying the `config.groovy` or `config.batch.groovy` files](#config.groovy)

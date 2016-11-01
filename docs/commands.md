@@ -1,4 +1,16 @@
 # Running Cpipe
+* [Basic Functionality](#basic-functionality)
+* [Run](#run)
+* [Test](#test)
+* [Batch](#batch)
+  * [Add Batch](#add-batch)
+  * [Show Batch](#show-batch)
+  * [Show Batches](#show-batches)
+  * [Add Sample](#add-sample)
+* [Genelist](#genelist)
+* [Metadata](#metadata)
+  * [Update](#update)
+  * [Validate](#validate)
 
 ## Basic Functionality
 
