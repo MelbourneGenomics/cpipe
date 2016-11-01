@@ -26,7 +26,7 @@ Once you have your fastq files, follow these steps to create a new analysis batc
       python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name
     ```
 
-  For more information on this command, refer to the (`add_batch` documentation)[commands.md#add-batch]
+  For more information on this command, refer to the [`add_batch` documentation](commands.md#add-batch)
   
 ### Adding More Samples
 
