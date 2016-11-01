@@ -93,7 +93,7 @@ def task_download_groovy():
     if has_swift_auth():
         return nectar_download('groovy')
     else:
-        return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION))
+        return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION), 'zip')
 
 
 def task_download_bwa():

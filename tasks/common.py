@@ -1,14 +1,15 @@
 import os
 import tarfile
 import shutil
+import subprocess
+import tempfile
+import stat
+
 from urllib import urlopen, urlretrieve
 from StringIO import StringIO
-
-import subprocess
 from doit.action import CmdAction
 from doit.tools import create_folder
 from zipfile import ZipFile
-import tempfile
 
 # General paths
 HERE = os.path.dirname(__file__)  # The cpipe root directory
@@ -64,6 +65,10 @@ def replace_symlink(target, link):
     if os.path.islink(link) or os.path.isfile(link):
         os.unlink(link)
     os.symlink(target, link)
+
+def make_executable(file):
+    st = os.stat(file)
+    os.chmod(file, st.st_mode | stat.S_IEXEC)
 
 def delete_and_copy(src, dest):
     if os.path.isdir(src):

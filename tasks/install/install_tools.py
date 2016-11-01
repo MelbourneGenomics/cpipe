@@ -271,7 +271,10 @@ def task_install_groovy():
         # Symlink all binaries to this directory
         groovy_bin = os.path.join(GROOVY_ROOT, 'bin')
         for bin_file in os.listdir(groovy_bin):
-            replace_symlink(os.path.join(groovy_bin, bin_file), os.path.join(INSTALL_BIN, bin_file))
+            bin_target = os.path.join(groovy_bin, bin_file)
+            symlink = os.path.join(INSTALL_BIN, bin_file)
+            replace_symlink(bin_target, symlink)
+            make_executable(bin_target)
 
         if has_swift_auth():
             add_to_manifest('groovy')
