@@ -83,15 +83,15 @@ TOOLS="$BASE/tools"
 SCRIPTS="$BASE/pipeline/scripts"
 
 // Location of Picard tools here
-PICARD_HOME="$BASE/tools/picard"
+PICARD_HOME="$BASE/tools/java_libs"
 
-HTSLIB="$BASE/tools/htslib"
+HTSLIB="$BASE/tools"
 
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)
 // GATK="$TOOLS/gatk/2.3.9"
-GATK="$TOOLS/gatk"
+GATK="$TOOLS/java_libs"
 
 // gatk < 2.8
 GATK_LEGACY=false
@@ -104,11 +104,11 @@ GATK_VARIANT_ONLY=false
 EXCEL="$TOOLS/excel"
 
 // Location of Bedtools distribution
-BEDTOOLS="$TOOLS/bedtools"
+BEDTOOLS="$TOOLS"
 
 // Location of Samtools
-BCFTOOLS="$TOOLS/bcftools"
-SAMTOOLS="$TOOLS/samtools"
+BCFTOOLS="$TOOLS/bin"
+SAMTOOLS="$TOOLS/bin"
 
 // FastQC tool
 FASTQC="$TOOLS/fastqc"
@@ -132,7 +132,7 @@ IGVTOOLS="$TOOLS/IGVTools"
 IGV="$TOOLS/tools/igv"
 
 // Location and version of BWA
-BWA="$TOOLS/bwa/bwa"
+BWA="$TOOLS/bin/bwa"
 BWA_THREADS="5"
 
 CONDEL="$TOOLS/vep_plugins/config/Condel"

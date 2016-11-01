@@ -10,7 +10,6 @@ import hashlib
 from os import path
 from subprocess import check_call
 from swiftclient.service import SwiftService
-from tasks.nectar_assets.dependencies import *
 from tasks.common import ROOT, unzip_todir
 import tempfile
 import shutil
@@ -58,8 +57,6 @@ def assets_needing_update():
                 to_download.append('{path}/{version}.tar.gz'.format(**target_json[key]))
 
         return to_download
-
-
 def download_nectar_assets():
     print('Updating Cpipe assets...')
 
@@ -117,10 +114,6 @@ def download_nectar_assets():
 
         # Delete the temp dir
         shutil.rmtree(download_dir)
-
-        # Write out the updated list
-        current.seek(0)
-        current.write(json.dumps(current_json, indent=4))
 
 
 def task_nectar_assets():

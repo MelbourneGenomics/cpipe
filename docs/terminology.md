@@ -9,3 +9,5 @@ analysed with a given design only consider those regions and ignore variance in 
 * Profile: See 'Design'
 * Cohort: See 'Design'
 * Sample Metadata: Data about the samples, e.g. sample ID, sex, ethnicity
+* Pipeline Run ID: A number, designed to be unique to each run of cpipe across any installations on any system. Generated
+using the string contained in the `pipeline_id` file.

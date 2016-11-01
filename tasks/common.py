@@ -1,14 +1,15 @@
 import os
 import tarfile
 import shutil
+import subprocess
+import tempfile
+import stat
+
 from urllib import urlopen, urlretrieve
 from StringIO import StringIO
-
-import subprocess
 from doit.action import CmdAction
 from doit.tools import create_folder
 from zipfile import ZipFile
-import tempfile
 
 # General paths
 HERE = os.path.dirname(__file__)  # The cpipe root directory
@@ -29,6 +30,8 @@ PERL_VERSION = "5.24.0"
 R_VERSION = "3.3.1"
 GROOVY_VERSION = "2.4.7"
 CPSUITE_VERSION = "1.2.7"
+GROOVY_NGS_COMMIT = "b982218"
+JUNIT_XML_COMMIT = "9893370"
 FASTQC_VERSION = "0.11.5"
 PICARD_VERSION = "2.6.0"
 DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
@@ -43,34 +46,37 @@ ZLIB_VERSION = '1.2.8'
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
 INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
-C_INCLUDE_ROOT = os.path.join(TOOLS_ROOT, 'c_libs')
+INSTALL_LIB = os.path.join(INSTALL_ROOT, 'lib')
 PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
-PERL_ROOT = os.path.join(TOOLS_ROOT, 'perl')
-R_ROOT = os.path.join(TOOLS_ROOT, 'r')
 JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
-GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')
 VEP_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'vep_libs')
+VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
 PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
-BWA_ROOT = os.path.join(TOOLS_ROOT, 'bwa')
-HTSLIB_ROOT = os.path.join(TOOLS_ROOT, 'htslib')
-SAMTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'samtools')
-BCFTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bcftools')
-BEDTOOLS_ROOT = os.path.join(TOOLS_ROOT, 'bedtools')
-GATK_ROOT = os.path.join(TOOLS_ROOT, 'gatk')
 CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
-CPANM_ROOT = os.path.join(TOOLS_ROOT, 'cpanm')
-CPANM_EXE = os.path.join(CPANM_ROOT, 'cpanm')
+BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
 MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
-
-BZIP_ROOT = os.path.join(C_INCLUDE_ROOT, 'bzip2')
-XZ_ROOT = os.path.join(C_INCLUDE_ROOT, 'xz')
-PCRE_ROOT = os.path.join(C_INCLUDE_ROOT, 'pcre')
-LIBCURL_ROOT = os.path.join(C_INCLUDE_ROOT, 'libcurl')
-ZLIB_ROOT = os.path.join(C_INCLUDE_ROOT, 'zlib')
+FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
+GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
+def replace_symlink(target, link):
+    if os.path.islink(link) or os.path.isfile(link):
+        os.unlink(link)
+    os.symlink(target, link)
+
+def make_executable(file):
+    st = os.stat(file)
+    os.chmod(file, st.st_mode | stat.S_IEXEC)
+
+def delete_and_copy(src, dest):
+    if os.path.isdir(src):
+        if os.path.isdir(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+    else:
+        shutil.copy(src, dest)
 
 def unzip_todir(input, directory, type):
     """
@@ -194,7 +200,11 @@ def cmd(command, **kwargs):
     defaults.update(kwargs)
 
     return CmdAction(
-        'source {}\n'.format(ENVIRONMENT_FILE) + command,
+        '''
+            set -e
+            source {}
+        '''.format(ENVIRONMENT_FILE)
+        + command,
         **defaults
     )
 

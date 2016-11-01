@@ -9,6 +9,11 @@
         "version": "3be3889", 
         "hash": "e6d90e02a58519c50a8cd90dfba9e71fefe11bae"
     }, 
+    "xz": {
+        "path": "tools/xz", 
+        "version": "5.2.2", 
+        "hash": "aea9c5c5973bdf26fb88733ad87850597462e53f"
+    }, 
     "cpanm": {
         "path": "tools/cpanm", 
         "version": "1.7042", 
@@ -28,6 +33,11 @@
         "path": "data/mills_and_1000g", 
         "version": "hg19", 
         "hash": "fb161c4b579d64b3e0d603e5c0ba30c24663a011"
+    }, 
+    "pcre": {
+        "path": "tools/pcre", 
+        "version": "8.39", 
+        "hash": "ca9697cdea7cdc2895c6a9fdb4be3f3774aa817b"
     }, 
     "samtools": {
         "path": "tools/samtools", 
@@ -49,6 +59,11 @@
         "version": "2.9.1", 
         "hash": "0c1d123e7edd819f47a3cc681bd31141bf70e947"
     }, 
+    "libcurl": {
+        "path": "tools/libcurl", 
+        "version": "7.50.3", 
+        "hash": "db2962f8f533e6cf51c824f10b03bcec134a174a"
+    }, 
     "picard": {
         "path": "tools/picard", 
         "version": "2.6.0", 
@@ -64,25 +79,35 @@
         "version": "hg19", 
         "hash": "3dd6aefbf60f2e5d5b58241d34d7591ca12bc6d5"
     }, 
-    "r": {
-        "path": "tools/r", 
-        "version": "3.3.1", 
-        "hash": "c86465e481ad23bf8949ea2a83507bce0e9b6103"
-    }, 
-    "c_libs": {
-        "path": "tools/c_libs", 
-        "version": "4", 
-        "hash": "fc130124e1cb97845c178e2598a2bcf0be9f2f29"
+    "bpipe": {
+        "path": "tools/bpipe", 
+        "version": "0.9.9.2", 
+        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
     "gatk": {
         "path": "tools/gatk", 
         "version": "3.6", 
         "hash": "63b3d342fd1ad27ec18be7ed4287c7bf60d0f88c"
     }, 
+    "takari_cpsuite": {
+        "path": "tools/takari_cpsuite", 
+        "version": "1.2.7", 
+        "hash": "70654fbd58a1a5f98921022f483ea8a58c344b69"
+    }, 
     "chromosomes": {
         "path": "data/chromosomes", 
         "version": "hg19", 
         "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
+    }, 
+    "vep_cache": {
+        "path": "data/vep_cache", 
+        "version": "GRCh37.85", 
+        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    }, 
+    "bzip2": {
+        "path": "tools/bzip2", 
+        "version": "1.0.6", 
+        "hash": "3da91428ec4dbe6acb40c381a64a5097949209a4"
     }, 
     "bwa": {
         "path": "tools/bwa", 
@@ -94,35 +119,45 @@
         "version": "1.3", 
         "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     }, 
-    "cpan": {
-        "path": "tools/cpan", 
-        "version": "1", 
-        "hash": "5176fbd8d8cdd3716931550578dc3175aa1093e4"
+    "r": {
+        "path": "tools/r", 
+        "version": "3.3.1", 
+        "hash": "438c3759a550f37e2e185d12f9b93c0dba84f350"
     }, 
     "dbsnp": {
         "path": "data/dbsnp", 
         "version": "138.hg19", 
-        "hash": "6ede859381ed28194dcb7a41425d562c4aaa8214"
+        "hash": "d16cfdc1da79019baf4755a97b11f3022bae0447"
     }, 
     "groovy": {
         "path": "tools/groovy", 
         "version": "2.4.7", 
         "hash": "1cfcb19b6b2056e24c438101cc0fafe4cb06311e"
     }, 
-    "bpipe": {
-        "path": "tools/bpipe", 
-        "version": "0.9.9.2", 
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+    "zlib": {
+        "path": "tools/zlib", 
+        "version": "1.2.8", 
+        "hash": "5e35fe09e1bbd3510fba6e5fe25949a41e482ab6"
+    }, 
+    "junit_xml_formatter": {
+        "path": "tools/junit_xml_formatter", 
+        "version": "9893370", 
+        "hash": "20992592b0dd85767b2e6f5f997ccc8ff35102cc"
+    }, 
+    "perl_libs": {
+        "path": "tools/perl_libs", 
+        "version": "1", 
+        "hash": "61e16e084289abdd31d0fb7f0c09485b68c408c4"
     }, 
     "bcftools": {
         "path": "tools/bcftools", 
         "version": "1.3", 
         "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
     }, 
-    "vep_cache": {
-        "path": "data/vep_cache", 
-        "version": "GRCh37.85", 
-        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    "groovy_ngs_utils": {
+        "path": "tools/groovy_ngs_utils", 
+        "version": "b982218", 
+        "hash": "28e3d9ba083dc67d803ab049dc674a2093206c5a"
     }, 
     "java_libs": {
         "path": "tools/java_libs", 

@@ -8,14 +8,19 @@ PYTHON_VERSION="2.7.12"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
 TEMP_SUBDIR=`mktemp -d`
-SYS_PYTHON=${ROOT}/tools/c_libs
+SYS_PYTHON=${ROOT}/tools
 SYS_PYBIN=${SYS_PYTHON}/bin
 PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
 # Printing utilities
-bold=$(tput bold)
-normal=$(tput sgr0)
+if [[ $- == *i* ]]; then
+    bold=$(tput bold)
+    normal=$(tput sgr0)
+else
+    bold=
+    normal=
+fi
 
 # Usage function
 function usage {

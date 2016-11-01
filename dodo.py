@@ -5,13 +5,9 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
  specified. The default task is 'install'.
 """
 
-from tasks.compile_tools import *
-from tasks.common import ROOT, has_swift_auth
-
-if has_swift_auth():
-    from tasks.nectar_assets import *
-else:
-    from tasks.manual_assets import *
+from tasks.common import has_swift_auth
+from tasks.download import *
+from tasks.install import *
 from os import path
 import re
 import subprocess
@@ -34,18 +30,62 @@ def task_install():
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
-
 def task_assets():
-    # If the user has all the necessary environment variables set, let them download the cached assets
-    # from the object store
-    if has_swift_auth():
-        task = 'nectar_assets'
-    else:
-        task = 'manual_assets'
-
     return {
         'actions': None,
-        'task_dep': [task]
+        'task_dep': ['tool_assets', 'data_assets']
+    }
+
+def task_data_assets():
+    return {
+        'actions': None,
+        'task_dep': [
+            'download_dbnsfp',
+            'install_vep_cache',
+            'obtain_ucsc',
+            'download_mills_and_1000g',
+            'download_dbsnp',
+            'obtain_trio_refinement',
+            'download_chromosome_sizes',
+        ]
+    }
+
+def task_tool_assets():
+    return {
+        'actions': None,
+        'task_dep': [
+            'install_perl',
+            'install_r',
+            'install_bwa',
+            'install_htslib',
+            'install_samtools',
+            'install_bcftools',
+            'install_bedtools',
+            'install_gatk',
+            'install_perl_libs',
+            'install_vep',
+            'install_fastqc',
+            'install_groovy',
+            'install_bpipe',
+            'install_picard',
+            'install_vep_libs',
+            'install_vep_plugins',
+            'install_junit_xml_formatter',
+            'install_groovy_ngs_utils',
+            'install_takari_cpsuite',
+            'install_bzip2',
+            'install_xz',
+            'install_pcre',
+            'install_libcurl',
+            'install_zlib'
+        ]
+    }
+
+def task_copy_config():
+    return {
+        'actions': None,
+        'task_dep': ['copy_main_config', 'copy_bpipe_config'],
+        'uptodate': [True]
     }
 
 

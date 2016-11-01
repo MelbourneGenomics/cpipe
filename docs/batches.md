@@ -1,24 +1,48 @@
 # Batches
+
+* [Introduction](#introduction)
+* [Manipulating Batches](#manipulating-batches)
+  * [Creating a Batch](#creating-a-batch)
+* [Files](#files)
+  * [Data Directory](#data-directory)
+  * [Sample Metadata](#sample-metadata)
+* [config.batch.groovy](#configbatchgroovy)
+
+## Introduction
+In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
+ `cpipe/batches`. For example, a batch named `batch_001` would mean creating a `cpipe/batches/batch_001`gi directory.
+ 
 ## Manipulating Batches
 ### Creating a Batch
-Once you have your fastq files, following these steps to create a new analysis batch:
+Once you have your fastq files, follow these steps to create a new analysis batch:
 * Create the batch directory and copy in the fastq data:
+
     ```bash
     mkdir -p batches/batch_identifier/data
     cp  your_fastq_files batches/batch_identifier/data
     ```
-* Creates the metadata file
-    `python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name`
-e.g. python ./pipeline/scripts/manage_batch.py add_batch --batch test150422 --profile CARDIOM
-To specify a capture region:
-python ./pipeline/scripts/manage_batch.py add_batch --batch batch_identifier --profile profile_name --exome nextera.bed
+* Create the metadata file using:
+    ```bash
+      python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name
+    ```
+
+  For more information on this command, refer to the [`add_batch` documentation](commands.md#add-batch)
+  
+### Adding More Samples
+
+To add more samples to an existing batch, use the `./cpipe batch add_samples` command. Refer to 
+[its documentation](./commands.md#add-sample)
+
+### Viewing Batch Information
+
+Cpipe provides two utility commands for viewing batch information:
+* `./cpipe batch show_batches` lists all the batches in the current installation. Refer to 
+[its documentation](commands.md#show-batches) for more information
+* `./cpipe batch show_batch --batch <batch name>` will list information about an existing batch. Refer to
+[its documentation](commands.md#show-batch) for more information.
 
 ## Files
-
-In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
- cpipe/batches. For example, a batch named batch_001 would mean creating a cpipe/batches/batch_001 directory.
- 
-Inside this directory are three fundamental elements:
+Inside the batch directory (`batches/<batch name>`) are three fundamental elements. Here they are covered in more detail.
  * The `data` subdirectory (mandatory) 
  * The sample metadata file (mandatory)
  * A `config.batch.groovy` configuration file (optional)
@@ -51,27 +75,31 @@ various options about each sample
 |10 | Cohort | Name of target region to be analysed for the patient | Unrestricted | 2.2+|
 |11 | Sample Type |  	 | Normal, Tumour | 2.2+|
 |12 | Fastq files |  	 | Comma separated list of FASTQ files found in the data directory. | 2.2+|
-|13 | Prioritised genes | The categories are used to prioritise variants from these genes in the gene priority column of the pipeline output. | e.g. 3:GABRD,KCNAB2,ALG6 4:CASQ2,HAX1,CHRNB2,KCNJ10 | Comma separated gene list, space separating priorities.|
-|2.2+ | 14 | Consanguinity |  	 | No, Yes, Suspected, Unknown|
-|2.2+ | 15 | Variants file | Known variants for the disease (not implemented) | Unrestricted|
-|2.2+ | 16 | Pedigree file | PED specification for trios (see Trio Analysis below) | Unrestricted|
-|2.2+ | 17 | Ethnicity | For filtering on specific variants (not implemented) | Unknown, European, African, Asian|
-|2.2+ | 18 | Variant call group | Comma separated list of samples to call as a group (not implemented) | Unrestricted|
-|2.2+ | 19 | Capture date | Exome capture date | Comma separated list of dates of the format  yyyymmdd|
-|2.2+ | 20 | Sequencing Date | Date of sequencing. | Comma separated list of dates of the format  yyyymmdd|
-|2.2+ | 21 | Mean Coverage | Total on-target aligned mean coverage, post duplicate removal as obtained by the sequencing laboratory. | Numeric [0-9.]|
-|2.2+ | 22 | Duplicate % | Percentage of detected duplicates removed before calculating mean on-target coverage |  	2.2+|
+|13 | Prioritised genes | The categories are used to prioritise variants from these genes in the gene priority column of the pipeline output. | Comma separated gene list, space separating priorities, e.g. 3:GABRD,KCNAB2,ALG6 4:CASQ2,HAX1,CHRNB2,KCNJ10 | 2.2+ |
+|14 | Consanguinity |  	 | No, Yes, Suspected, Unknown| 2.2+ |
+|15 | Variants file | Known variants for the disease (not implemented) | Unrestricted |2.2+|
+|16 | Pedigree file | PED specification for trios (see Trio Analysis below) | Unrestricted|2.2+|
+|17 | Ethnicity | For filtering on specific variants (not implemented) | Unknown, European, African, Asian|2.2+ |
+|18 | Variant call group | Comma separated list of samples to call as a group (not implemented) | Unrestricted| 2.2+ |
+|19 | Capture date | Exome capture date | Comma separated list of dates of the format  yyyymmdd|2.2+
+|20 | Sequencing Date | Date of sequencing. | Comma separated list of dates of the format  yyyymmdd|2.2+ |
+|21 | Mean Coverage | Total on-target aligned mean coverage, post duplicate removal as obtained by the sequencing laboratory. | Numeric [0-9.]|2.2+ |
+|22 | Duplicate % | Percentage of detected duplicates removed before calculating mean on-target coverage |  	2.2+|
 |23 | Machine ID | Provided by the sequencing laboratory | Comma separated list | 2.2+|
-|24 | DNA Extraction Lab |  	 	2.2+ | 25 | Sequencing Lab|
-| 	 	2.2+ | 26 | Exome capture |  	 	2.2+ | 27|
-|Library preparation |  	 	2.2+ | 28 | Barcode pool size |  	 	2.2+|
-|29 | Read type |  	 	2.2+ | 30 | Machine type|
-| 	 	2.2+ | 31 | Sequencing chemistry |  	 	2.2+ | 32|
-|Sequencing software |  	 	2.2+ | 33 | Demultiplex software |  	 	2.2+|
-|34 | Hospital centre | Origin of the patient sample |  	2.2+ | 35|
-|Sequencing contact | Where sequencing alerts should be sent | Unrestricted | 2.2+ | 36|
-|Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 37|
-|Notes | Additional notes or relevant information about the sequencing | Unrestricted | 2.2+|
+|24 | DNA Extraction Lab |  |   | 2.2+ |
+|25 | Sequencing Lab |  |   | 2.2+ |
+|26 | Exome capture |   |   | 2.2+ |
+|27| Library preparation |  |   |2.2+ |
+|28 | Barcode pool size |   |   |2.2+|
+|29 | Read type |   |   | 2.2+ |
+|30 | Machine type| |   |2.2+ |
+|31 | Sequencing chemistry |    |   | 2.2+ |
+|32|Sequencing software |   |   | 2.2+ |
+|33 | Demultiplex software |    |   |2.2+|
+|34 | Hospital centre | Origin of the patient sample |  	| 2.2+ |
+|35| Sequencing contact | Where sequencing alerts should be sent | Unrestricted | 2.2+ | 
+|36|Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 
+|37|Notes | Additional notes or relevant information about the sequencing | Unrestricted |2.2+|
 |38 | Pipeline notes | Additional notes relevant to the operation of the pipeline | Unrestricted | 2.3 |
 |39 | Analysis type | Currently unused | Unrestricted | 2.3 |
 
