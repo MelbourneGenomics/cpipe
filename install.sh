@@ -14,8 +14,13 @@ PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
 # Printing utilities
-bold=$(tput bold)
-normal=$(tput sgr0)
+if [[ $- == *i* ]]; then
+    bold=$(tput bold)
+    normal=$(tput sgr0)
+else
+    bold=
+    normal=
+fi
 
 # Usage function
 function usage {
