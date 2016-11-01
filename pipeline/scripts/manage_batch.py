@@ -28,6 +28,9 @@ import glob
 import os
 import os.path
 import sys
+import subprocess
+
+from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
 
 DEFAULT_PRIORITY = '1'
 
@@ -37,29 +40,32 @@ def write_log(log, msg):
     '''
     log.write('%s: %s\n' % (datetime.datetime.now().strftime('%y%m%d-%H%M%S'), msg))
 
+
 def run_command(cmd, log):
     '''
         execute a command on the shell
     '''
     write_log(log, "executing: {0}...".format(cmd))
-    os.system(cmd)
+    subprocess.check_call(cmd, shell=True, executable='bash')
     write_log(log, "executing: {0}: done".format(cmd))
+
 
 def show_batches(out):
     '''
         look for directories in the batches directory
     '''
-    for batch in glob.glob('./batches/*'):
+    for batch in glob.glob(BATCHES + '/*'):
         if os.path.isdir(batch):
             out.write('{0}\n'.format(os.path.basename(batch)))
+
 
 def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     '''
         create a new batch
     '''
-    batch_directory = './batches/{0}'.format(batch_name)
+    batch_directory = batch_dir(batch_name)
     # check running from correct directory
-    if not os.path.isdir('./batches'):
+    if not os.path.isdir(BATCHES):
         write_log(log, "ERROR: batches directory not found. Are you running this in the Cpipe root folder?")
         sys.exit(1)
 
@@ -78,11 +84,12 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
                 sys.exit(1)
 
     # ensure profile exists
-    profile_directory = './designs/{0}'.format(profile_name)
-    profile = './designs/{0}/{0}.genes.txt'.format(profile_name)
-    profile_bed = './designs/{0}/{0}.bed'.format(profile_name)
+    profile_directory = os.path.join(DESIGNS, profile_name)
+    profile = '{0}/{1}/{1}.genes.txt'.format(DESIGNS, profile_name)
+    profile_bed = '{0}/{1}/{1}.bed'.format(DESIGNS, profile_name)
     if not os.path.isfile(profile):
-        write_log(log, 'ERROR: profile "{0}" not found. Use manage_genelists.py to list or add new profiles'.format(profile_name))
+        write_log(log, 'ERROR: profile "{0}" not found. Use manage_genelists.py to list or add new profiles'.format(
+            profile_name))
         sys.exit(1)
 
     # configure exome target if specified
@@ -105,7 +112,9 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     else:
         target_region = os.path.join(profile_directory, "generated_target_regions.bed")
         write_log(log, 'Generating target region from design details and writing to {0}...'.format(target_region))
-        run_command("python ./pipeline/scripts/combine_target_regions.py --genefiles {0} --bedfiles {1} --exons {2} > {3}".format(profile, profile_bed, "./designs/genelists/exons.bed", target_region), log)
+        run_command(
+            "python {base}/pipeline/scripts/combine_target_regions.py --genefiles {0} --bedfiles {1} --exons {2} > {3}".format(
+                profile, profile_bed, os.path.join(DESIGNS, "genelists/exons.bed"), target_region, base=BASE), log)
         write_log(log, 'Generating target region from design details and writing to {0}: done'.format(target_region))
         target_region = os.path.abspath(target_region)
 
@@ -124,7 +133,27 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         data_files = ' '.join(data_files)
     write_log(log, 'writing {0}...'.format(target_file))
     # for now we outsource sample file creation to the groovy
-    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp \"$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar\" $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -disease {1} {2} > samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
+    run_command(
+        '''
+            set -e
+            source {config_util}
+            load_config
+            cd {batches}/{batch_name}
+            $GROOVY\
+                -cp "{classpath}/*"\
+                {base}/pipeline/scripts/files_to_sample_info.groovy\
+                -batch {batch_name}\
+                -disease {profile_name} {data_files}\
+                > samples.txt
+        '''.format(
+            config_util=CONFIG_GROOVY_UTIL,
+            batches=BATCHES,
+            batch_name=batch_name,
+            classpath=CLASSPATH,
+            base=BASE,
+            profile_name=profile_name,
+            data_files=data_files
+        ), log)
     write_log(log, 'writing {0}: done'.format(target_file))
 
     analysis_directory = os.path.join(batch_directory, "analysis")
@@ -132,13 +161,16 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         write_log(log, "Creating directory: {0}...".format(analysis_directory))
         os.mkdir(analysis_directory)
         write_log(log, "Creating directory: {0}: done".format(analysis_directory))
-    write_log(log, "To run an analysis: cd {0}; ../../../bpipe run ../../../pipeline/pipeline.groovy ../samples.txt".format(analysis_directory))
+    write_log(log,
+              "To run an analysis: cd {0}; ../../../bpipe run ../../../pipeline/pipeline.groovy ../samples.txt".format(
+                  analysis_directory))
+
 
 def add_sample(batch_name, profile_name, data_files, log):
     '''
         add to an existing sample
     '''
-    batch_directory = './batches/{0}'.format(batch_name)
+    batch_directory = batch_dir(batch_name)
     # generate samples.txt
     target_file = os.path.join(batch_directory, "samples.txt")
     if data_files is None:
@@ -147,15 +179,36 @@ def add_sample(batch_name, profile_name, data_files, log):
         data_files = ' '.join(data_files)
 
     write_log(log, 'writing {0}...'.format(target_file))
-    run_command("(eval `sed \"s/\\/\\/.*//\" ./pipeline/config.groovy`; cd ./batches/{0}; $GROOVY -cp \"$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$BASE/tools/groovy-ngs-utils/1.0.2/groovy-ngs-utils.jar\" $BASE/pipeline/scripts/files_to_sample_info.groovy -batch {0} -noheader -disease {1} {2} >> samples.txt; cd -)".format(batch_name, profile_name, data_files), log)
+    run_command(
+        '''
+            set -e
+            source {config_util}
+            load_config
+            cd {batches}/{batch_name}
+            $GROOVY\
+                -cp "{classpath}/*"\
+                {base}/pipeline/scripts/files_to_sample_info.groovy\
+                -noheader\
+                -disease {profile_name} {data_files}\
+                >> samples.txt
+        '''.format(
+            config_util=CONFIG_GROOVY_UTIL,
+            batch_name=batch_name,
+            batches=BATCHES,
+            classpath=CLASSPATH,
+            base=BASE,
+            profile_name=profile_name,
+            data_files=data_files
+        ), log)
     write_log(log, 'writing {0}: done'.format(target_file))
+
 
 def show_batch(batch_name, out):
     '''
         show details of a single batch
     '''
     # batch exists?
-    batch_directory = './batches/{0}'.format(batch_name)
+    batch_directory = batch_dir(batch_name)
     if not os.path.isdir(batch_directory):
         out.write('Batch {0}: not found\n'.format(batch_name))
         sys.exit(0)
@@ -163,7 +216,7 @@ def show_batch(batch_name, out):
     samples = os.path.join(batch_directory, 'samples.txt')
     if os.path.exists(samples):
         lines = open(samples, 'r').readlines()
-        out.write('BATCH {0} contains {1} sample(s)\n'.format(batch_name, len(lines)-1))
+        out.write('BATCH {0} contains {1} sample(s)\n'.format(batch_name, len(lines) - 1))
         header = lines[0].strip('\n').split('\t')
         justify = max([len(x) for x in header])
         aggregate = collections.defaultdict(set)
@@ -177,14 +230,16 @@ def show_batch(batch_name, out):
             out.write('{0}: {1}\n'.format(header.rjust(justify), ' '.join(aggregate[header])))
     else:
         out.write('samples.txt: not found\n'.format(batch_name))
-    # could also show data, target regions
+        # could also show data, target regions
+
 
 def main():
     '''
         parse command line
     '''
     parser = argparse.ArgumentParser(description='Manage batches')
-    parser.add_argument('command', help='command to execute', choices=['add_batch', 'show_batches', 'show_batch', 'add_sample'])
+    parser.add_argument('command', help='command to execute',
+                        choices=['add_batch', 'show_batches', 'show_batch', 'add_sample'])
     parser.add_argument('--batch', required=False, help='batch name')
     parser.add_argument('--profile', required=False, help='analysis profile')
     parser.add_argument('--exome', required=False, help='target regions')
@@ -192,22 +247,23 @@ def main():
     parser.add_argument('--force', action="store_true", required=False, help='force action')
     args = parser.parse_args()
 
-    if args.command == 'show_batches': # list all batches
+    if args.command == 'show_batches':  # list all batches
         show_batches(out=sys.stdout)
     else:
         if not args.batch:
             parser.print_help()
             sys.exit(1)
-        if args.command == 'show_batch': # show details of a batch
+        if args.command == 'show_batch':  # show details of a batch
             show_batch(args.batch, out=sys.stdout)
-        elif args.command == 'add_batch': # add a new batch
+        elif args.command == 'add_batch':  # add a new batch
             if not args.profile:
                 write_log(sys.stderr, "No profile specified; defaulting to ALL (entire human exome)")
                 add_batch(args.batch, 'ALL', args.exome, args.data, args.force, log=sys.stderr)
             else:
                 add_batch(args.batch, args.profile, args.exome, args.data, args.force, log=sys.stderr)
-        elif args.command == 'add_sample': # add additional samples to batch
+        elif args.command == 'add_sample':  # add additional samples to batch
             add_sample(args.batch, args.profile, args.data, log=sys.stderr)
+
 
 if __name__ == '__main__':
     main()

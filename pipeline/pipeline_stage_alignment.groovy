@@ -53,7 +53,7 @@ set_sample_info = {
     produce(sample_bed_file) {
         exec """
             python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
-        """
+        """, "set_sample_info"
     }
  
     println "Processing input files ${files} for target region $sample_bed_file"
@@ -65,7 +65,7 @@ fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
     transform('*.fastq.gz')  to('_fastqc.zip') {
-        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz"
+        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz", "fastqc"
     }
 }
 
@@ -124,7 +124,7 @@ trim_fastq = {
                     $output1.gz ${output1.prefix}.unpaired.gz 
                     $output2.gz ${output2.prefix}.unpaired.gz 
                     ILLUMINACLIP:$ADAPTERS_FASTA:2:40:15 LEADING:3 TRAILING:6 SLIDINGWINDOW:4:15 MINLEN:36
-            """
+            """, "trim_fastq"
        }
    }
 }
@@ -195,7 +195,7 @@ index_bam = {
     // nb: fixed in new version of Bpipe
     output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
     transform("bam") to ("bam.bai") {
-        exec "$SAMTOOLS/samtools index $input.bam"
+        exec "$SAMTOOLS/samtools index $input.bam", "index_bam"
     }
     stage_status("index_bam", "forwarding", sample);
     forward input
@@ -234,7 +234,7 @@ merge_bams = {
                     ASSUME_SORTED=true
                     CREATE_INDEX=true
                     OUTPUT=$output.bam
-             """, "merge"
+             """, "merge_bams"
         //}
     }
     stage_status("merge_bams", "exit", sample);
@@ -261,7 +261,7 @@ dedup = {
              OUTPUT=$output.bam
 
         rm -r "$safe_tmp_dir"
-    """
+    """, "dedup"
 
     check {
         exec """

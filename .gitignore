@@ -1,6 +1,6 @@
 /tools/
 /data/
 /pipeline/config.groovy
-/tasks/nectar_assets/current.manifest.json
+/tasks/nectar/current.manifest.json
 *.pyc
 *.swp

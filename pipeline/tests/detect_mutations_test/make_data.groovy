@@ -12,7 +12,7 @@ load "$BASE/pipeline/pipeline_stages_config.groovy"
 
 slop_bed = {
     exec """
-        $BEDTOOLS/bin/bedtools slop -b 100 -g $REFBASE/hg19.genome -i $BASE/designs/CARDIOM/CARDIOM.bed > $output.bed
+        $BEDTOOLS/bin/bedtools slop -b 100 -g $HG19_CHROM_INFO -i $BASE/designs/CARDIOM/CARDIOM.bed > $output.bed
      """
 
     branch.extract_region = output.bed

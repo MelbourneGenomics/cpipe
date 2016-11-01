@@ -121,7 +121,7 @@ update_gene_lists = {
                 python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
 
                 touch $output1
-            """
+            """, "update_gene_lists"
         }
     }
 }
@@ -147,7 +147,7 @@ create_combined_target = {
             cut -f 1,2,3 | 
             $BEDTOOLS/bin/bedtools sort | 
             $BEDTOOLS/bin/bedtools merge > $output.bed
-        """
+        """, "create_combined_target"
     }
 
     branch.COMBINED_TARGET = output.bed
@@ -173,7 +173,7 @@ create_synonymous_target = {
             $BEDTOOLS/bin/bedtools subtract -a "$safe_tmp_dir/intron.bed" -b "$safe_tmp_dir/exon.bed" > $output.bed
 
             rm -r "$safe_tmp_dir"
-        """
+        """, "create_synonymous_target"
 
         branch.COMBINED_SYNONYMOUS = output.bed
     }
@@ -185,7 +185,7 @@ build_capture_stats = {
     produce( "exon_coverage_stats.txt" ) {
         exec """
             python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
-        """
+        """, "build_capture_stats"
     }
     stage_status("build_capture_stats", "exit", "n/a");
 }
@@ -244,7 +244,7 @@ set_target_info = {
             else
                 python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
             fi
-        """
+        """, "set_target_info"
     }
 
     produce(transcripts_file) {
@@ -329,7 +329,7 @@ sample_similarity_report = {
     produce("similarity_report.txt") {
         exec """
             $JAVA -Xmx4g -cp "${GROOVY_HOME}/embeddable/groovy-all-${GROOVY_VERSION}.jar:$BASE/tools/java_libs/*" VCFSimilarity $inputs.vcf > $output.txt
-             """
+             """, "sample_similarity_report"
     }
 }
 
