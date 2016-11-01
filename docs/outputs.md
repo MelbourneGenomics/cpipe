@@ -19,8 +19,10 @@
 
 ***
 
-After completion of the pipeline (after a successful `run` command), cpipe will produces results in the cpipe/batches/
-<batch identifier>/analysis directory. This directory has the following important subdirectories:
+## Introduction
+
+After completion of the pipeline (after a successful `run` command), cpipe will produce results in the `cpipe/batches/
+<batch identifier>/analysis` directory. This directory has the following important subdirectories:
 
 * `align`: Contains the sequence alignment (BAM) files generated when aligning the fastq sample files to the 
 reference genome. 

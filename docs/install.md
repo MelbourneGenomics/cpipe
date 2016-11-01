@@ -54,7 +54,8 @@ git clone https://github.com/MelbourneGenomics/cpipe_util
 cp cpipe_util/swift_credentials.sh cpipe
 ```
 Or you can download the credentials file from NeCTAR (Compute → Access & Security → API Access → Download OpenStack RC File) and
-place it in the cpipe root directory. You will need MGHA NeCTAR access for this method.
+place it in the cpipe root directory. Then you'll need to rename the file as `swift_credentials.sh`.
+You will need MGHA NeCTAR access for this method.
 
 ## Installation
 Run `./install.sh` and the full installation should take place. 
