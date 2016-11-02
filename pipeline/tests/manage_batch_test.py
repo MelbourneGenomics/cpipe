@@ -16,11 +16,14 @@ from cpipe_utility import BASE
 def suppress_stdout():
     with open(os.devnull, "w") as devnull:
         old_stdout = sys.stdout
+        old_stderr = sys.stderr
         sys.stdout = devnull
+        sys.stderr = devnull
         try:
             yield
         finally:
             sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
 class ManageBatchTest(unittest.TestCase):
     test_batch_name = 'test'
@@ -31,7 +34,8 @@ class ManageBatchTest(unittest.TestCase):
     sample_metadata = os.path.join(test_batch_dir, 'samples.txt')
 
     def create_test_batch(self):
-        add_batch(self.test_batch_name, 'ALL', None, self.test_data_files, None, log=sys.stdout)
+        with open(os.devnull, "w") as devnull:
+            add_batch(self.test_batch_name, 'ALL', None, self.test_data_files, None, log=devnull)
 
     def delete_test_batch(self):
         batch_dir = os.path.join(BASE, 'batches', self.test_batch_name)
@@ -76,8 +80,8 @@ class ManageBatchTest(unittest.TestCase):
     def test_add_sample(self):
         self.create_test_batch()
         initial_size = os.stat(self.sample_metadata).st_size
-        with suppress_stdout():
-            add_sample(self.test_batch_name, 'ALL', self.test_data_files, sys.stdout)
+        with suppress_stdout(), open(os.devnull, "w") as devnull:
+            add_sample(self.test_batch_name, 'ALL', self.test_data_files, log=devnull)
         final_size = os.stat(self.sample_metadata).st_size
         self.delete_test_batch()
         assert(final_size > initial_size)

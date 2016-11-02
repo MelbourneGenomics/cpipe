@@ -46,7 +46,7 @@ def run_command(cmd, log):
         execute a command on the shell
     '''
     write_log(log, "executing: {0}...".format(cmd))
-    subprocess.check_call(cmd, shell=True, executable='bash')
+    subprocess.check_call(cmd, shell=True, executable='bash', stdout=log, stderr=log)
     write_log(log, "executing: {0}: done".format(cmd))
 
 
