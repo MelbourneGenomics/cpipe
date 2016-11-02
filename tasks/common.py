@@ -9,6 +9,7 @@ from urllib import urlopen, urlretrieve
 from StringIO import StringIO
 from doit.action import CmdAction
 from doit.tools import create_folder
+from doit import get_var
 from zipfile import ZipFile
 
 # General paths
@@ -61,14 +62,23 @@ GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
+# Utility variables
+bash_header = '''
+    set -e
+    source {}
+'''.format(ENVIRONMENT_FILE)
+MANUAL_INSTALL = get_var('mode', 'auto')
+
 def replace_symlink(target, link):
     if os.path.islink(link) or os.path.isfile(link):
         os.unlink(link)
     os.symlink(target, link)
 
+
 def make_executable(file):
     st = os.stat(file)
     os.chmod(file, st.st_mode | stat.S_IEXEC)
+
 
 def delete_and_copy(src, dest):
     if os.path.isdir(src):
@@ -77,6 +87,7 @@ def delete_and_copy(src, dest):
         shutil.copytree(src, dest)
     else:
         shutil.copy(src, dest)
+
 
 def unzip_todir(input, directory, type):
     """
@@ -152,34 +163,6 @@ def download_zip(url_str, directory, type=None):
     unzip_todir(input, directory, type)
 
 
-def get_cpanm_env():
-    install_env = os.environ.copy()
-    install_env["CPATH"] = (install_env.get("C_INCLUDE_PATH") or '') + os.pathsep + PERL_ROOT
-    install_env["PERL_SRC"] = PERL_ROOT
-    return install_env
-
-
-def get_c_env():
-    env = os.environ.copy()
-    include_dirs = [os.path.abspath(os.path.join(C_INCLUDE_ROOT, p)) for p in os.listdir(C_INCLUDE_ROOT)]
-    
-    if 'CFLAGS' not in env:
-        env['CFLAGS'] = ''
-    if 'LDFLAGS' not in env:
-        env['LDFLAGS'] = ''
-    if 'CPPFLAGS' not in env:
-        env['CPPFLAGS'] = ''
-
-    #for dir in include_dirs:
-    #    env['CFLAGS'] += ' -I' + dir
-    #    env['CPPFLAGS'] += ' -I' + dir 
-    #    env['LDFLAGS'] += ' -L' + dir 
-    #env['LDFLAGS'] += '-L' + os.pathsep.join(include_dirs)
-    #env["CPATH"] = (env.get("CPATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
-    #env['LD_LIBRARY_PATH'] = (env.get("LD_LIBRARY_PATH") or '') + os.pathsep + os.pathsep.join(include_dirs)
-    return env
-
-
 def cmd(command, **kwargs):
     """
     Creates a doit CmdAction with certain default parameters used by cpipe, namely using bash as the default shell,
@@ -200,16 +183,12 @@ def cmd(command, **kwargs):
     defaults.update(kwargs)
 
     return CmdAction(
-        '''
-            set -e
-            source {}
-        '''.format(ENVIRONMENT_FILE)
-        + command,
+        bash_header + command,
         **defaults
     )
 
-def sh(command, **kwargs):
 
+def sh(command, **kwargs):
     # Set default options and override then with the user specified options
     defaults = {
         'executable': 'bash',
@@ -218,7 +197,7 @@ def sh(command, **kwargs):
     }
     defaults.update(kwargs)
 
-    subprocess.check_call('source {}\n'.format(ENVIRONMENT_FILE) + command, **defaults)
+    subprocess.check_call(bash_header + command, **defaults)
 
 def has_swift_auth():
     swift_credentials = {
@@ -234,6 +213,11 @@ def has_swift_auth():
     # from the object store
     return swift_credentials.issubset(os.environ.keys())
 
+def manual_install():
+    return MANUAL_INSTALL == 'manual'
+
+def swift_install():
+    return MANUAL_INSTALL == 'auto'
 
 def in_docker():
     return os.path.exists('/.dockerenv')

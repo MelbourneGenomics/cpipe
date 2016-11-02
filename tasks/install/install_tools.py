@@ -1,5 +1,7 @@
+from __future__ import print_function
 import os
 import glob
+import sys
 from tasks.nectar.nectar_util import *
 
 from tasks.install.install_c_libs import *
@@ -143,21 +145,36 @@ def task_install_bedtools():
 
 
 def task_install_gatk():
-    def action(gatk_dir):
-        sh('''
+    # If they're part of Melbourne Genomics they can use our licensed copy of GATK. Otherwise they have to install it
+    # themselves
+    if has_swift_auth():
+        def action(gatk_dir):
+            sh('''
             GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
             cp GenomeAnalysisTK.jar {}
         '''.format(JAVA_LIBS_ROOT), cwd=gatk_dir)
-        if has_swift_auth():
-            add_to_manifest('gatk')
+            if has_swift_auth():
+                add_to_manifest('gatk')
 
-    return {
-        'actions': [action],
-        'getargs': {'gatk_dir': ('download_gatk', 'dir')},
-        'setup': ['download_gatk'],
-        'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
-        'uptodate': [not nectar_asset_needs_update('gatk')],
-    }
+        return {
+            'actions': [action],
+            'getargs': {'gatk_dir': ('download_gatk', 'dir')},
+            'setup': ['download_gatk'],
+            'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
+            'uptodate': [not nectar_asset_needs_update('gatk')],
+        }
+    else:
+        def action():
+            print('''
+                It looks like you aren't a member of Melbourne Genomics (since you don't have a swift_credentials.sh
+                file in your cpipe directory). In this case, you'll have to obtain your own copy of the
+                GenomeAnalysisTK.jar and place it in cpipe/tools/java_libs. You'll be able to obtain a copy from the
+                Broad website: https://software.broadinstitute.org/gatk/download/
+            ''', file=sys.stderr)
+        return {
+            'actions': [action],
+            'uptodate': [False]
+        }
 
 
 def task_install_perl_libs():

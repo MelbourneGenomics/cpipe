@@ -66,7 +66,7 @@ def download_nectar_asset(asset_key, to_temp=True):
 
         download_dir = tempfile.mkdtemp()
         for result in swift.download(
-                container='cpipe-2.4-assets',
+                container=target_json[asset_key]['container'],
                 objects=[os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')],
                 options={'out_directory': download_dir}
         ):

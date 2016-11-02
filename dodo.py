@@ -4,6 +4,7 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
  setup operations needed by cpipe. This module imports tasks from the tasks directory and executes whichever the user
  specified. The default task is 'install'.
 """
+import sys
 
 from tasks.common import has_swift_auth
 from tasks.download import *
@@ -51,34 +52,36 @@ def task_data_assets():
     }
 
 def task_tool_assets():
+    task_dep = [
+        'install_perl',
+        'install_r',
+        'install_bwa',
+        'install_htslib',
+        'install_samtools',
+        'install_bcftools',
+        'install_bedtools',
+        'install_gatk',
+        'install_perl_libs',
+        'install_vep',
+        'install_fastqc',
+        'install_groovy',
+        'install_bpipe',
+        'install_picard',
+        'install_vep_libs',
+        'install_vep_plugins',
+        'install_junit_xml_formatter',
+        'install_groovy_ngs_utils',
+        'install_takari_cpsuite',
+        'install_bzip2',
+        'install_xz',
+        'install_pcre',
+        'install_libcurl',
+        'install_zlib'
+    ]
+
     return {
         'actions': None,
-        'task_dep': [
-            'install_perl',
-            'install_r',
-            'install_bwa',
-            'install_htslib',
-            'install_samtools',
-            'install_bcftools',
-            'install_bedtools',
-            'install_gatk',
-            'install_perl_libs',
-            'install_vep',
-            'install_fastqc',
-            'install_groovy',
-            'install_bpipe',
-            'install_picard',
-            'install_vep_libs',
-            'install_vep_plugins',
-            'install_junit_xml_formatter',
-            'install_groovy_ngs_utils',
-            'install_takari_cpsuite',
-            'install_bzip2',
-            'install_xz',
-            'install_pcre',
-            'install_libcurl',
-            'install_zlib'
-        ]
+        'task_dep': task_dep
     }
 
 def task_copy_config():
@@ -88,13 +91,6 @@ def task_copy_config():
         'uptodate': [True]
     }
 
-
-def task_copy_config():
-    return {
-        'actions': None,
-        'task_dep': ['copy_main_config', 'copy_bpipe_config'],
-        'uptodate': [True]
-    }
 
 
 def task_copy_main_config():

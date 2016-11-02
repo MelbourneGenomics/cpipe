@@ -59,7 +59,7 @@ def task_download_maven():
 
 
 def task_download_cpanm():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('cpanm')
     else:
         def action():
@@ -76,35 +76,35 @@ def task_download_cpanm():
 
 
 def task_download_perl():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('perl')
     else:
         return download_task("http://www.cpan.org/src/5.0/perl-{0}.tar.gz".format(PERL_VERSION))
 
 
 def task_download_r():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('r')
     else:
         return download_task("http://cran.csiro.au/src/base/R-3/R-{0}.tar.gz".format(R_VERSION))
 
 
 def task_download_groovy():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('groovy')
     else:
         return download_task("https://dl.bintray.com/groovy/maven/apache-groovy-binary-{0}.zip".format(GROOVY_VERSION), 'zip')
 
 
 def task_download_bwa():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('bwa')
     else:
         return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION))
 
 
 def task_download_htslib():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('htslib')
     else:
         return download_task("https://github.com/samtools/htslib/releases/download/{0}/htslib-{0}.tar.bz2".format(
@@ -112,7 +112,7 @@ def task_download_htslib():
 
 
 def task_download_samtools():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('samtools')
     else:
         return download_task("https://github.com/samtools/samtools/releases/download/{0}/samtools-{0}.tar.bz2".format(
@@ -120,7 +120,7 @@ def task_download_samtools():
 
 
 def task_download_bcftools():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('bcftools')
     else:
         return download_task('https://github.com/samtools/bcftools/releases/download/{0}/bcftools-{0}.tar.bz2'.format(
@@ -128,13 +128,13 @@ def task_download_bcftools():
 
 
 def task_download_bedtools():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('bedtools')
     else:
         return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION))
 
 def task_download_vep():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('vep')
     else:
         def action():
@@ -151,14 +151,14 @@ def task_download_vep():
         }
 
 def task_download_fastqc():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('fastqc')
     else:
         return download_task(
             "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v{0}.zip".format(FASTQC_VERSION))
 
 def task_download_bpipe():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('bpipe')
     else:
         def action():
@@ -177,7 +177,7 @@ def task_download_bpipe():
 
 
 def task_download_gatk():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('gatk')
     else:
         def action():
@@ -202,7 +202,7 @@ def task_download_gatk():
 
 
 def task_download_picard():
-    if has_swift_auth():
+    if swift_install():
        return nectar_download('picard')
     else:
         def action():
@@ -223,7 +223,7 @@ def task_download_perl_libs():
     Downloads all cpan libs into the cpan directory. Each dependency is a subtask
     :return:
     """
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('perl_libs')
     else:
         def action():
@@ -245,7 +245,7 @@ def task_download_perl_libs():
 
 
 def task_download_vep_libs():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('vep_libs')
     else:
         def action():
@@ -261,7 +261,7 @@ def task_download_vep_libs():
 
 
 def task_download_vep_plugins():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('vep_plugins')
     else:
         def action():
@@ -304,7 +304,7 @@ def task_make_java_libs_dir():
 
 
 def task_download_junit_xml_formatter():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('junit_xml_formatter')
     else:
         def action():
@@ -327,7 +327,7 @@ def task_download_junit_xml_formatter():
 
 
 def task_download_groovy_ngs_utils():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('groovy_ngs_utils')
     else:
         def action():
@@ -352,7 +352,7 @@ def task_download_groovy_ngs_utils():
 
 
 def task_download_takari_cpsuite():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('takari_cpsuite')
     else:
         def action():
@@ -382,7 +382,7 @@ def task_download_c_libs():
 
 
 def task_download_bzip2():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('bzip2')
     else:
         return download_task(
@@ -390,7 +390,7 @@ def task_download_bzip2():
 
 
 def task_download_xz():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('xz')
     else:
         return download_task(
@@ -398,7 +398,7 @@ def task_download_xz():
 
 
 def task_download_pcre():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('pcre')
     else:
         return download_task(
@@ -406,7 +406,7 @@ def task_download_pcre():
 
 
 def task_download_libcurl():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('libcurl')
     else:
         return download_task(
@@ -414,7 +414,7 @@ def task_download_libcurl():
 
 
 def task_download_zlib():
-    if has_swift_auth():
+    if swift_install():
         return nectar_download('zlib')
     else:
         return download_task(
