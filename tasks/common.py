@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import tempfile
 import stat
+import sys
 
 from urllib import urlopen, urlretrieve
 from StringIO import StringIO
@@ -189,14 +190,15 @@ def cmd(command, **kwargs):
 
 
 def sh(command, **kwargs):
+
     # Set default options and override then with the user specified options
     defaults = {
         'executable': 'bash',
         'shell': True,
-        'cwd': ROOT
+        'cwd': ROOT,
+        'stdout': sys.stdout
     }
     defaults.update(kwargs)
-
     subprocess.check_call(bash_header + command, **defaults)
 
 def has_swift_auth():
