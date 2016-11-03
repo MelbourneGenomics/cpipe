@@ -12,6 +12,14 @@ from tasks.common import unzip_todir, has_swift_auth, ROOT
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
 target_manifest = path.join(current_dir, 'target.manifest.json')
+credentials = {
+    'os_auth_url': "https://keystone.rc.nectar.org.au:5000/v2.0/",
+    'os_tenant_id': "7ea859948c3a451c9baced6fee813ed1",
+    'os_tenant_name': "Melbourne_Genomics_Health_Alliance_pipeline_install_bot",
+    'os_project_name': "Melbourne_Genomics_Health_Alliance",
+    'os_region_name': "Melbourne"
+}
+
 
 def add_to_manifest(key):
     with open(target_manifest, 'r') as target, \
@@ -30,11 +38,11 @@ def create_current_manifest():
         with open(current_manifest, 'w') as current:
             json.dump({}, current)
 
+
 def nectar_asset_needs_update(asset_key):
     create_current_manifest()
     with open(target_manifest, 'r') as target, \
             open(current_manifest, 'r') as current:
-
         # Open the input and output json files
         target_json = json.load(target)
         current_json = json.load(current)
@@ -43,6 +51,7 @@ def nectar_asset_needs_update(asset_key):
         if asset_key not in current_json or target_json[asset_key]['hash'] != current_json[asset_key]['hash']:
             return True
     return False
+
 
 def download_nectar_asset(asset_key, to_temp=True):
     create_current_manifest()
@@ -68,7 +77,7 @@ def download_nectar_asset(asset_key, to_temp=True):
         for result in swift.download(
                 container=target_json[asset_key]['container'],
                 objects=[os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')],
-                options={'out_directory': download_dir}
+                options=credentials.update({'out_directory': download_dir})
         ):
             zip_file = result['path']
             target_hash = target_json[asset_key]['hash']
@@ -96,6 +105,7 @@ def download_nectar_asset(asset_key, to_temp=True):
                 # Return the download location so we can pass it to the install tasks
                 return unzip_dir
 
+
 def nectar_download(asset_key):
     """
     Downloads the asset to a temporary directory for later installation
@@ -106,11 +116,13 @@ def nectar_download(asset_key):
         'uptodate': [False]
     }
 
+
 def nectar_install(asset_key, extra_keys={}):
     """
     Downloads the asset to its final destination in the cpipe installation, not using a temporary file
     or requiring installation
     """
+
     def action():
         # Download the asset from nectar
         download_nectar_asset(asset_key, to_temp=False)
@@ -126,4 +138,3 @@ def nectar_install(asset_key, extra_keys={}):
     }
     task.update(extra_keys)
     return task
-
