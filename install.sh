@@ -52,6 +52,7 @@ TASKS='install'
 CUSTOM_TASKS=''
 CREDENTIALS="${ROOT}/swift_credentials.sh"
 USE_SWIFT=1
+MODE='auto'
 
 while true ; do
     case "$1" in
@@ -93,14 +94,17 @@ fi
 # If credentials were specified, load them
 if (( USE_SWIFT )); then
 
-    # Check the credentials file exists
+    # If the credentials exist, load them. Otherwise, warn the user they don't have credentials
     if [[ ! -f $CREDENTIALS ]]; then
-        >&2 echo "Credentials file doesn't exist at the path specified ($CREDENTIALS)"
-        exit 1
+        >&2 echo "Credentials file doesn't exist at the path specified ($CREDENTIALS). Cpipe will perform an incomplete\
+ installation. If you are part of MGHA you probably want to obtain download credentials and place them in the path above."
+    else
+        >&2 echo "Credentials file found in path specified ($CREDENTIALS). Performing full install."
+        # Load swift credentials
+        source ${ROOT}/swift_credentials.sh
     fi
-
-    # Load swift credentials
-    source ${ROOT}/swift_credentials.sh
+else
+    MODE='manual'
 fi
 
 # Output stream
@@ -109,7 +113,6 @@ if [[ $VERBOSITY == 2 ]] ; then
 else
     OUTPUT_STREAM="/dev/null"
 fi
-
 
     # Use python-build to install python
     if [[ ! -f ${VENV} ]]; then
@@ -145,4 +148,4 @@ fi
     } > ${OUTPUT_STREAM}
 
 # Download assets and tools using doit
-doit -n $PROCESSES --verbosity $VERBOSITY $TASKS
+doit -n $PROCESSES --verbosity $VERBOSITY $TASKS mode=${MODE}
