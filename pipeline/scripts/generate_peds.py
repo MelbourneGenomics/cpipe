@@ -109,7 +109,7 @@ def generate_peds(metadata, log_fh):
             result[sample] = generate_ped(sample, pedigree, gender_map, log_fh)
             found += 1
 
-    write_log(log_fh, 'parsing sample metadata: processed {0} lines, found {1} families'.format(count, found))
+    write_log(log_fh, 'parsing sample metadata: processed {0} lines, found {1} families'.format(len(lines), found))
     return result
 
 def write_peds(prefix, data):
