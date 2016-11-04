@@ -31,11 +31,13 @@ def task_install():
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
+
 def task_assets():
     return {
         'actions': None,
         'task_dep': ['tool_assets', 'data_assets']
     }
+
 
 def task_data_assets():
     return {
@@ -51,38 +53,38 @@ def task_data_assets():
         ]
     }
 
-def task_tool_assets():
-    task_dep = [
-        'install_perl',
-        'install_r',
-        'install_bwa',
-        'install_htslib',
-        'install_samtools',
-        'install_bcftools',
-        'install_bedtools',
-        'install_gatk',
-        'install_perl_libs',
-        'install_vep',
-        'install_fastqc',
-        'install_groovy',
-        'install_bpipe',
-        'install_picard',
-        'install_vep_libs',
-        'install_vep_plugins',
-        'install_junit_xml_formatter',
-        'install_groovy_ngs_utils',
-        'install_takari_cpsuite',
-        'install_bzip2',
-        'install_xz',
-        'install_pcre',
-        'install_libcurl',
-        'install_zlib'
-    ]
 
+def task_tool_assets():
     return {
         'actions': None,
-        'task_dep': task_dep
+        'task_dep': [
+            'install_perl',
+            'install_r',
+            'install_bwa',
+            'install_htslib',
+            'install_samtools',
+            'install_bcftools',
+            'install_bedtools',
+            'install_gatk',
+            'install_perl_libs',
+            'install_vep',
+            'install_fastqc',
+            'install_groovy',
+            'install_bpipe',
+            'install_picard',
+            'install_vep_libs',
+            'install_vep_plugins',
+            'install_junit_xml_formatter',
+            'install_groovy_ngs_utils',
+            'install_takari_cpsuite',
+            'install_bzip2',
+            'install_xz',
+            'install_pcre',
+            'install_libcurl',
+            'install_zlib'
+        ]
     }
+
 
 def task_copy_config():
     return {
@@ -90,7 +92,6 @@ def task_copy_config():
         'task_dep': ['copy_main_config', 'copy_bpipe_config'],
         'uptodate': [True]
     }
-
 
 
 def task_copy_main_config():
