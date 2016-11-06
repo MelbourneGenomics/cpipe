@@ -123,22 +123,17 @@ case "$1" in
             ;;
 
         esac
-    # e.g. docker run cpipe genelist show_bed --profile profile_name
     ;;
     bpipe)
         shift 1
         cd ${ROOT}/batches/${BATCH}/analysis
-        echo `pwd`
-        ../../../bpipe $@
+        ${BASE}/bpipe $@
     ;;
     run)
-        
         # Parse args
         shift 1
         ARGS=$(getopt -o p: --long ",bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
         eval set -- "$ARGS"
-
-        # Default args
 
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
         while true ; do
@@ -161,7 +156,7 @@ case "$1" in
         check_java
         mkdir -p batches/${BATCH}/analysis
         cd ${ROOT}/batches/${BATCH}/analysis
-        ../../../bpipe run ${BPIPE_OPTIONS} ../../../pipeline/pipeline.groovy ../samples.txt < /dev/stdin
+        ${BASE}/bpipe run ${BPIPE_OPTIONS} ${BASE}/pipeline/pipeline.groovy ${BASE}/batches/${BATCH}/samples.txt < /dev/stdin
     ;;
     test)
         shift 1
