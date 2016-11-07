@@ -37,6 +37,8 @@ function print_run_usage {
     echo "${bold}Run Options"
     echo "  ${bold}--help, --usage"
     echo "    ${normal}Prints this help page"
+    echo "  ${bold}-b, --batch <batch name>"
+    echo "    ${normal}Specify a batch (a subdirectory inside batches) to use for the run and bpipe commands. Defaults to a batch named 'batch'. Setting the batch here is the same as using the flag before the 'run' command."
     echo "  ${bold}-p, --bpipe-options <options>"
     echo "    ${normal}Specify options to pass to bpipe. Refer to http://docs.bpipe.org/Commands/run/ for reference"
 }
@@ -132,12 +134,16 @@ case "$1" in
     run)
         # Parse args
         shift 1
-        ARGS=$(getopt -o p: --long ",bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
+        ARGS=$(getopt -o p:b: --long "batch:,bpipe-options:,help,usage" -n $(basename $BASH_SOURCE) -- "$@")
         eval set -- "$ARGS"
 
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
         while true ; do
                 case "$1" in
+                    -b|--batch)
+                        BATCH=$2
+                        shift 2
+                    ;;
                     -p|--bpipe-options)
                         BPIPE_OPTIONS=$2
                         shift 2
