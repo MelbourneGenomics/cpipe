@@ -90,7 +90,6 @@ while true ; do
     esac
 done
 
-
 case "$1" in
     batch)
         #  e.g. docker run cpipe batch add_batch --batch batch_identifier --profile profile_name

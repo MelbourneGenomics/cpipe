@@ -16,17 +16,41 @@ In Cpipe, a batch is a group of samples to be analysed at the same time. In the 
 ### Creating a Batch
 Once you have your fastq files, follow these steps to create a new analysis batch:
 * Create the batch directory and copy in the fastq data:
-
     ```bash
-    mkdir -p batches/batch_identifier/data
-    cp  your_fastq_files batches/batch_identifier/data
+    mkdir -p batches/<batch identifier>/data
+    cp <fastq files> batches/<batch identifier>/data
     ```
 * Create the metadata file using:
     ```bash
-      python ./cpipe batch add_batch --batch <batch identifier> --profile profile_name
+      python ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
     ```
+    * `<target region>` is the full filepath to a capture regions bed file specified by your sequencer. For example, for
+    Illumina sequencing prepared with a Nextera DNA Library Preparation Kit, this file can be downloaded from 
+    [the Illumina website](http://support.illumina.com/downloads/nextera-rapid-capture-exome-v1-2-product-files.html).
+    * `<profile name>` is the name of the design (subdirectory within `cpipe/designs`) to use for the analysis. By default
+    this is the ALL profile, which we recommend using. See the [designs documentation](designs.md) for more information.
 
-  For more information on this command, refer to the [`add_batch` documentation](commands.md#add-batch)
+  For more information on the `add_batch` command, refer to its [documentation](commands.md#add-batch)
+  
+### Creating a Batch for Re-analysis
+If you intend to re-analyse an existing batch from an old version of Cpipe, first create the new batch directory, then
+copy the data directory, sample metadata file, and config file into this new batch. You can use this script to assist 
+you.
+
+First set the `OLD_BATCH` and `NEW_BATCH` variables to the path to the relevant batch directory (e.g. `OLD_BATCH=batches/001`, 
+`NEW_BATCH=/path/to/old/cpipe/batches/001`
+and then run this script:
+```bash
+mkdir -p $NEW_BATCH
+for file in data/ samples.txt target_regions.txt config.batch.groovy ; do
+    if [[ -e $OLD_BATCH/$file ]] ; then
+        cp -R $OLD_BATCH/$file $NEW_BATCH
+    fi
+done
+```
+
+Note that you don't need to run the `add_batch` script as you do when creating a new batch, because this creates the
+ metadata file and configuration file which should already exist if you are performing reanalysis.
   
 ### Adding More Samples
 
@@ -42,14 +66,15 @@ Cpipe provides two utility commands for viewing batch information:
 [its documentation](commands.md#show-batch) for more information.
 
 ## Files
-Inside the batch directory (`batches/<batch name>`) are three fundamental elements. Here they are covered in more detail.
- * The `data` subdirectory (mandatory) 
- * The sample metadata file (mandatory)
- * A `config.batch.groovy` configuration file (optional)
+Inside the batch directory (`batches/<batch name>`) are three fundamental elements. All of these must be present and 
+are not optional. Here they are covered in more detail.
+ * The `data` subdirectory
+ * The sample metadata file
+ * A `config.batch.groovy` configuration file
   
 ### Data Directory 
 The data directory is a directory named `data` that will hold all of the fastq samples for this batch. 
-Each sample in this directory  must fit the pattern `<sample id>_<anything>_<lane number>_<read number>.fastq.gz`, for 
+Each sample in this directory must fit the pattern `<sample id>_<anything>_<lane number>_<read number>.fastq.gz`, for 
 example, `00NA12877_Coriell_000_TGx140395_TL140776_L001_R1.fastq.gz`. The components to this filename are as follows
 * `sample id` is any unique name for the sample, e.g. `NA12878` in our example
 * `anything` of course can be anything produced by the sequencer, in this case `Coriell_000_TGx140395_TL140776` 
@@ -89,20 +114,24 @@ various options about each sample
 |24 | DNA Extraction Lab |  |   | 2.2+ |
 |25 | Sequencing Lab |  |   | 2.2+ |
 |26 | Exome capture |   |   | 2.2+ |
-|27| Library preparation |  |   |2.2+ |
+|27 | Library preparation |  |   |2.2+ |
 |28 | Barcode pool size |   |   |2.2+|
 |29 | Read type |   |   | 2.2+ |
 |30 | Machine type| |   |2.2+ |
 |31 | Sequencing chemistry |    |   | 2.2+ |
-|32|Sequencing software |   |   | 2.2+ |
+|32 |Sequencing software |   |   | 2.2+ |
 |33 | Demultiplex software |    |   |2.2+|
 |34 | Hospital centre | Origin of the patient sample |  	| 2.2+ |
-|35| Sequencing contact | Where sequencing alerts should be sent | Unrestricted | 2.2+ | 
-|36|Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 
-|37|Notes | Additional notes or relevant information about the sequencing | Unrestricted |2.2+|
+|35 | Sequencing contact | Where sequencing alerts should be sent | Unrestricted | 2.2+ | 
+|36 |Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 
+|37 |Notes | Additional notes or relevant information about the sequencing | Unrestricted |2.2+|
 |38 | Pipeline notes | Additional notes relevant to the operation of the pipeline | Unrestricted | 2.3 |
 |39 | Analysis type | Currently unused | Unrestricted | 2.3 |
 
 ### config.batch.groovy
-The final file that can be part of a batch is an optional configuration file. Refer to the [configuration](configuration.md)
+The final file that must be included in the batch directory is the configuration file. Refer to the [configuration](configuration.md)
 section for more details.
+
+Note that, while most of the fields are optional in this file, the config.batch.groovy **must** contain an `EXOME_TARGET`
+field. This should be set automatically by running `./cpipe batch add_batch` as documented in the [Creating a Batch](#creating-a-batch)
+section.

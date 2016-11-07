@@ -25,8 +25,8 @@ you avoid changing this file, because if you change this file between two sets o
 settings the first was run. The only possible time you might want to edit this file is to change one of the tools 
 directories, but since Cpipe bundles all of its own tools, this isn't recommended either.
 
-Instead, we suggest you create a `config.batch.groovy` file in your batch directory (batches/<batch name>) and alter
-configuration there. 
+Instead, we suggest you edit these settings in the `config.batch.groovy` file in your batch directory (batches/<batch name>),
+which should be created by the `./cpipe batch add_batch` command.
 
 ### Syntax
 
@@ -34,6 +34,7 @@ configuration there.
 no space around the equals sign
 * Comments are also allowed in these files, but they must be using C-style slashes rather than bash hash symbols
 * For example, these lines are valid for the config.groovy file:
+
     ```
     // Whether to fail analysis if FASTQC produces warnings
     CHECK_FASTQC_FAILURES=false
