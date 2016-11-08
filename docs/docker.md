@@ -38,7 +38,7 @@ The easiest way to obtain a Cpipe image is by logging onto the Cpipe docker regi
 
 Once you have the credentials, you'll first need to login to our registry. Insert the credentials as prompted.
 ```bash
-    docker login https://docker.melbournegenomics.org
+docker login https://docker.melbournegenomics.org
 ```
 
 Now all you need to do is run the following command, where `<version>` is the version of Cpipe you would like to install
@@ -61,10 +61,12 @@ In order to build the Cpipe container, follow these steps:
 into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
 * 2b) If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
 do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
-* 3) Build the container with the following command, where `<version>` is some identifier you want to tag the image with.
+* 3) `cd` into the cpipe directory and build the container with the following commands,
+ where `<version>` is some identifier you want to tag the image with.
 
     ```bash
-        docker build . -t cpipe:<version>
+    cd cpipe
+    docker build . -t cpipe:<version>
     ```
     The `<version>` tag can be the release version of Cpipe (e.g. `2.4`), or it could be the git commit hash if you think
     you will have many images from the same release (e.g. `3b592c3`)
@@ -73,7 +75,7 @@ do this, follow all the instructions in the [Public Install section of the Insta
 
 ### Creating a Batch
 
-The first step in runing the Cpipe image, as with the native install, is to create your analysis batch. However in
+The first step in running the Cpipe image, as with the native install, is to create your analysis batch. However in
  Docker, this batch must contain *everything* from your filesystem that Cpipe will ever need, which includes the exome target
  file that you wouldn't normally put in the batch directory.
 
@@ -82,9 +84,9 @@ The first step in runing the Cpipe image, as with the native install, is to crea
  make a `batches/<batch identifier>` directory as a subdirectory:
 
 ```bash
-    mkdir -p batches/<batch identifier>/data
-    cp <fastq files> batches/<batch identifier>/data
-    cp <target region> batches/<batch identifier>
+mkdir -p batches/<batch identifier>/data
+cp <fastq files> batches/<batch identifier>/data
+cp <target region> batches/<batch identifier>
 ```
 For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch).
 
@@ -98,7 +100,7 @@ will be killed and you'll have to start the whole process again.
 
 To SSH into the container, run
 ```bash
-    docker run -it --entrypoint=bash -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
+docker run -it --entrypoint=bash -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
 ```
 Here, `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
 
@@ -106,7 +108,7 @@ This should place you in the cpipe directory of a fully configured Cpipe install
 
 However, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for your batch. To do so, run:
 ```bash
-  ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
+./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
 ```
 
 All done! You can now run any of the commands listed in the [commands documentation](commands.md), including `./cpipe run`,
@@ -117,7 +119,7 @@ the main analysis command.
 To create the metadata and configuration file from outside the container, run the following command.
 Here, the `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
 ```bash
-    docker -v `pwd`/batches:/opt/cpipe/batches run cpipe:<tag> batch add_batch --batch <batch identifier> --profile ALL --exome <target region>
+docker -v `pwd`/batches:/opt/cpipe/batches run cpipe:<tag> batch add_batch --batch <batch identifier> --profile ALL --exome <target region>
 ```
 
 What the `-v` flag
@@ -126,14 +128,14 @@ filepaths inside the container, you'll either have to use relative paths, which 
 directory (e.g. `./batches/MY_BATCH`) will be the path to the `MY_BATCH` batch. Alternatively you can use absolute paths,
 for example, the absolute path to `MY_BATCH` would be `/opt/cpipe/batches/MY_BATCH`.
 
-Because of this, in the command above, you'll have to specify the location of the <target region>` file from inside the container. For this we
+Because of this, in the command above, you'll have to specify the location of the `<target region>` file from inside the container. For this we
 recommend using the relative path to the file, for example `--exome batches/MY_BATCH/MY_REGIONS.bed`
 
 At this point, you can start using the docker image in the exact same way as the `./cpipe` command. The only difference is
 that you'll need to replace the `./cpipe` command with the same `docker run` command we used above. For example, to run
 the analysis, you'd type:
 ```bash
-    docker run  -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag> run
+docker run  -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag> run
 ```
 
 If this incantation is a bit too much, you might consider aliasing a cpipe command to this large command:
