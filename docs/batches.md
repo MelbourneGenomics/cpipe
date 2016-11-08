@@ -22,7 +22,7 @@ Once you have your fastq files, follow these steps to create a new analysis batc
     ```
 * Create the metadata file using:
     ```bash
-      python ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
+      ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
     ```
     * `<target region>` is the full filepath to a capture regions bed file specified by your sequencer. For example, for
     Illumina sequencing prepared with a Nextera DNA Library Preparation Kit, this file can be downloaded from 
