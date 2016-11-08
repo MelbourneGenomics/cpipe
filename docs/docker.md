@@ -8,7 +8,7 @@ currently recommend that you perform a native install on these systems.
 
 Docker consists of *images* which are self contained filesystems that can be easily distributed and shared. Once you have
 an image, you can run it, which will create a *container*, which is a mini operating system you can issue commands to
-and even SSH into.
+and even SSH into. For more information on how Docker works, refer to the [Docker website](https://www.docker.com/what-docker)
 
 If you are planning on running Cpipe in a docker container, you can follow these instructions instead of those in the
 [README](../README.md).
@@ -20,7 +20,7 @@ containers from this image should work the same. There are two main ways of obta
 * [Building the container yourself](#building-the-container-yourself)
 
 ### From MGHA Docker Registry
-**Please note this the docker registry is not available at the moment, please perform a manual install until we have
+**Please note this the docker registry is not available at the moment, please build the container yourself until we have
 setup the registry**
 
 The easiest way to obtain a Cpipe image is by logging onto the Cpipe docker registry and downloading to the image. However
@@ -96,9 +96,9 @@ Here, `<tag>` is the `version` of Cpipe you pulled from the registry, or the `ta
 This should place you in the cpipe directory of a fully configured Cpipe installation.
 
 However, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for you batch. To do so, run:
-    ```bash
-      python ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
-    ```
+```bash
+  python ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
+```
 
 All done! You can now run any of the commands listed in the [commands documentation](commands.md), including `./cpipe run`,
 the main analysis command.
