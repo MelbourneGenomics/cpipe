@@ -1,4 +1,13 @@
 # Docker
+* [Introduction](#introduction)
+* [Installation](#installation)
+    * [From MGHA Docker Registry](#from-mgha-docker-registry)
+    * [Building the Container Yourself](#building-the-container-yourself)
+* [Running the Image](#running-the-image)
+    * [Creating a Batch](#creating-a-batch)
+    * [SSHing into the Container](#sshing-into-the-container)
+    * [Using Docker Run](#using-docker-run)
+
 ## Introduction
 Docker is a containerization system that will allow you to install and run Cpipe without any dependencies or installation.
 
