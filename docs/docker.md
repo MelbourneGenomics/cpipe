@@ -43,16 +43,16 @@ That's all!
 
 In order to build the Cpipe container, follow these steps:
 
-1. Clone Cpipe with:
+* 1) Clone Cpipe with:
 
     ```bash
     git clone https://github.com/MelbourneGenomics/cpipe --branch 2.4 --depth 1
     ```
-2a. If you are part of MGHA, copy the swift_credentials.sh file
+* 2a) If you are part of MGHA, copy the swift_credentials.sh file
 into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
-2b. If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
+* 2b) If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
 do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
-3. Build the container with the following command, where `<version>` is some identifier you want to tag the image with.
+* 3) Build the container with the following command, where `<version>` is some identifier you want to tag the image with.
 
     ```bash
         docker build . -t cpipe:<version>
@@ -72,11 +72,11 @@ The first step in runing the Cpipe image, as with the native install, is to crea
  you have write access in and that has enough space to store the results of the analysis. Once inside this directory,
  make a `batches/<batch identifier>` directory as a subdirectory:
 
-    ```bash
-        mkdir -p batches/<batch identifier>/data
-        cp <fastq files> batches/<batch identifier>/data
-        cp <target region> batches/<batch identifier>
-    ```
+```bash
+    mkdir -p batches/<batch identifier>/data
+    cp <fastq files> batches/<batch identifier>/data
+    cp <target region> batches/<batch identifier>
+```
 For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch).
 
 At this point, you have two options, you can [SSH into the Docker container](#sshing-into-the-container) and run the remaining commands as with a
