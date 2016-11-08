@@ -20,14 +20,14 @@ containers from this image should work the same. There are two main ways of obta
 * [Building the container yourself](#building-the-container-yourself)
 
 ### From MGHA Docker Registry
-** Please note this the docker registry is not available at the moment, please perform a manual install until we have
+**Please note this the docker registry is not available at the moment, please perform a manual install until we have
 setup the registry**
 
 The easiest way to obtain a Cpipe image is by logging onto the Cpipe docker registry and downloading to the image. However
  since the images contain licensed software, we can unfortunately only provide these images to MGHA members. If you are
  a member of the MGHA and would like to obtain docker registry credentials, please send an email to help@melbournegenomics.org.au.
 
-Once you have the credentials, you'll first need to login to our registry. Insert the credentials as prompted:
+Once you have the credentials, you'll first need to login to our registry. Insert the credentials as prompted.
 ```bash
     docker login https://docker.melbournegenomics.org
 ```
@@ -43,15 +43,17 @@ That's all!
 
 In order to build the Cpipe container, follow these steps:
 
-1) Clone Cpipe with:
+1. Clone Cpipe with:
+
     ```bash
     git clone https://github.com/MelbourneGenomics/cpipe --branch 2.4 --depth 1
     ```
-2a) If you are part of MGHA, copy the swift_credentials.sh file
+2a. If you are part of MGHA, copy the swift_credentials.sh file
 into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
-2b) If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
+2b. If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
 do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
-3) Build the container with the following command, where `<version>` is some identifier you want to tag the image with.
+3. Build the container with the following command, where `<version>` is some identifier you want to tag the image with.
+
     ```bash
         docker build . -t cpipe:<version>
     ```
@@ -69,6 +71,7 @@ The first step in runing the Cpipe image, as with the native install, is to crea
  To create a new batch, `cd` into a directory that
  you have write access in and that has enough space to store the results of the analysis. Once inside this directory,
  make a `batches/<batch identifier>` directory as a subdirectory:
+
     ```bash
         mkdir -p batches/<batch identifier>/data
         cp <fastq files> batches/<batch identifier>/data
@@ -77,7 +80,7 @@ The first step in runing the Cpipe image, as with the native install, is to crea
 For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch).
 
 At this point, you have two options, you can [SSH into the Docker container](#sshing-into-the-container) and run the remaining commands as with a
-native install, or you can run commands using [`docker run`](#)
+native install, or you can run commands using [`docker run`](#using-docker-run)
 
 ### SSHing into the Container
 Before SSHing into a docker container, make sure you are in a `screen` or `tmux` session so you are able to let the process
@@ -90,17 +93,19 @@ To SSH into the container, run
 ```
 Here, `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
 
-This should place you in the cpipe directory of a fully configured Cpipe installation. You can now run any of the commands
-listed in the [commands documentation](commands.md).
+This should place you in the cpipe directory of a fully configured Cpipe installation.
 
-However, you'll first have to finish creating your metadata and configuration files for you batch. To do so, run:
+However, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for you batch. To do so, run:
     ```bash
       python ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
     ```
 
+All done! You can now run any of the commands listed in the [commands documentation](commands.md), including `./cpipe run`,
+the main analysis command.
+
 ### Using Docker Run
 
-* To create the metadata and configuration file from outside the container, run the following command. Here, the
+To create the metadata and configuration file from outside the container, run the following command. Here, the
 `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
 ```bash
     docker -v `pwd`/batches:/opt/cpipe/batches run cpipe:<tag> batch add_batch --batch <batch identifier> --profile ALL --exome <target region>
