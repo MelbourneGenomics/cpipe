@@ -170,5 +170,5 @@ For some of these commands, you'll need to recall how filepaths work inside the 
 
 ## Finding the Analysis
   Regardless of how you've performed your analysis, the output files should now be located in the directory you chose 
-  at the start, inside `batches/<batch identifier>/analysis. Refer to the [outputs documentation](outputs.md) for more
+  at the start, inside `batches/<batch identifier>/analysis`. Refer to the [outputs documentation](outputs.md) for more
   information on what these files mean.
