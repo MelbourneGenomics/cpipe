@@ -88,7 +88,10 @@ mkdir -p batches/<batch identifier>/data
 cp <fastq files> batches/<batch identifier>/data
 cp <target region> batches/<batch identifier>
 ```
-For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch).
+For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch). Please not that
+while it may be tempting to symmlink (`ln -s`) your fastq files into the data directory, this won't work with docker. 
+This is because, while the symlinks themselves will be mounted into the container, the files the links are pointing at
+won't exist in the container, so your data won't be accessible.
 
 At this point, you have two options, you can [SSH into the Docker container](#sshing-into-the-container) and run the remaining commands as with a
 native install, or you can run commands using [`docker run`](#using-docker-run)
@@ -116,10 +119,18 @@ the main analysis command.
 
 ### Using Docker Run
 
-To create the metadata and configuration file from outside the container, run the following command.
-Here, the `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
+Docker run commands tend to be a bit long because they require you to specify the container name and any data being 
+mounted each time. For this reason, I recommend that you alias the following cpipe command like this (make sure you're in the
+directory containing `batches` so that `pwd` is correct):
 ```bash
-docker -v `pwd`/batches:/opt/cpipe/batches run cpipe:<tag> batch add_batch --batch <batch identifier> --profile ALL --exome <target region>
+alias cpipe="docker run  -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>"
+```
+Here, the `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
+If you think you're likely to want to run this a lot, consider putting the above command in your `~/.bashrc` file.
+
+Now, using the alias you have created, run the following command to create the metadata and configuration file from outside the container, run the following command.
+```bash
+cpipe batch add_batch --batch <batch identifier> --profile ALL --exome <target region>
 ```
 
 What the `-v` flag
@@ -132,18 +143,13 @@ Because of this, in the command above, you'll have to specify the location of th
 recommend using the relative path to the file, for example `--exome batches/MY_BATCH/MY_REGIONS.bed`
 
 At this point, you can start using the docker image in the exact same way as the `./cpipe` command. The only difference is
-that you'll need to replace the `./cpipe` command with the same `docker run` command we used above. For example, to run
-the analysis, you'd type:
+that you'll need to replace the `./cpipe` command with `cpipe`, the alias you made just before. 
+For example, to run the analysis, you'd simply type:
 ```bash
-docker run  -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag> run
-```
-
-If this incantation is a bit too much, you might consider aliasing a cpipe command to this large command:
-```bash
-alias cpipe=docker run  -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
+cpipe run
 ```
 
 Also recall how filepaths work inside the container as explained above.
 
-You can now refer to the [command documentation](commands.md), remembering that you should use the above command instead
+You can now refer to the [command documentation](commands.md), remembering that you should use `cpipe` instead
 of `./cpipe`.
