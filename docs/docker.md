@@ -25,8 +25,8 @@ If you are planning on running Cpipe in a docker container, you can follow these
 ## Installation
 The installation step for the dockerized Cpipe involves obtaining a Cpipe *image*. Regardless of how you do this, running
 containers from this image should work the same. There are two main ways of obtaining a Cpipe image:
-* [Downloading from the MGHA Docker Registry](#from-mgha-docker-registry) (MGHA members only)
-* [Building the container yourself](#building-the-container-yourself)
+* [Downloading from the MGHA Docker Registry](#from-mgha-docker-registry) (For MGHA members)
+* [Building the container yourself](#building-the-container-yourself) (For everyone else)
 
 ### From MGHA Docker Registry
 **Please note this the docker registry is not available at the moment, please build the container yourself until we have
@@ -64,12 +64,13 @@ do this, follow all the instructions in the [Public Install section of the Insta
 * 3) `cd` into the cpipe directory and build the container with the following commands,
  where `<version>` is some identifier you want to tag the image with.
 
-    ```bash
-    cd cpipe
-    docker build . -t cpipe:<version>
-    ```
-    The `<version>` tag can be the release version of Cpipe (e.g. `2.4`), or it could be the git commit hash if you think
-    you will have many images from the same release (e.g. `3b592c3`)
+  ```bash
+  cd cpipe
+  docker build . -t cpipe:<version>
+  ```
+  
+  The `<version>` tag can be the release version of Cpipe (e.g. `2.4`), or it could be the git commit hash if you think
+  you will have many images from the same release (e.g. `3b592c3`)
 
 ## Running the Image
 
@@ -89,32 +90,31 @@ cp <fastq files> batches/<batch identifier>/data
 cp <target region> batches/<batch identifier>
 ```
 For explanations of these parameters, refer to the [batch documentation](batches.md#creating-a-batch). Please note that
-while it may be tempting to symmlink (`ln -s`) your fastq files into the data directory, this won't work with docker. 
+while it may be tempting to symlink (`ln -s`) your fastq files into the data directory, this won't work with docker. 
 This is because, while the symlinks themselves will be mounted into the container, the files the links are pointing at
 won't exist in the container, so your data won't be accessible.
 
-At this point, you have two options, you can [SSH into the Docker container](#sshing-into-the-container) and run the remaining commands as with a
-native install, or you can run commands using [`docker run`](#using-docker-run)
+At this point, you have two options, you can either:
+* [SSH into the Docker container](#sshing-into-the-container) and run the remaining commands as with a
+native install
+* [Run commands using `docker run`](#using-docker-run)
 
 ### SSHing into the Container
-Before SSHing into a docker container, make sure you are in a `screen` or `tmux` session so you are able to let the process
-run in the background. This is because, if you ever type `exit` or `Ctrl+D` when inside a docker container, the container
-will be killed and you'll have to start the whole process again.
-
-To SSH into the container, run:
-```bash
-docker run -it --entrypoint=bash -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
-```
-Here, `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.
-
-This should place you in the cpipe directory of a fully configured Cpipe installation.
-
-However, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for your batch.
-To do so, run:
-```bash
-./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
-```
-The `<target region>` file should be located in `batches/<batch identifier>` if you followed the earlier instructions.
+* Before SSHing into a docker container, make sure you are in a `screen` or `tmux` session so you are able to let the process
+  run in the background. This is because, if you ever type `exit` or `Ctrl+D` when inside a docker container, the container
+  will be killed and you'll have to start the whole process again.
+* To SSH into the container, run:
+  ```bash
+  docker run -it --entrypoint=bash -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
+  ```
+  Here, `<tag>` is the `version` of Cpipe you pulled from the registry, or the `tag` you gave to cpipe when running `docker build`.  
+* You should now be in the cpipe directory of a fully configured Cpipe installation inside docker. Your terminal prompt should   probably have changed to something like `root@7621fa66f80b:/opt/cpipe#`, which indicates that you are root inside the container. If this didn't happen, something has gone wrong. Please check that you follow the previous steps correctly
+* Now, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for your batch.
+  To do so, run:
+  ```bash
+  ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
+  ```
+  The `<target region>` file should be located in `batches/<batch identifier>` if you followed the earlier instructions.
 
 All done! You can now run any of the commands listed in the [commands documentation](commands.md), including `./cpipe run`,
 the main analysis command. 
@@ -139,8 +139,7 @@ always available.
 
 What the `-v` flag does in that command, is mount your `batches` directory into the container at `/opt/cpipe/batches` as
 though it were a drive. The trick here is that when you're using
-filepaths inside the container, you'll either have to use relative paths, which will be relative to the cpipe installation
-directory (e.g. `./batches/MY_BATCH`) will be the path to the `MY_BATCH` batch. Alternatively you can use absolute paths,
+filepaths inside the container, you'll either have to use relative paths or absolute paths, Relative paths in the container  will be relative to the cpipe installation directory, so for example, `./batches/MY_BATCH` will be the path to the `MY_BATCH` batch. Alternatively you can use absolute paths,
 for example, the absolute path to `MY_BATCH` would be `/opt/cpipe/batches/MY_BATCH`. This will be relevant for the next
 command.
 
@@ -161,10 +160,10 @@ For example, to run the analysis, you'd simply type:
 cpipe --batch <batch identifier> run
 ```
 
-For some of these commands, you'll need to recall how filepaths work inside the container as explained above.
-
 You can now refer to the [command documentation](commands.md), remembering that you should use `cpipe` instead
 of `./cpipe`.
+
+For some of these commands, you'll need to recall how filepaths work inside the container as explained above.
 
 ## Finding the Analysis
   Regardless of how you've performed your analysis, the output files should now be located in the directory you chose 
