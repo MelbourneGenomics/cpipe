@@ -17,7 +17,7 @@ def download_ftp_list(ftp, files, target_dir):
 
 def task_download_dbnsfp():
     targets = [os.path.join(DATA_ROOT, 'dbnsfp', 'dbNSFP.gz')]
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('dbnsfp', {'targets': targets})
     else:
         DBNSFP_ROOT = os.path.join(DATA_ROOT, 'dbnsfp')
@@ -47,7 +47,7 @@ def task_download_dbnsfp():
 VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
 def task_install_vep_cache():
     targets = [VEP_CACHE]
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('vep_cache', {'targets': targets})
     else:
         return {
@@ -71,7 +71,7 @@ def task_install_vep_cache():
 
 UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
 def task_obtain_ucsc():
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('ucsc', {'targets': [UCSC_ROOT]})#, UCSC_SAMTOOLS_INDEX, UCSC_BWA_INDEX]})
     else:
         return {
@@ -97,7 +97,7 @@ def task_download_ucsc():
 MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
 def task_download_mills_and_1000g():
     targets = [MILLS_ROOT]
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('mills_and_1000g', {'targets': targets})
     else:
         return {
@@ -117,7 +117,7 @@ def task_download_mills_and_1000g():
 DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
 def task_download_dbsnp():
     targets = [DBSNP_ROOT]
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('dbsnp', {'targets': targets})
     else:
         return {
@@ -137,7 +137,7 @@ def task_download_dbsnp():
 TRIO_REFINEMENT_FILE = '{data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.hg19.vcf.gz'.format(data_dir=DATA_ROOT)
 
 def task_obtain_trio_refinement():
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('1000G_phase3', {'targets': [TRIO_REFINEMENT_FILE]})
     else:
         return {
@@ -224,7 +224,7 @@ CHROMOSOME_FILE = os.path.join(CHROMOSOME_DIR, 'hg19.genome')
 
 def task_download_chromosome_sizes():
     targets = [CHROMOSOME_DIR, CHROMOSOME_FILE]
-    if has_swift_auth():
+    if swift_install():
         return nectar_install('chromosomes', {'targets': targets})
     else:
         def download_chromosome_size():

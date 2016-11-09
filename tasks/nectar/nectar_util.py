@@ -6,6 +6,8 @@ import json
 import shutil
 from swiftclient.service import SwiftService
 import tempfile
+from urlparse import urlparse, urljoin
+from urllib import urlretrieve
 
 from tasks.common import unzip_todir, has_swift_auth, ROOT
 
@@ -30,11 +32,11 @@ def create_current_manifest():
         with open(current_manifest, 'w') as current:
             json.dump({}, current)
 
+
 def nectar_asset_needs_update(asset_key):
     create_current_manifest()
     with open(target_manifest, 'r') as target, \
             open(current_manifest, 'r') as current:
-
         # Open the input and output json files
         target_json = json.load(target)
         current_json = json.load(current)
@@ -43,6 +45,7 @@ def nectar_asset_needs_update(asset_key):
         if asset_key not in current_json or target_json[asset_key]['hash'] != current_json[asset_key]['hash']:
             return True
     return False
+
 
 def download_nectar_asset(asset_key, to_temp=True):
     create_current_manifest()
@@ -54,6 +57,15 @@ def download_nectar_asset(asset_key, to_temp=True):
         current.seek(0)
         target_json = json.load(target)
 
+        # Calculate the download directory and file names
+        # Directory to download into
+        download_dir = tempfile.mkdtemp()
+        # The download file name without any directories
+        file_name = target_json[asset_key]['version'] + '.tar.gz'
+        # The download file with path relative to the cpipe directory, e.g. tools/gatk/3.6.tar.gz
+        file_path = os.path.join(target_json[asset_key]['path'], file_name)
+        container = target_json[asset_key]['container']
+
         # If we're downloading to a temp directory, do so. Otherwise use the path listed in the manifest,
         # clearing the directory if it exists
         if to_temp:
@@ -64,37 +76,44 @@ def download_nectar_asset(asset_key, to_temp=True):
                 shutil.rmtree(unzip_dir)
             os.makedirs(unzip_dir)
 
-        download_dir = tempfile.mkdtemp()
-        for result in swift.download(
-                container='cpipe-2.4-assets',
-                objects=[os.path.join(target_json[asset_key]['path'], target_json[asset_key]['version'] + '.tar.gz')],
-                options={'out_directory': download_dir}
-        ):
-            zip_file = result['path']
-            target_hash = target_json[asset_key]['hash']
+        # Do the download using either the swift client for private files, or urlretrieve for public ones
+        parsed = urlparse(container)
+        if parsed.scheme.startswith('http'):
+            full_url = urljoin(container, file_path)
+            zip_file = os.path.join(download_dir, file_name)
+            urlretrieve(full_url, zip_file)
+        else:
+            for result in swift.download(
+                    container=container,
+                    objects=[file_path],
+                    options={'out_directory': download_dir}
+            ):
+                zip_file = result['path']
 
-            if not result['success']:
-                print('\t' + asset_key + '... FAILED! ' + str(result['error']))
-                raise IOError(result['error'])
+                if not result['success']:
+                    print('\t' + asset_key + '... FAILED! ' + str(result['error']))
+                    raise IOError(result['error'])
 
-            # sha1hash the zip file to ensure its integrity
-            with open(zip_file, 'r') as zip_handle:
-                current_hash = hashlib.sha1(zip_handle.read()).hexdigest()
-                if current_hash != target_hash:
-                    raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
-                        asset_key)
+        # sha1hash the zip file to ensure its integrity
+        target_hash = target_json[asset_key]['hash']
+        with open(zip_file, 'r') as zip_handle:
+            current_hash = hashlib.sha1(zip_handle.read()).hexdigest()
+            if current_hash != target_hash:
+                raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
+                    asset_key)
 
-                # Rewind the zip handle
-                zip_handle.seek(0)
+            # Rewind the zip handle
+            zip_handle.seek(0)
 
-                # Do the actual unzipping
-                unzip_todir(zip_handle, unzip_dir, 'tgz')
+            # Do the actual unzipping
+            unzip_todir(zip_handle, unzip_dir, 'tgz')
 
-                # And delete the zip file + parent directories
-                shutil.rmtree(download_dir)
+            # And delete the zip file + parent directories
+            shutil.rmtree(download_dir)
 
-                # Return the download location so we can pass it to the install tasks
-                return unzip_dir
+            # Return the download location so we can pass it to the install tasks
+            return unzip_dir
+
 
 def nectar_download(asset_key):
     """
@@ -106,11 +125,13 @@ def nectar_download(asset_key):
         'uptodate': [False]
     }
 
+
 def nectar_install(asset_key, extra_keys={}):
     """
     Downloads the asset to its final destination in the cpipe installation, not using a temporary file
     or requiring installation
     """
+
     def action():
         # Download the asset from nectar
         download_nectar_asset(asset_key, to_temp=False)
@@ -126,4 +147,3 @@ def nectar_install(asset_key, extra_keys={}):
     }
     task.update(extra_keys)
     return task
-

@@ -1,167 +1,200 @@
 {
     "fastqc": {
         "path": "tools/fastqc", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "0.11.5", 
         "hash": "093dd50b2b7e53bf30b63c14c35028db34a1ba8a"
     }, 
     "vep_plugins": {
         "path": "tools/vep_plugins", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "3be3889", 
         "hash": "e6d90e02a58519c50a8cd90dfba9e71fefe11bae"
     }, 
     "xz": {
         "path": "tools/xz", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "5.2.2", 
         "hash": "aea9c5c5973bdf26fb88733ad87850597462e53f"
     }, 
     "cpanm": {
         "path": "tools/cpanm", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.7042", 
         "hash": "b2368543b02d23093e5221a551dd7c3ed3090603"
     }, 
     "bedtools": {
         "path": "tools/bedtools", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "2.25.0", 
         "hash": "62c80cc7679396f355819d449110d4e02eb6c663"
     }, 
     "1000G_phase3": {
         "path": "data/1000G_phase3", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "hg19_v4_20130502", 
         "hash": "b9ee50c63d74c60d9601342085f2c3ece0d6e803"
     }, 
     "mills_and_1000g": {
         "path": "data/mills_and_1000g", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "hg19", 
         "hash": "fb161c4b579d64b3e0d603e5c0ba30c24663a011"
     }, 
     "pcre": {
         "path": "tools/pcre", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "8.39", 
         "hash": "ca9697cdea7cdc2895c6a9fdb4be3f3774aa817b"
     }, 
     "samtools": {
         "path": "tools/samtools", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.3", 
         "hash": "641ed06e528dcb4a81833ca87601772f453ac1a4"
     }, 
     "vep_libs": {
         "path": "tools/vep_libs", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "85", 
         "hash": "c9c9fd299e8f67fe14d76a28fae371b2433fdfcd"
     }, 
     "vep": {
         "path": "tools/vep", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "85", 
         "hash": "91ce1f82e8aa01c6bceed5edd9603ef3f08a7ba8"
     }, 
     "dbnsfp": {
         "path": "data/dbnsfp", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "2.9.1", 
         "hash": "0c1d123e7edd819f47a3cc681bd31141bf70e947"
     }, 
     "libcurl": {
         "path": "tools/libcurl", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "7.50.3", 
         "hash": "db2962f8f533e6cf51c824f10b03bcec134a174a"
     }, 
     "picard": {
         "path": "tools/picard", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "2.6.0", 
         "hash": "08f045fbcb6a3951756d90c3fa7f6b17b1948013"
     }, 
     "perl": {
         "path": "tools/perl", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "5.24.0", 
         "hash": "73f2a074d8e54049208083c78a78ec3f2ddb7698"
     }, 
     "ucsc": {
         "path": "data/ucsc", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "hg19", 
         "hash": "3dd6aefbf60f2e5d5b58241d34d7591ca12bc6d5"
     }, 
-    "bpipe": {
-        "path": "tools/bpipe", 
-        "version": "0.9.9.2", 
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+    "r": {
+        "path": "tools/r", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "3.3.1", 
+        "hash": "438c3759a550f37e2e185d12f9b93c0dba84f350"
     }, 
     "gatk": {
         "path": "tools/gatk", 
-        "version": "3.6", 
-        "hash": "63b3d342fd1ad27ec18be7ed4287c7bf60d0f88c"
+        "container": "cpipe-2.4-private", 
+        "hash": "b2faad1b624c0d414b08acea64f2ac6f03a40fab", 
+        "version": "3.6"
     }, 
     "takari_cpsuite": {
         "path": "tools/takari_cpsuite", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.2.7", 
         "hash": "70654fbd58a1a5f98921022f483ea8a58c344b69"
     }, 
     "chromosomes": {
         "path": "data/chromosomes", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "hg19", 
         "hash": "9b703da735e78caba8eec1bcaac4a4e3df3d6c0d"
     }, 
-    "vep_cache": {
-        "path": "data/vep_cache", 
-        "version": "GRCh37.85", 
-        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    "perl_libs": {
+        "path": "tools/perl_libs", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "1", 
+        "hash": "61e16e084289abdd31d0fb7f0c09485b68c408c4"
     }, 
     "bzip2": {
         "path": "tools/bzip2", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.0.6", 
         "hash": "3da91428ec4dbe6acb40c381a64a5097949209a4"
     }, 
     "bwa": {
         "path": "tools/bwa", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "0.7.13", 
         "hash": "8ee0166e041093df2c5fab57613f487971399392"
     }, 
     "htslib": {
         "path": "tools/htslib", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.3", 
         "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     }, 
-    "r": {
-        "path": "tools/r", 
-        "version": "3.3.1", 
-        "hash": "438c3759a550f37e2e185d12f9b93c0dba84f350"
-    }, 
     "dbsnp": {
         "path": "data/dbsnp", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "138.hg19", 
         "hash": "d16cfdc1da79019baf4755a97b11f3022bae0447"
     }, 
     "groovy": {
         "path": "tools/groovy", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "2.4.7", 
         "hash": "1cfcb19b6b2056e24c438101cc0fafe4cb06311e"
     }, 
+    "groovy_ngs_utils": {
+        "path": "tools/groovy_ngs_utils", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "b982218", 
+        "hash": "28e3d9ba083dc67d803ab049dc674a2093206c5a"
+    }, 
     "zlib": {
         "path": "tools/zlib", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "1.2.8", 
         "hash": "5e35fe09e1bbd3510fba6e5fe25949a41e482ab6"
     }, 
     "junit_xml_formatter": {
         "path": "tools/junit_xml_formatter", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "9893370", 
         "hash": "20992592b0dd85767b2e6f5f997ccc8ff35102cc"
     }, 
-    "perl_libs": {
-        "path": "tools/perl_libs", 
-        "version": "1", 
-        "hash": "61e16e084289abdd31d0fb7f0c09485b68c408c4"
-    }, 
-    "bcftools": {
-        "path": "tools/bcftools", 
-        "version": "1.3", 
-        "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
-    }, 
-    "groovy_ngs_utils": {
-        "path": "tools/groovy_ngs_utils", 
-        "version": "b982218", 
-        "hash": "28e3d9ba083dc67d803ab049dc674a2093206c5a"
+    "bpipe": {
+        "path": "tools/bpipe", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "0.9.9.2", 
+        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
     }, 
     "java_libs": {
         "path": "tools/java_libs", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": 1, 
         "hash": "ad6f673de53b285d551cf2462eb76230c1a7bc19"
+    }, 
+    "vep_cache": {
+        "path": "data/vep_cache", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "GRCh37.85", 
+        "hash": "5908789fbfed1687a3e094cf35905b04edbe3a46"
+    }, 
+    "bcftools": {
+        "path": "tools/bcftools", 
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "1.3", 
+        "hash": "2691edcb8d3a16ea3cfe8432beb92b89d02774b0"
     }
 }

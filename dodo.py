@@ -4,6 +4,7 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
  setup operations needed by cpipe. This module imports tasks from the tasks directory and executes whichever the user
  specified. The default task is 'install'.
 """
+import sys
 
 from tasks.common import has_swift_auth
 from tasks.download import *
@@ -30,11 +31,13 @@ def task_install():
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
+
 def task_assets():
     return {
         'actions': None,
         'task_dep': ['tool_assets', 'data_assets']
     }
+
 
 def task_data_assets():
     return {
@@ -49,6 +52,7 @@ def task_data_assets():
             'download_chromosome_sizes',
         ]
     }
+
 
 def task_tool_assets():
     return {
@@ -79,13 +83,6 @@ def task_tool_assets():
             'install_libcurl',
             'install_zlib'
         ]
-    }
-
-def task_copy_config():
-    return {
-        'actions': None,
-        'task_dep': ['copy_main_config', 'copy_bpipe_config'],
-        'uptodate': [True]
     }
 
 
