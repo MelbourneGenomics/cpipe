@@ -7,6 +7,7 @@
     * [Creating a Batch](#creating-a-batch)
     * [SSHing into the Container](#sshing-into-the-container)
     * [Using Docker Run](#using-docker-run)
+* [Finding the Analysis](#finding-the-analysis)
 
 ## Introduction
 Docker is a containerization system that will allow you to install and run Cpipe without any dependencies or installation.
@@ -104,6 +105,7 @@ native install
   run in the background. This is because, if you ever type `exit` or `Ctrl+D` when inside a docker container, the container
   will be killed and you'll have to start the whole process again.
 * To SSH into the container, run:
+
   ```bash
   docker run -it --entrypoint=bash -v `pwd`/batches:/opt/cpipe/batches cpipe:<tag>
   ```
@@ -111,6 +113,7 @@ native install
 * You should now be in the cpipe directory of a fully configured Cpipe installation inside docker. Your terminal prompt should   probably have changed to something like `root@7621fa66f80b:/opt/cpipe#`, which indicates that you are root inside the container. If this didn't happen, something has gone wrong. Please check that you follow the previous steps correctly
 * Now, before you can start the analysis, you'll first have to finish creating your metadata and configuration files for your batch.
   To do so, run:
+  
   ```bash
   ./cpipe batch add_batch --batch <batch identifier> --profile <profile name> --exome <target region>
   ```
