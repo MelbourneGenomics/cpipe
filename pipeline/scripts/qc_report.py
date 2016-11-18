@@ -143,7 +143,7 @@ def median(items):
         mid = (len(items) - 1) / 2
         return sorted_list[mid]
 
-def parse_metadata(meta, study):
+def parse_metadata(meta, study, log):
     '''
        reads metadata file and returns info about a study
     '''
@@ -156,7 +156,10 @@ def parse_metadata(meta, study):
             # convert to dict
             candidate = {}
             for idx, field in enumerate(fields):
-                candidate[header[idx].strip().lower()] = field.strip()
+                if idx < len(header): # ignore additional columns
+                    candidate[header[idx].strip().lower()] = field.strip()
+                else:
+                    write_log(log, 'WARNING: skipped additional field "{}" at column {}'.format(field, idx))
             if 'sample_id' in candidate and candidate['sample_id'] == study:
                 return candidate
     # problem
@@ -505,7 +508,7 @@ def main():
         summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)
         summaries.append(summary)
 
-    sample = parse_metadata(open(args.meta, 'r'), args.study)
+    sample = parse_metadata(open(args.meta, 'r'), args.study, log=sys.stderr)
     if args.write_karyotype:
         write_karyotype(open(args.write_karyotype, 'w'), karyotype, sample)
     categories = build_categories(open(args.gc, 'r'), sample['prioritised_genes'], log=sys.stderr)
