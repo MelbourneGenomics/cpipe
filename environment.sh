@@ -15,9 +15,6 @@ ROOT=$(readlink -f $(dirname $BASH_SOURCE))
 source $ROOT/pipeline/scripts/config_groovy_util.sh
 load_config
 
-# Load virtualenv
-source ${TOOLS}/python/bin/activate
-
 # Add all tool directories and bin folders to PATH
 export SYS_JAVA=`which $JAVA` # Export the old system java before we override it 
 export PATH=${TOOLS}/bin:${TOOLS}/maven/bin:${TOOLS}/bpipe/bin:${PATH}
@@ -33,3 +30,7 @@ export TMPDIR #TMPDIR is set in config.groovy.
 #TODO: Load this in install after config.groovy has been copied
 # Fix manage batch, metadata scripts
 # Update docs
+
+# Load virtualenv
+source ${TOOLS}/python/bin/activate
+
