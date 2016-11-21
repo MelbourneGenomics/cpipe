@@ -1,64 +1,46 @@
 #!/usr/bin/env python
-'''
-###########################################################################
-#
-# This file is part of Cpipe.
-#
-# Cpipe is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, under version 3 of the License, subject
-# to additional terms compatible with the GNU General Public License version 3,
-# specified in the LICENSE file that is part of the Cpipe distribution.
-#
-# Cpipe is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
-#
-###########################################################################
-'''
 
 import argparse
 import collections
 import datetime
 import glob
+import pandas as pd
 import os
 import os.path
+import fnmatch
 import sys
 import subprocess
 
 from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
 
 DEFAULT_PRIORITY = '1'
+FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality",
+          "DNA_Date", "Cohort", "Sample_Type", "Fastq_Files", "Prioritised_Genes", "Consanguinity", "Variants_File",
+          "Pedigree_File", "Ethnicity", "VariantCall_Group", "Capture_Date", "Sequencing_Date", "Mean_Coverage",
+          "Duplicate_Percentage", "Machine_ID", "DNA_Extraction_Lab", "Sequencing_Lab", "Exome_Capture",
+          "Library_Preparation", "Barcode_Pool_Size", "Read_Type", "Machine_Type", "Sequencing_Chemistry",
+          "Sequencing_Software", "Demultiplex_Software", "Hospital_Centre", "Sequencing_Contact", "Pipeline_Contact",
+          "Notes", "Pipeline_Notes", "Analysis_Type"]
 
 
-def write_log(log, msg):
+def list_batches(out):
     '''
-        write timestamped log message
+        Prints the name of all batches that contain a samples.txt file
     '''
-    log.write('%s: %s\n' % (datetime.datetime.now().strftime('%y%m%d-%H%M%S'), msg))
 
+    # Find all directories that contain a samples.txt and add them to a list
+    df = pd.DataFrame(columns=('Batch Name', 'Batch Path'))
+    for root, dirs, files in os.walk(BATCHES):
+        if 'samples.txt' in files:
+            batch_name = os.path.basename(root)
+            full_path = os.path.abspath(root)
+            df = df.append({'Batch Name': batch_name, 'Batch Path': full_path}, ignore_index=True)
 
-def run_command(cmd, log):
-    '''
-        execute a command on the shell
-    '''
-    write_log(log, "executing: {0}...".format(cmd))
-    subprocess.check_call(cmd, shell=True, executable='bash', stdout=log, stderr=log)
-    write_log(log, "executing: {0}: done".format(cmd))
+    # Sort them alphabetically by their batch name
+    df = df.sort_values(by='Batch Name')
 
-
-def show_batches(out):
-    '''
-        look for directories in the batches directory
-    '''
-    for batch in glob.glob(BATCHES + '/*'):
-        if os.path.isdir(batch):
-            out.write('{0}\n'.format(os.path.basename(batch)))
-
+    # Print to stdout
+    df.to_csv(out, sep='\t', index=False)
 
 def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     '''
@@ -246,7 +228,7 @@ def validate_batch(val):
 def create_parser():
     parser = argparse.ArgumentParser(description='Manage batches')
     parser.add_argument('command', help='command to execute',
-                        choices=['add_batch', 'show_batches', 'show_batch', 'add_sample'])
+                        choices=['list', 'show_batches', 'show_batch', 'add_sample'])
     parser.add_argument('--batch', required=False, help='batch name', type=validate_batch)
     parser.add_argument('--profile', required=False, help='analysis profile')
     parser.add_argument('--exome', required=False, help='target regions')
@@ -263,8 +245,8 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    if args.command == 'show_batches':  # list all batches
-        show_batches(out=sys.stdout)
+    if args.command == 'list':  # list all batches
+        list_batches(out=sys.stdout)
     else:
         if not args.batch:
             parser.print_help()
