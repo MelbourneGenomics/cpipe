@@ -1,4 +1,5 @@
 python-swiftclient
 python-keystoneclient
--e git+https://github.com/TMiguelT/doit.git@2.9-without-sqlite#egg=do
+doit
 pymysql
+pandas
