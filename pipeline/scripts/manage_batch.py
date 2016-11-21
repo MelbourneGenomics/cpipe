@@ -34,6 +34,7 @@ from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS,
 
 DEFAULT_PRIORITY = '1'
 
+
 def write_log(log, msg):
     '''
         write timestamped log message
@@ -162,8 +163,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
         os.mkdir(analysis_directory)
         write_log(log, "Creating directory: {0}: done".format(analysis_directory))
     write_log(log,
-              "To run an analysis: cd {0}; ../../../bpipe run ../../../pipeline/pipeline.groovy ../samples.txt".format(
-                  analysis_directory))
+              "To run an analysis: `./cpipe --batch {} run`".format(batch_name))
 
 
 def add_sample(batch_name, profile_name, data_files, log):
@@ -233,18 +233,34 @@ def show_batch(batch_name, out):
         # could also show data, target regions
 
 
-def main():
-    '''
-        parse command line
-    '''
+def validate_batch(val):
+    if not isinstance(val, str):
+        raise argparse.ArgumentTypeError('The batch name must be provided as a string')
+    batch = str(val)
+    if batch.lower().startswith(('batch', 'sample_id')):
+        raise argparse.ArgumentTypeError('The batch name cannot start with "batch" or "sample_id" due to a bug in '
+                                         'the Bpipe SampleInfo parser.')
+    return batch
+
+
+def create_parser():
     parser = argparse.ArgumentParser(description='Manage batches')
     parser.add_argument('command', help='command to execute',
                         choices=['add_batch', 'show_batches', 'show_batch', 'add_sample'])
-    parser.add_argument('--batch', required=False, help='batch name')
+    parser.add_argument('--batch', required=False, help='batch name', type=validate_batch)
     parser.add_argument('--profile', required=False, help='analysis profile')
     parser.add_argument('--exome', required=False, help='target regions')
     parser.add_argument('--data', required=False, nargs='*', help='fastq files (relative to batch directory)')
     parser.add_argument('--force', action="store_true", required=False, help='force action')
+    return parser
+
+
+def main():
+    '''
+        parse command line
+    '''
+
+    parser = create_parser()
     args = parser.parse_args()
 
     if args.command == 'show_batches':  # list all batches

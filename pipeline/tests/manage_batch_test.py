@@ -4,11 +4,12 @@ import sys
 import traceback
 import StringIO
 import shutil
+import argparse
 from contextlib import contextmanager
 
 sys.path.append('../scripts/')
 
-from manage_batch import add_batch, show_batches, show_batch, add_sample
+from manage_batch import add_batch, show_batches, show_batch, add_sample, create_parser
 from cpipe_utility import BASE
 
 
@@ -33,12 +34,14 @@ class ManageBatchTest(unittest.TestCase):
     batch_groovy = os.path.join(test_batch_dir, 'config.batch.groovy')
     sample_metadata = os.path.join(test_batch_dir, 'samples.txt')
 
-    def create_test_batch(self):
+    def create_test_batch(self, batch_name=None):
+        batch_name = batch_name or self.test_batch_name
         with open(os.devnull, "w") as devnull:
-            add_batch(self.test_batch_name, 'ALL', None, self.test_data_files, None, log=devnull)
+            add_batch(batch_name, 'ALL', None, self.test_data_files, None, log=devnull)
 
-    def delete_test_batch(self):
-        batch_dir = os.path.join(BASE, 'batches', self.test_batch_name)
+    def delete_test_batch(self, batch_name=None):
+        batch_name = batch_name or self.test_batch_name
+        batch_dir = os.path.join(BASE, 'batches', batch_name)
         shutil.rmtree(batch_dir)
 
     def test_add_batch(self):
@@ -76,6 +79,14 @@ class ManageBatchTest(unittest.TestCase):
             show_batch(self.test_batch_name, stream)
         assert (len(stream.getvalue()) > 0)
         self.delete_test_batch()
+
+    def test_create_parser(self):
+        parser = create_parser()
+
+        with self.assertRaises(SystemExit):
+            parser.parse_args(['add_batch', '--profile', 'ALL', '--batch', 'batch'])
+        with self.assertRaises(SystemExit):
+            parser.parse_args(['add_batch', '--profile', 'ALL', '--batch', 'sample_id'])
 
     def test_add_sample(self):
         self.create_test_batch()

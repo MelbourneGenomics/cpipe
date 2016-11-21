@@ -43,11 +43,15 @@ function print_run_usage {
     echo "    ${normal}Specify options to pass to bpipe. Refer to http://docs.bpipe.org/Commands/run/ for reference"
 }
 
+function check_batch {
+    if [[ -z $BATCH ]]; then
+        >&2 echo 'You must specify a batch using `--batch <batch name>`'
+        exit 1
+    fi
+}
+
 # Set useful variables
 ROOT=$(readlink -f $(dirname $BASH_SOURCE))
-
-# default batch name
-BATCH='batch'
 
 # Load config groovy
 source pipeline/scripts/config_groovy_util.sh
@@ -126,6 +130,7 @@ case "$1" in
         esac
     ;;
     bpipe)
+        check_batch
         shift 1
         cd ${ROOT}/batches/${BATCH}/analysis
         ${BASE}/bpipe $@
@@ -138,26 +143,27 @@ case "$1" in
 
         # Process args - they can specify a batch directory to replace the default 'batch', and they can specify bpipe options manually
         while true ; do
-                case "$1" in
-                    -b|--batch)
-                        BATCH=$2
-                        shift 2
-                    ;;
-                    -p|--bpipe-options)
-                        BPIPE_OPTIONS=$2
-                        shift 2
-                    ;;
-                    --usage|--help)
-                        print_run_usage
-                        exit 0
-                    ;;
-                    --)
-                        shift
-                        break
-                    ;;
-                esac
+            case "$1" in
+                -b|--batch)
+                    BATCH=$2
+                    shift 2
+                ;;
+                -p|--bpipe-options)
+                    BPIPE_OPTIONS=$2
+                    shift 2
+                ;;
+                --usage|--help)
+                    print_run_usage
+                    exit 0
+                ;;
+                --)
+                    shift
+                    break
+                ;;
+            esac
         done
 
+        check_batch
         check_java
         mkdir -p batches/${BATCH}/analysis
         cd ${ROOT}/batches/${BATCH}/analysis
