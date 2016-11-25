@@ -109,22 +109,22 @@ various options about each sample
 |19 | Capture date | Exome capture date | Comma separated list of dates of the format  yyyymmdd|2.2+
 |20 | Sequencing Date | Date of sequencing. | Comma separated list of dates of the format  yyyymmdd|2.2+ |
 |21 | Mean Coverage | Total on-target aligned mean coverage, post duplicate removal as obtained by the sequencing laboratory. | Numeric [0-9.]|2.2+ |
-|22 | Duplicate % | Percentage of detected duplicates removed before calculating mean on-target coverage |  	2.2+|
+|22 | Duplicate % | Percentage of detected duplicates removed before calculating mean on-target coverage | 2.2+ |
 |23 | Machine ID | Provided by the sequencing laboratory | Comma separated list | 2.2+|
-|24 | DNA Extraction Lab |  |   | 2.2+ |
-|25 | Sequencing Lab |  |   | 2.2+ |
-|26 | Exome capture |   |   | 2.2+ |
-|27 | Library preparation |  |   |2.2+ |
-|28 | Barcode pool size |   |   |2.2+|
-|29 | Read type |   |   | 2.2+ |
-|30 | Machine type| |   |2.2+ |
-|31 | Sequencing chemistry |    |   | 2.2+ |
-|32 |Sequencing software |   |   | 2.2+ |
-|33 | Demultiplex software |    |   |2.2+|
-|34 | Hospital centre | Origin of the patient sample |  	| 2.2+ |
+|24 | DNA Extraction Lab | Lab that extracted the DNA | Unrestricted | 2.2+ |
+|25 | Sequencing Lab | Lab that sequenced the sample | Unrestricted | 2.2+ |
+|26 | Exome capture | Capture kit used (e.g. Nextera Rapid Capture Exome 1.2) | Unrestricted | 2.2+ |
+|27 | Library preparation | Additional library preparation | Unrestricted | 2.2+ |
+|28 | Barcode pool size | Size of barcode adapters | Unrestricted | 2.2+|
+|29 | Read type | The type of read (e.g. 100PE)  | Unrestricted | 2.2+ |
+|30 | Machine type | Sequencing machine (e.g. HiSeq 2500) | Unrestricted | 2.2+ |
+|31 | Sequencing chemistry | e.g. TruSeq Rapid XPS | Unrestricted | 2.2+ |
+|32 | Sequencing software | e.g. Illumina RTA 1.18.64 | Unrestricted | 2.2+ |
+|33 | Demultiplex software | e.g. bcl2fastq 1.8.4 | Unrestricted | 2.2+|
+|34 | Hospital centre | Origin of the patient sample | Unrestricted | 2.2+ |
 |35 | Sequencing contact | Where sequencing alerts should be sent | Unrestricted | 2.2+ | 
-|36 |Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 
-|37 |Notes | Additional notes or relevant information about the sequencing | Unrestricted |2.2+|
+|36 | Pipeline contact | Where pipeline result alerts should be sent | Unrestricted | 2.2+ | 
+|37 | Notes | Additional notes or relevant information about the sequencing | Unrestricted | 2.2+ |
 |38 | Pipeline notes | Additional notes relevant to the operation of the pipeline | Unrestricted | 2.3 |
 |39 | Analysis type | Currently unused | Unrestricted | 2.3 |
 
