@@ -1,16 +1,41 @@
 import os
 from pathlib import Path
 import re
+import pandas as pd
+import sys
 
 BASE = Path(__file__).parent.parent.parent
 BATCHES = BASE / 'batches'
 DESIGNS = BASE / 'designs'
+DESIGN_LIST = set([f.stem for f in DESIGNS.iterdir()])
 CLASSPATH = BASE / 'tools/java_libs'
 CONFIG_GROOVY = BASE / "pipeline" / "config.groovy"
 CONFIG_GROOVY_UTIL = BASE / "pipeline" / "scripts" / "config_groovy_util.sh"
 
 def batch_dir(batch_name):
     return os.path.join(BATCHES, batch_name)
+
+def list_batches(out):
+    '''
+        Prints the name of all batches that contain a samples.txt file
+    '''
+
+    # Find all directories that contain a samples.txt and add them to a list
+    df = pd.DataFrame(columns=('Batch Name', 'Batch Path'))
+    for root, dirs, files in os.walk(BATCHES):
+        if 'samples.txt' in files:
+            batch_name = os.path.basename(root)
+            full_path = os.path.abspath(root)
+            df = df.append({'Batch Name': batch_name, 'Batch Path': full_path}, ignore_index=True)
+
+    # Sort them alphabetically by their batch name
+    df = df.sort_values(by='Batch Name')
+
+    # Print to output stream if requested, otherwise return the data frame
+    if out is None:
+        return df
+    else:
+        df.to_csv(out, sep='\t', index=False)
 
 def read_config_groovy():
     """

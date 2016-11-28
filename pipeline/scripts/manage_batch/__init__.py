@@ -4,6 +4,8 @@ import argparse
 import collections
 import datetime
 import glob
+import shutil
+
 import pandas as pd
 import os
 import os.path
@@ -11,7 +13,8 @@ import fnmatch
 import sys
 import subprocess
 
-from .cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
+from ..cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
+from .parser import create_parser
 
 DEFAULT_PRIORITY = '1'
 FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality",
@@ -23,24 +26,6 @@ FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_
           "Notes", "Pipeline_Notes", "Analysis_Type"]
 
 
-def list_batches(out):
-    '''
-        Prints the name of all batches that contain a samples.txt file
-    '''
-
-    # Find all directories that contain a samples.txt and add them to a list
-    df = pd.DataFrame(columns=('Batch Name', 'Batch Path'))
-    for root, dirs, files in os.walk(BATCHES):
-        if 'samples.txt' in files:
-            batch_name = os.path.basename(root)
-            full_path = os.path.abspath(root)
-            df = df.append({'Batch Name': batch_name, 'Batch Path': full_path}, ignore_index=True)
-
-    # Sort them alphabetically by their batch name
-    df = df.sort_values(by='Batch Name')
-
-    # Print to stdout
-    df.to_csv(out, sep='\t', index=False)
 
 def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
     '''
@@ -214,59 +199,18 @@ def show_batch(batch_name, out):
         out.write('samples.txt: not found\n'.format(batch_name))
         # could also show data, target regions
 
+def list_batches():
+    list_batches(sys.stdout)
 
-def batch_name(val):
-    if not isinstance(val, str):
-        raise argparse.ArgumentTypeError('The batch name must be provided as a string')
-    batch = str(val)
-    if batch.lower().startswith(('batch', 'sample_id')):
-        raise argparse.ArgumentTypeError('The batch name cannot start with "batch" or "sample_id" due to a bug in '
-                                         'the Bpipe SampleInfo parser.')
-    return batch
+def create_batch(batch, data, exome, profile, force):
 
-def fastq_path(path):
-    (base, ext) = os.path.splitext(path)
-    if os.path.exists(path) and ext == 'gz' and base.endswith('fastq'):
-        return path
-    else:
-        raise argparse.ArgumentTypeError('The fastq file must exist, and end in a ".fastq.gz" file extension')
+    # Handle an existing batch
+    if batch.exists():
+        if force:
+            shutil.rmtree(batch)
+        else:
+            raise FileExistsError('Batch directory already exists! Use the --force flag to replace an existing batch')
 
-def bed_path(path):
-    (base, ext) = os.path.splitext(path)
-    if os.path.exists(path) and ext == 'bed':
-        return path
-    else:
-        raise argparse.ArgumentTypeError('The bed file must exist, and end in a ".bed" file extension')
-
-
-def profile(name):
-     pass
-
-
-def create_parser():
-    parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
-    subparsers = parser.add_subparsers()
-
-    # list command
-    list_parser = subparsers.add_parser('list', help='Lists the batches in the current Cpipe installation')
-
-    # create command
-    create_batch_parser = subparsers.add_parser('create', help='Creates a new batch, including data, metadata file and configuration file')
-    create_batch_parser.add_argument('name', type=batch_name, required=True, help='The name for the new batch')
-    create_batch_parser.add_argument('--data', '-d', required=True, help='The fastq files to add to the batch', nargs='+', type=fastq_path)
-    create_batch_parser.add_argument('--exome', '-e', required=True, help='A bed file indicating which regions are covered by the sequencing '
-                                                                          'procedure', type=bed_path)
-    create_batch_parser.add_argument('--profile', '-p', required=True, help='The analysis profile (genelist) to use for '
-                                                                            'the analysis of this batch', type=fastq_path)
-
-    parser.add_argument('command', help='command to execute',
-                        choices=['list', 'create', 'edit_metadata', 'view_metadata', 'validate_metadata', 'add_sample'])
-    parser.add_argument('--batch', required=False, help='batch name', type=validate_batch)
-    parser.add_argument('--profile', required=False, help='analysis profile')
-    parser.add_argument('--exome', required=False, help='target regions')
-    parser.add_argument('--data', required=False, nargs='*', help='fastq files (relative to batch directory)')
-    parser.add_argument('--force', action="store_true", required=False, help='force action')
-    return parser
 
 
 def main():
@@ -277,8 +221,13 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
+    if args.subparser_name == 'list':
+        list_batches()
+    if args.subparser_name == 'create':
+        create_batch()
+
     if args.command == 'list':  # list all batches
-        list_batches(out=sys.stdout)
+        list_batches()
     else:
         if not args.batch:
             parser.print_help()
