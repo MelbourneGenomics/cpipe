@@ -78,7 +78,7 @@ def process_table(source, target, ann_headers, log):
                 if len(ann_fields) != len(ann_headers): # ann column count mismatch
                     error = []
                     common = min(len(ann_fields), len(ann_headers))
-                    for idx in xrange(0, common):
+                    for idx in range(0, common):
                         if ann_fields[idx] in EMPTY_BEFORE:
                             ann_fields[idx] = EMPTY_AFTER
                         error.append("{0}: '{1}'".format(ann_headers[idx], ann_fields[idx]))

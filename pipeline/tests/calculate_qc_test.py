@@ -25,7 +25,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import calculate_qc_statistics
@@ -34,7 +34,7 @@ class CalculateQCTest(unittest.TestCase):
 
     def test_calc(self):
         bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-100\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-200\tAAAA\tJJJJ\n']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = calculate_qc_statistics.calculate_statistics(bam, log)
         assert result['fragment_count'] == 2
         assert result['fragment_mean'] == 150.0
@@ -47,8 +47,8 @@ class CalculateQCTest(unittest.TestCase):
 
     def test_out(self):
         bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tA\t5\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\tAB\t5I\n', '0\t3\t2\t3\t4\t5\t6\t7\t300\tABC\t555\n', '0\t3\t2\t3\t4\t5\t6\t7\t350\tABCD\t5II5\n']
-        log = StringIO.StringIO()
-        out = StringIO.StringIO()
+        log = io.StringIO()
+        out = io.StringIO()
         calculate_qc_statistics.main(bam, out, log)
         lines = out.getvalue().split('\n')
         assert lines[0] == 'fragment_count\t4'
@@ -63,7 +63,7 @@ class CalculateQCTest(unittest.TestCase):
     def test_filtered(self):
         # should only include lines 1 and 4 in fragment count
         bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\t9\t10\n', '0\t7\t2\t3\t4\t5\t6\t7\t500\t9\t10\n', '0\t2\t2\t3\t4\t5\t6\t7\t1000\t9\t10\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\t9\t10\n']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = calculate_qc_statistics.calculate_statistics(bam, log)
         assert result['fragment_count'] == 2
         assert result['fragment_mean'] == 150.0

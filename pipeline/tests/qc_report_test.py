@@ -25,7 +25,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import qc_report
@@ -34,7 +34,7 @@ class QCReportTest(unittest.TestCase):
 
     def test_male(self):
         exome_cov = ['chr1\t100\t200\tg\t1\t20', 'chrX\t100\t200\tg\t1\t10', 'chrY\t100\t200\tg\t1\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
         assert result['sex'] == 'MALE'
         assert result['x_mean_coverage'] == 10.
@@ -43,7 +43,7 @@ class QCReportTest(unittest.TestCase):
 
     def test_female(self):
         exome_cov = ['chr1\t100\t200\tg\t1\t5', 'chrX\t100\t200\tg\t1\t40', 'chrX\t400\t500\tg\t1\t60']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = qc_report.calculate_karyotype(exome_cov, log)
         assert result['sex'] == 'FEMALE'
         assert result['x_mean_coverage'] == 50.
@@ -66,7 +66,7 @@ class QCReportTest(unittest.TestCase):
         assert p is None
 
     def test_calculate_mean_stats(self):
-        log = StringIO.StringIO()
+        log = io.StringIO()
         mean = 20
         # expect first to include those in the range 4 -> 36 (80% either side)
         stats = [0, 10, 20, 100]
@@ -75,7 +75,7 @@ class QCReportTest(unittest.TestCase):
 
     def test_calculate_summary(self):
         cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         s = qc_report.calculate_summary(cov, 20, log)
         assert s['mean'] == 16.25
         assert s['median'] == 10
@@ -84,7 +84,7 @@ class QCReportTest(unittest.TestCase):
 
     def test_report(self):
         cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         s = qc_report.calculate_summary(cov, 20, log)
 
         exome_cov = ['chr1\t100\t200\tg\t1\t5', 'chrX\t100\t200\tg\t1\t40', 'chrX\t400\t500\tg\t1\t60']
@@ -103,7 +103,7 @@ class QCReportTest(unittest.TestCase):
         fragments = None
         padding = '20,10,5'
 
-        out = StringIO.StringIO()
+        out = io.StringIO()
         qc_report.generate_report([s], k, p, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log)
         lines = out.getvalue().split('\n')
         assert lines[0] == '# Sequencing Summary Report for Study 12345'
@@ -125,14 +125,14 @@ class QCReportTest(unittest.TestCase):
     def test_build_metrics(self):
         p = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics', 'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE', 'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885', '## HISTOGRAM\tjava.lang.Double' ]
         o = ['12345']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         m = qc_report.build_metrics(p, o, log)
         assert m['read_pairs_examined'] == '45114896'
 
     def test_build_empty_categories(self):
         categories = ''
         prioritized = ''
-        log = StringIO.StringIO()
+        log = io.StringIO()
         qc_report.build_categories(categories, prioritized, log)
 
     def test_grouping(self):

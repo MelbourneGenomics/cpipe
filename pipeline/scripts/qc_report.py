@@ -401,7 +401,7 @@ def generate_report(summaries, karyotype, meta, threshold, categories, conversio
     out.write('\n## Gene Summary\n')
     out.write('Gene | Category | % > {0}x  | Median | OK? | % in capture\n'.format(threshold))
     out.write('-----|----------|-----------|--------|-----|-------------\n'.format(threshold))
-    for gene in sorted(summary['genes'].keys(), key=lambda gene: "{0}{1}".format(9 - category(gene, categories), gene)):
+    for gene in sorted(list(summary['genes'].keys()), key=lambda gene: "{0}{1}".format(9 - category(gene, categories), gene)):
         record = summary['genes'][gene]
         in_capture = capture[gene.lower()] if gene.lower() in capture else 0.0
         out.write('{0} | {1} | {2:.1f} | {3} | {4} | {5:.1f}\n'.format(gene, category(gene, categories), record['ok'], record['median'], is_ok(record['ok'], conversion), in_capture))

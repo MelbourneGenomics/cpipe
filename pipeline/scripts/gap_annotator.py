@@ -84,7 +84,7 @@ class IntervalTree(object):
         '''
             iterate over all intervals
         '''
-        for item in self.chroms.itervalues():
+        for item in list(self.chroms.values()):
             item.traverse(func)
 
 class IntervalNode(object):

@@ -5,7 +5,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import update_metadata
@@ -13,9 +13,9 @@ import update_metadata
 class UpdateMetadataTest(unittest.TestCase):
 
     def test_simple(self):
-        log = StringIO.StringIO()
+        log = io.StringIO()
         sin = ("sample_id\tfoo", "1\t2")
-        sout = StringIO.StringIO()
+        sout = io.StringIO()
         update_metadata.update_metadata(sin, sout, log, "1", "foo", "bar")
 
         lines = sout.getvalue().split('\n')
@@ -23,9 +23,9 @@ class UpdateMetadataTest(unittest.TestCase):
         assert len(lines) == 2 # finishes with blank line
 
     def test_no_sample(self):
-        log = StringIO.StringIO()
+        log = io.StringIO()
         sin = ("sample_id\tfoo", "1\t2")
-        sout = StringIO.StringIO()
+        sout = io.StringIO()
         update_metadata.update_metadata(sin, sout, log, "2", "foo", "bar")
 
         lines = log.getvalue().split('\n')

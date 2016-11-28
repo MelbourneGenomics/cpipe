@@ -48,7 +48,7 @@ reader = csv.reader(open(summary))
 
 # First read the header and since by default some columns don't have headers,
 # as a side benefit we fix those
-header = reader.next()
+header = next(reader)
 
 # Fix missing column headings
 header.append('PRIORITY_TX')
@@ -93,7 +93,7 @@ for l in reader:
                         continue
 
                 # Has to be the same gene
-                if gene not in map(lambda x: x.split(':')[0], v[2].split(',')):
+                if gene not in [x.split(':')[0] for x in v[2].split(',')]:
                         continue
 
                 # Column 2 is in the following format:
@@ -101,21 +101,21 @@ for l in reader:
                 # We want to report only the transcript and the AA change
         
                 try:
-                    vtxs = zip(map(lambda x: x.split(':')[1], v[2].split(',')), # the NM_.. transcript id
-                           map(lambda x: ':'.join(x.split(':')[3:5]), v[2].split(','))) # the AA change
+                    vtxs = list(zip([x.split(':')[1] for x in v[2].split(',')], # the NM_.. transcript id
+                           [':'.join(x.split(':')[3:5]) for x in v[2].split(',')])) # the AA change
                     
                     if debug:
-                        print >>sys.stderr, "Full transcripts for %s are %s" % (aachange, vtxs)
+                        print("Full transcripts for %s are %s" % (aachange, vtxs), file=sys.stderr)
 
                     # vtxs is a list of transcripts, each element is another list
                     # of 2 elements, (tx name, aa change)
-                    vtxs_flag = filter(lambda x: x[0] in txs, vtxs)
+                    vtxs_flag = [x for x in vtxs if x[0] in txs]
                     if vtxs_flag:
                             if debug:
-                                print "Full transcripts for %s are %s" % (aachange, vtxs)
-                                print "FLAGGED: %s" % vtxs_flag
-                            found_vtx = ";".join(map(lambda f: ":".join(f), vtxs_flag))
-                except Exception,e:
+                                print("Full transcripts for %s are %s" % (aachange, vtxs))
+                                print("FLAGGED: %s" % vtxs_flag)
+                            found_vtx = ";".join([":".join(f) for f in vtxs_flag])
+                except Exception as e:
                     found_vtx = 'Error: Please check manually'
 
         row.append(found_vtx)

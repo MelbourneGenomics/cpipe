@@ -136,12 +136,12 @@ for g in refseq_genes:
     if gene in genes:
 
         # Exon start positions in column 9
-        starts = map(lambda x: int(x), filter(lambda x: x != '', g[9].split(",")))
+        starts = [int(x) for x in [x for x in g[9].split(",") if x != '']]
 
         # Exon end positions in column 10
-        ends = map(lambda x: int(x), filter(lambda x: x != '', g[10].split(",")))
+        ends = [int(x) for x in [x for x in g[10].split(",") if x != '']]
 
-        exons = map(lambda x: list(x), zip(starts,ends))
+        exons = [list(x) for x in zip(starts,ends)]
         #log.info("Found gene %s with transcript %s (%d exons)" % (g[12],g[1],len(exons)))
 
         if chr != gene_chr[gene]:
@@ -154,7 +154,7 @@ for g in refseq_genes:
         # Update the index of coding sequence starts / ends
         # This is to be used later when we adjust exons based on 
         # UTR inclusion
-        cds_starts[gene] = min(cds_starts.get(gene,sys.maxint),cds_start)
+        cds_starts[gene] = min(cds_starts.get(gene,sys.maxsize),cds_start)
         cds_ends[gene] = max(cds_ends.get(gene,0),cds_end)
 
         #log.info("CDS starts for gene %s are %s" % (str(cds_starts), str(cds_ends)))
@@ -212,7 +212,7 @@ if not include_utr:
             if len(exons) == 0:
                 log.info("WARNING: no exons overlapped by coordinates for gene %s: " % g)
             else:
-                first_exon = exons[min(range(len(exons)), key=lambda i: exons[i][0])]
+                first_exon = exons[min(list(range(len(exons))), key=lambda i: exons[i][0])]
 
                 if first_exon[1] > cds_starts[g]:
                     first_exon[0] = cds_starts[g]
@@ -220,7 +220,7 @@ if not include_utr:
                 # Move the end of the last exon to the end of the CDS
                 # Note that exons are not sorted, so we have to find 
                 # the last exon ...
-                last_exon = exons[max(range(len(exons)), key=lambda i: exons[i][1])]
+                last_exon = exons[max(list(range(len(exons))), key=lambda i: exons[i][1])]
                 if last_exon[0] < cds_ends[g]:
                     last_exon[1] = cds_ends[g]
             

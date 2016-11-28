@@ -26,7 +26,7 @@
 import sys, csv
 
 if len(sys.argv) < 4:
-    print "\nUsage: %s <coverage file> <output file> <coverage threshold>\n" % sys.argv[0]
+    print(("\nUsage: %s <coverage file> <output file> <coverage threshold>\n" % sys.argv[0]))
     exit(1)
 
 cov = csv.reader(open(sys.argv[1]), delimiter='\t')
@@ -71,4 +71,4 @@ for line in cov:
         in_block = False
         high_count += 1
 
-print "Found %d areas with coverage < %d (total %d bases above threshold + %d below = %d total)" % (block_index, coverage_threshold, high_count, low_count, total_count)
+print(("Found %d areas with coverage < %d (total %d bases above threshold + %d below = %d total)" % (block_index, coverage_threshold, high_count, low_count, total_count)))

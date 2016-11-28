@@ -42,7 +42,7 @@ def update_metadata(sample_in, sample_out, log, sample, name, value):
         return 1
 
     if name.lower() not in headers_map:
-        log.write('ERROR: {0} is not a valid field name. Must be one of: {1}\n'.format(name, ', '.join(headers_map.keys())))
+        log.write('ERROR: {0} is not a valid field name. Must be one of: {1}\n'.format(name, ', '.join(list(headers_map.keys()))))
         return 1
 
     sample_found = False
