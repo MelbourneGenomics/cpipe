@@ -54,9 +54,9 @@ def check_sex(dir_name):
     '''
         compare inferred sex from karyotype file to sample sex
     '''
-    print "\n# Gender Validation"
-    print "Sample     | Outcome  | Sex    | Inferred"
-    print "-----------|----------|--------|---------"
+    print("\n# Gender Validation")
+    print("Sample     | Outcome  | Sex    | Inferred")
+    print("-----------|----------|--------|---------")
     for karyotype_file in glob.glob(os.path.join(dir_name, '*.karyotype.tsv')):
         result = {}
         for line in open(karyotype_file, 'r'):
@@ -65,20 +65,20 @@ def check_sex(dir_name):
 
         sample = extract_sample(karyotype_file)
         if "Sex" not in result:
-            print "%s | **Sex not found** | | " % sample
+            print(("%s | **Sex not found** | | " % sample))
         if "Inferred Sex" not in result:
-            print "%s | **Inferred Sex not found** | | " % sample
+            print(("%s | **Inferred Sex not found** | | " % sample))
         if "Sex" in result and "Inferred Sex" in result:
             outcome = "OK" if result["Sex"].upper() == result["Inferred Sex"].upper() else "**FAIL*"
-            print "%s | %s | %s | %s" % (sample.ljust(10), outcome.ljust(8), result["Sex"].ljust(6), result["Inferred Sex"].ljust(8))
+            print(("%s | %s | %s | %s" % (sample.ljust(10), outcome.ljust(8), result["Sex"].ljust(6), result["Inferred Sex"].ljust(8))))
 
 def check_gene_coverage(dir_name, bad_threshold=15):
     '''
         calculate gene coverage from qc reports
     '''
-    print "\n# Gene coverage by sample (flagged if >%i%% fail)" % bad_threshold
-    print "Sample     | Outcome  | % Fail | Good | Pass | Fail | Total"
-    print "-----------|----------|--------|------|------|------|------"
+    print(("\n# Gene coverage by sample (flagged if >%i%% fail)" % bad_threshold))
+    print("Sample     | Outcome  | % Fail | Good | Pass | Fail | Total")
+    print("-----------|----------|--------|------|------|------|------")
     for summary_file in glob.glob(os.path.join(dir_name, '*.summary.htm')):
         out = md_to_text(summary_file)
         result = collections.defaultdict(int)
@@ -93,15 +93,15 @@ def check_gene_coverage(dir_name, bad_threshold=15):
         bad_percent = 100. * result['FAIL'] / total if total > 0 else 100
         sample = extract_sample(summary_file)
         outcome = "OK" if bad_percent < bad_threshold else "**FAIL**"
-        print "%s | %s | %s | %4i | %4i | %4i | %5i" % (sample.ljust(10), outcome.ljust(8), str('%.1f' % bad_percent).rjust(6), result['GOOD'], result['PASS'], result['FAIL'], total)
+        print(("%s | %s | %s | %4i | %4i | %4i | %5i" % (sample.ljust(10), outcome.ljust(8), str('%.1f' % bad_percent).rjust(6), result['GOOD'], result['PASS'], result['FAIL'], total)))
 
 def check_observed_mean_coverage(dir_name, bad_threshold=90):
     '''
         extract observed mean coverage from each sample qc report
     '''
-    print "\n# Observed mean coverage by sample (flagged if coverage <%i)" % bad_threshold
-    print "Sample     | Outcome  | OMC"
-    print "-----------|----------|------"
+    print(("\n# Observed mean coverage by sample (flagged if coverage <%i)" % bad_threshold))
+    print("Sample     | Outcome  | OMC")
+    print("-----------|----------|------")
     for summary_file in glob.glob(os.path.join(dir_name, '*.summary.md')):
         out = md_to_text(summary_file)
         sample = extract_sample(summary_file)
@@ -110,18 +110,18 @@ def check_observed_mean_coverage(dir_name, bad_threshold=90):
                 try:
                     omc = float(line.split('|')[1])
                     outcome = "OK\t" if omc > bad_threshold else "**FAIL**"
-                    print "%s | %s | %s" % (sample.ljust(10), outcome.ljust(8), str('%.1f' % omc).rjust(4))
+                    print(("%s | %s | %s" % (sample.ljust(10), outcome.ljust(8), str('%.1f' % omc).rjust(4))))
                     break
                 except ValueError:
-                    print "%s | %s | Unexpected string: %s" % (sample, "**FAIL**", line)
+                    print(("%s | %s | Unexpected string: %s" % (sample, "**FAIL**", line)))
 
 def check_individual_genes(dir_name, bad_threshold=75):
     '''
         find genes that fail across multiple samples
     '''
-    print "\n# Individual genes with >%i%% fail across samples" % bad_threshold
-    print "Gene     | Outcome  | % Fail | Good | Pass | Fail | Total"
-    print "---------|----------|--------|------|------|------|------"
+    print(("\n# Individual genes with >%i%% fail across samples" % bad_threshold))
+    print("Gene     | Outcome  | % Fail | Good | Pass | Fail | Total")
+    print("---------|----------|--------|------|------|------|------")
     genes = {}
 
     for summary_file in glob.glob(os.path.join(dir_name, '*.summary.md')):
@@ -142,22 +142,22 @@ def check_individual_genes(dir_name, bad_threshold=75):
     for gene in genes:
         bad_percent[gene] = 100. * genes[gene]['FAIL'] / sum([genes[gene][status] for status in genes[gene]])
 
-    for key, value in sorted(bad_percent.items(), key=operator.itemgetter(1)):
+    for key, value in sorted(list(bad_percent.items()), key=operator.itemgetter(1)):
         if value > bad_threshold:
             outcome = 'OK' if value <= bad_threshold else '**FAIL**'
-            print "%s | %s | %s | %4i | %4i | %4i | %4i" % (key.ljust(8), outcome.ljust(8), str('%.1f' % value).rjust(6), genes[key]['GOOD'], genes[key]['PASS'], genes[key]['FAIL'], sum([genes[key][status] for status in genes[key]]))
+            print(("%s | %s | %s | %4i | %4i | %4i | %4i" % (key.ljust(8), outcome.ljust(8), str('%.1f' % value).rjust(6), genes[key]['GOOD'], genes[key]['PASS'], genes[key]['FAIL'], sum([genes[key][status] for status in genes[key]]))))
 
 def show_not_found(handle, title):
     '''
         list genes not found
     '''
-    print "# Requested Genes not found in %s" % title
+    print(("# Requested Genes not found in %s" % title))
     found = False
     for line in handle:
-        print "* %s" % line.strip()
+        print(("* %s" % line.strip()))
         found = True
     if not found:
-        print "None"
+        print("None")
 
 def main():
     '''
@@ -176,20 +176,20 @@ def main():
     check_gene_coverage(args.dir, bad_threshold=args.gene_coverage)
     check_observed_mean_coverage(args.dir, bad_threshold=args.mean_coverage)
     check_individual_genes(args.dir, bad_threshold=args.gene_sample_fail)
-    print ""
+    print("")
     if args.missing_exons and os.path.isfile(args.missing_exons):
         show_not_found(open(args.missing_exons, 'r'), 'Reference')
     else:
-        print "* No missing gene information at exon level"
-    print ""
+        print("* No missing gene information at exon level")
+    print("")
     if args.missing_annovar and os.path.isfile(args.missing_annovar):
         show_not_found(open(args.missing_annovar, 'r'), 'Annovar')
     else:
-        print "* No missing gene information at annovar level"
-    print ""
+        print("* No missing gene information at annovar level")
+    print("")
     if args.excluded_genes and os.path.isfile(args.excluded_genes):
-        print "# Excluded genes found in gene lists"
+        print("# Excluded genes found in gene lists")
         for line in open(args.excluded_genes, 'r'):
-            print line.strip()
+            print((line.strip()))
 if __name__ == '__main__':
     main()

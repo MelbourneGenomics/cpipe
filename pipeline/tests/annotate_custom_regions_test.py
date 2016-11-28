@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import annotate_custom_regions
@@ -36,9 +36,9 @@ class AnnotateCustomRegionsTest(unittest.TestCase):
 
     def test_simple(self):
         regions = ['chr1\t100\t200\tA', 'chr1\t150\t250\tB', 'chr1\t200\t300\tC']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         source = ['CHROM\tPOS\tX', 'chr1\t100\tZ', 'chr1\t200\tY', 'chr1\t500\tW']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         annotate_custom_regions.annotate(source=source, target=target, regions=annotate_custom_regions.build_regions(regions, log), log=log)
         lines = target.getvalue().split('\n')
         assert lines[0] == 'CHROM\tPOS\tX\tCPIPE_BED'

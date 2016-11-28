@@ -103,7 +103,7 @@ def main():
     if args.parse:
         write(sys.stdin, sys.stdout, new_pipeline_id)
     else:
-        print new_pipeline_id
+        print(new_pipeline_id)
 
 if __name__ == "__main__":
     main()

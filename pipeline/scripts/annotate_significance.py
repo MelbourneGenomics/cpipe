@@ -173,16 +173,16 @@ class Annovar(object):
 
     def is_rare(self):
         '''Return true iff at least one database has the variant at > the MAF_THRESHOLD'''
-        log.debug("MAF values for %s:%s are %s", self.Chr, self.Start, map(lambda f: self.maf_value(f), self.POPULATION_FREQ_FIELDS))
-        return not any(map(lambda f: self.maf_value(f) > self.MAF_THRESHOLD, self.POPULATION_FREQ_FIELDS))
+        log.debug("MAF values for %s:%s are %s", self.Chr, self.Start, [self.maf_value(f) for f in self.POPULATION_FREQ_FIELDS])
+        return not any([self.maf_value(f) > self.MAF_THRESHOLD for f in self.POPULATION_FREQ_FIELDS])
 
     def is_very_rare(self):
         '''Return true iff at least one database has the variant at > the MAF_THRESHOLD_VERY_RARE'''
-        return not any(map(lambda f: self.maf_value(f) > self.MAF_THRESHOLD_VERY_RARE, self.POPULATION_FREQ_FIELDS))
+        return not any([self.maf_value(f) > self.MAF_THRESHOLD_VERY_RARE for f in self.POPULATION_FREQ_FIELDS])
 
     def is_novel(self):
         '''return true iff the variant has no MAF in any database AND no DBSNP ID'''
-        return not any(map(lambda f: self.maf_value(f) > 0.0, self.POPULATION_FREQ_FIELDS)) and (self.snp138 in ["", "."])
+        return not any([self.maf_value(f) > 0.0 for f in self.POPULATION_FREQ_FIELDS]) and (self.snp138 in ["", "."])
 
     def is_conserved(self):
         '''
@@ -237,7 +237,7 @@ def process_annovar(annovar, output, synonymous=None):
         for line in synonymous:
             fields = line.strip().split('\t')
             if len(fields) > 2:
-                for field in xrange(int(fields[1]), int(fields[2])):
+                for field in range(int(fields[1]), int(fields[2])):
                     key = '{0},{1}'.format(fields[0], field)
                     synonymous_set.add(key)
     log.info("finished reading synonymous set: {0} positions.".format(len(synonymous_set)))

@@ -6,8 +6,8 @@ import json
 import shutil
 from swiftclient.service import SwiftService
 import tempfile
-from urlparse import urlparse, urljoin
-from urllib import urlretrieve
+from urllib.parse import urlparse, urljoin
+from urllib.request import urlretrieve
 
 from tasks.common import unzip_todir, has_swift_auth, ROOT
 
@@ -91,7 +91,7 @@ def download_nectar_asset(asset_key, to_temp=True):
                 zip_file = result['path']
 
                 if not result['success']:
-                    print('\t' + asset_key + '... FAILED! ' + str(result['error']))
+                    print(('\t' + asset_key + '... FAILED! ' + str(result['error'])))
                     raise IOError(result['error'])
 
         # sha1hash the zip file to ensure its integrity

@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import gap_annotator
@@ -36,9 +36,9 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_simple_no_transcript(self):
         cov = ['chr1\t100\t200\tA\t1\t0', 'chr1\t100\t200\tA\t2\t0', 'chr1\t100\t200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', '703\tNM_033083\tchr3\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -48,9 +48,9 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_simple_no_overlap(self):
         cov = ['chr1\t100\t200\tA\t1\t0', 'chr1\t100\t200\tA\t2\t0', 'chr1\t100\t200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', '703\tNM_033083\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -60,9 +60,9 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_simple_overlap(self):
         cov = ['chr1\t15471419\t15471614\tA\t1\t0', 'chr1\t15471419\t15471614\tA\t2\t0', 'chr1\t15471419\t15471614\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', '703\tNM_033083\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -73,9 +73,9 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_simple_mean(self):
         cov = ['chr1\t15471419\t15471614\tA\t1\t0', 'chr1\t15471419\t15471614\tA\t2\t0', 'chr1\t15471419\t15471614\tA\t3\t1', 'chr1\t15471419\t15471614\tA\t4\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', '703\tNM_033083\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 1, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -86,11 +86,11 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_multiple_overlap(self):
         cov = ['chr1\t15471419\t15471614\tA\t1\t0', 'chr1\t15471419\t15471614\tA\t2\t0', 'chr1\t15471419\t15471614\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,', \
             '703\tdummy\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t2\t15469063,15471412,\t15469389,15471516,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -103,12 +103,12 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_exclude(self):
         cov = ['chr1\t15471419\t15471614\tA\t1\t0', 'chr1\t15471419\t15471614\tA\t2\t0', 'chr1\t15471419\t15471614\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t6\t15469063,15471419,15473593,15475854,15477848,15480615,\t15469389,15471514,15473730,15476045,15478082,15484120,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,', \
             '703\tdummy\tchr1\t+\t15469063\t15484120\t15469286\t15480662\t2\t15469063,15471412,\t15469389,15471516,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
         exclude = ['NM_033083',]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log, exclude)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -119,10 +119,10 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_distance(self):
         cov = ['chr1\t100\t200\tA\t1\t0', 'chr1\t100\t200\tA\t2\t0', 'chr1\t100\t200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t+\t100\t1000\t105\t920\t2\t103,500,\t180,550,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -130,10 +130,10 @@ class GapAnnotatorTest(unittest.TestCase):
  
     def test_neg_distance(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t+\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -141,10 +141,10 @@ class GapAnnotatorTest(unittest.TestCase):
  
     def test_neg_strand(self):
         cov = ['chr1\t925\t1200\tA\t1\t0', 'chr1\t925\t1200\tA\t2\t0', 'chr1\t925\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t-\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 0, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -152,10 +152,10 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_cds_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t-\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
-        target = StringIO.StringIO()
+        target = io.StringIO()
         ds = gap_annotator.init_db(data, log)
         gap_annotator.find_gaps(cov, 0, 1, target, ds, log)
         lines = target.getvalue().split('\n')
@@ -177,11 +177,11 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_bed_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t-\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
         bed = ['chr1\t110\t130\tbed1']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         beds = {}
         beds['b1'] = gap_annotator.init_bed(bed, 'b1', log)
         ds = gap_annotator.init_db(data, log)
@@ -191,12 +191,12 @@ class GapAnnotatorTest(unittest.TestCase):
         
     def test_bed_multi_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t-\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
         b1 = ['chr1\t110\t130\tbed1', 'chr1\t115\t125\tbed2']
         b2 = ['chr1\t110\t130\tb3']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         beds = {}
         beds['b1'] = gap_annotator.init_bed(b1, 'b1', log)
         beds['b2'] = gap_annotator.init_bed(b2, 'b2', log)
@@ -210,11 +210,11 @@ class GapAnnotatorTest(unittest.TestCase):
 
     def test_bed_no_overlap(self):
         cov = ['chr1\t120\t1200\tA\t1\t0', 'chr1\t120\t1200\tA\t2\t0', 'chr1\t120\t1200\tA\t3\t10']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         data = ['bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\texonCount\texonStarts\texonEnds\tscore\tname2\tcdsStartStat\tcdsEndStat\texonFrames', \
             '703\tNM_033083\tchr1\t-\t100\t1000\t105\t920\t2\t103,500,\t180,930,\t0\tEAF1\tcmpl\tcmpl\t0,1,0,2,1,1,' ]
         bed = ['chr1\t210\t230\tbed1']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         beds = {}
         beds['b1'] = gap_annotator.init_bed(bed, 'b1', log)
         ds = gap_annotator.init_db(data, log)

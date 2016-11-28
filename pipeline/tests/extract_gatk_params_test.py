@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import extract_gatk_table_params
@@ -36,13 +36,13 @@ class ExtractGATKParamsTest(unittest.TestCase):
 
     def test_get_info(self):
         vcf = ['##INFO=<ID=ANN,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT">']
-        out = StringIO.StringIO()
+        out = io.StringIO()
         params = extract_gatk_table_params.extract_parameters(vcf, out)
         assert out.getvalue() == '-F ANN'
 
     def test_get_format(self):
         vcf = ['##FORMAT=<ID=ANN,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT">']
-        out = StringIO.StringIO()
+        out = io.StringIO()
         params = extract_gatk_table_params.extract_parameters(vcf, out)
         assert out.getvalue() == '-GF ANN'
 

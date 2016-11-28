@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import filter_transcripts
@@ -39,8 +39,8 @@ class FilterTranscriptsTest(unittest.TestCase):
             test that XM on its own is not filtered
         '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tXM_1\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_transcripts.filter_tsv(unfiltered, target, log)
         lines = target.getvalue().split('\n')
         assert lines[1] == 'chr1\t100\tA\tA\tXM_1'
@@ -52,8 +52,8 @@ class FilterTranscriptsTest(unittest.TestCase):
             test that NM on its own is not filtered
         '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tNM_1\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_transcripts.filter_tsv(unfiltered, target, log)
         lines = target.getvalue().split('\n')
         assert lines[1] == 'chr1\t100\tA\tA\tNM_1'
@@ -65,8 +65,8 @@ class FilterTranscriptsTest(unittest.TestCase):
             test that XM is filtered if an NM is present
         '''
         unfiltered = ['CHROM\tPOS\tREF\tALT\tFeature\n', 'chr1\t100\tA\tA\tNM_1\n', 'chr1\t100\tA\tA\tXM_1\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_transcripts.filter_tsv(unfiltered, target, log)
         lines = target.getvalue().split('\n')
         assert lines[1] == 'chr1\t100\tA\tA\tNM_1'

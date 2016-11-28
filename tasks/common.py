@@ -5,9 +5,8 @@ import subprocess
 import tempfile
 import stat
 import sys
-
-from urllib import urlopen, urlretrieve
-from StringIO import StringIO
+from urllib.request import urlopen, urlretrieve
+from io import StringIO
 from doit.action import CmdAction
 from doit.tools import create_folder
 from doit import get_var
@@ -213,7 +212,7 @@ def has_swift_auth():
 
     # If the user has all the necessary environment variables set, let them download the cached assets
     # from the object store
-    return swift_credentials.issubset(os.environ.keys())
+    return swift_credentials.issubset(list(os.environ.keys()))
 
 def manual_install():
     return MANUAL_INSTALL == 'manual'

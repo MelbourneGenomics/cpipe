@@ -45,7 +45,7 @@ reader = csv.reader(open(summary))
 
 # First read the header and since by default some columns don't have headers,
 # as a side benefit we fix those
-header = reader.next()
+header = next(reader)
 
 VCGS_TX_COL = header.index("VCGS_TX")
 
@@ -63,7 +63,7 @@ def find_alt_annotation(gene,chr,start,obs, aa):
                     if gene == l[1] and chr == l[21] and start == l[22] and obs == l[25]:
                             # Found the variant (we hope)
                             if debug:
-                                    print >>sys.stderr, "Matched %s:%s:%s:%s with aa change %s vs %s" % (gene,chr,start,obs, aa, l[VCGS_TX_COL])
+                                    print("Matched %s:%s:%s:%s with aa change %s vs %s" % (gene,chr,start,obs, aa, l[VCGS_TX_COL]), file=sys.stderr)
 
                             return l[3]
             return ""
