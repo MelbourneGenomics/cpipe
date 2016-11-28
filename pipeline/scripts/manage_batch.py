@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import collections
@@ -215,7 +215,7 @@ def show_batch(batch_name, out):
         # could also show data, target regions
 
 
-def validate_batch(val):
+def batch_name(val):
     if not isinstance(val, str):
         raise argparse.ArgumentTypeError('The batch name must be provided as a string')
     batch = str(val)
@@ -224,11 +224,43 @@ def validate_batch(val):
                                          'the Bpipe SampleInfo parser.')
     return batch
 
+def fastq_path(path):
+    (base, ext) = os.path.splitext(path)
+    if os.path.exists(path) and ext == 'gz' and base.endswith('fastq'):
+        return path
+    else:
+        raise argparse.ArgumentTypeError('The fastq file must exist, and end in a ".fastq.gz" file extension')
+
+def bed_path(path):
+    (base, ext) = os.path.splitext(path)
+    if os.path.exists(path) and ext == 'bed':
+        return path
+    else:
+        raise argparse.ArgumentTypeError('The bed file must exist, and end in a ".bed" file extension')
+
+
+def profile(name):
+     if
+
 
 def create_parser():
-    parser = argparse.ArgumentParser(description='Manage batches')
+    parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
+    subparsers = parser.add_subparsers()
+
+    # list command
+    list_parser = subparsers.add_parser('list', help='Lists the batches in the current Cpipe installation')
+
+    # create command
+    create_batch_parser = subparsers.add_parser('create', help='Creates a new batch, including data, metadata file and configuration file')
+    create_batch_parser.add_argument('name', type=batch_name, required=True, help='The name for the new batch')
+    create_batch_parser.add_argument('--data', '-d', required=True, help='The fastq files to add to the batch', nargs='+', type=fastq_path)
+    create_batch_parser.add_argument('--exome', '-e', required=True, help='A bed file indicating which regions are covered by the sequencing '
+                                                                          'procedure', type=bed_path)
+    create_batch_parser.add_argument('--profile', '-p', required=True, help='The analysis profile (genelist) to use for '
+                                                                            'the analysis of this batch', type=fastq_path)
+
     parser.add_argument('command', help='command to execute',
-                        choices=['list', 'show_batches', 'show_batch', 'add_sample'])
+                        choices=['list', 'create', 'edit_metadata', 'view_metadata', 'validate_metadata', 'add_sample'])
     parser.add_argument('--batch', required=False, help='batch name', type=validate_batch)
     parser.add_argument('--profile', required=False, help='analysis profile')
     parser.add_argument('--exome', required=False, help='target regions')
