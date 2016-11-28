@@ -35,7 +35,7 @@ def calculate_coverage(capture, exons, out, log):
     for line in capture:
         fields = line.strip().split('\t') # chr, start, end
         if len(fields) > 2:
-            for x in xrange(int(fields[1]), int(fields[2])):
+            for x in range(int(fields[1]), int(fields[2])):
                 cap.add('{0}:{1}'.format(fields[0], x))
 
     log.write('reading exons...\n')
@@ -45,7 +45,7 @@ def calculate_coverage(capture, exons, out, log):
         fields = line.strip().split('\t') # chr, start, end, gene
         if len(fields) > 3:
             gene = fields[3].lower()
-            for x in xrange(int(fields[1]), int(fields[2])):
+            for x in range(int(fields[1]), int(fields[2])):
                 cand = '{0}:{1}'.format(fields[0], x)
                 if cand in cap:
                     found[gene] += 1

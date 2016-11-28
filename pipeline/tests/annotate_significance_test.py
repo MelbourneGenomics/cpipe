@@ -40,7 +40,7 @@ class AnnotateSignificanceTest(unittest.TestCase):
     def __init__(self,n):
         unittest.TestCase.__init__(self,n)
         Annovar.init_columns(self.header)
-        variant = csv.reader([self.line], delimiter=",", quotechar='"').next()
+        variant = next(csv.reader([self.line], delimiter=",", quotechar='"'))
         self.a = Annovar(variant)
         #print "init ", self.a.columns
 

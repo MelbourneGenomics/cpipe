@@ -45,4 +45,4 @@ for line in sys.stdin:
   if candidate not in ref and candidate != '1' and candidate != 'HGNC_SYMBOL':
     missing.add( candidate )
 
-print '\n'.join( sorted( list( missing ) ) )
+print(('\n'.join( sorted( list( missing ) ) )))

@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import generate_peds
@@ -35,7 +35,7 @@ import generate_peds
 class GeneratePedsTest(unittest.TestCase):
     def test_simple(self):
         metadata = ['Sample_ID\tPedigree_File\tSex\n', 'P\t\tMale\n', 'M\t\tFemale\n', 'C\tfid=P,M\tM\n']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = generate_peds.generate_peds(metadata, log)
         #print 'log', log.getvalue()
         #print 'result', result
@@ -43,7 +43,7 @@ class GeneratePedsTest(unittest.TestCase):
 
     def test_unknown(self):
         metadata = ['Sample_ID\tPedigree_File\tSex\n', 'P\t\tUnknown\n', 'M\t\tUnknown\n', 'C\tfid=P,M\tM\n']
-        log = StringIO.StringIO()
+        log = io.StringIO()
         result = generate_peds.generate_peds(metadata, log)
         #print 'log', log.getvalue()
         #print 'result', result

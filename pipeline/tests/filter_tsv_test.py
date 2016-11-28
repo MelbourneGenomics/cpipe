@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import filter_tsv
@@ -36,8 +36,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_af(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\n', '0.2\t10\t10\t3,7\n', '0.1\t10\t10\t3,7\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False)
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t10\t3,7'
@@ -46,8 +46,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_dp(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\n', '0.2\t10\t1\t3,7\n', '0.2\t10\t10\t3,7\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False)
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t10\t3,7'
@@ -56,8 +56,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_ad_trio(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\ts2.DP\ts2.AD\n', '0.2\t10\t1\t3,7\t10\t2,8\n', '0.2\t10\t7\t3,1\t4\t2,8\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False)
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t1\t3,7\t10\t2,8'
@@ -66,8 +66,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_dp_trio(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\ts2.DP\ts2.AD\n', '0.2\t10\t1\t3,7\t10\t2,8\n', '0.2\t10\t5\t3,7\t4\t2,8\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False)
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t1\t3,7\t10\t2,8'
@@ -76,8 +76,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_dp_trio_proband_ok(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\ts2.DP\ts2.AD\n', '0.2\t10\t5\t3,7\t4\t2,8\n', '0.2\t10\t4\t3,7\t5\t2,8\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False, proband='s1')
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t5\t3,7\t4\t2,8'
@@ -86,8 +86,8 @@ class FilterTSVTest(unittest.TestCase):
 
     def test_ad(self):
         src = ['AF\tQUAL\ts1.DP\ts1.AD\n', '0.2\t10\t1\t3,1\n', '0.2\t10\t10\t3,7\n']
-        log = StringIO.StringIO()
-        target = StringIO.StringIO()
+        log = io.StringIO()
+        target = io.StringIO()
         filter_tsv.filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, reverse=False)
         lines = target.getvalue().split('\n')
         assert lines[1] == '0.2\t10\t10\t3,7'

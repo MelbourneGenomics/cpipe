@@ -11,7 +11,7 @@ import fnmatch
 import sys
 import subprocess
 
-from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
+from .cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
 
 DEFAULT_PRIORITY = '1'
 FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality",
@@ -240,7 +240,7 @@ def bed_path(path):
 
 
 def profile(name):
-     if
+     pass
 
 
 def create_parser():

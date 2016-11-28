@@ -4,7 +4,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import update_pipeline_run_id
@@ -21,8 +21,8 @@ class UpdatePipelineRunIDTest(unittest.TestCase):
        assert new_id == 'site_000000001'
 
     def test_update_samples(self):
-       src = StringIO.StringIO( 'h1\th2\nl1\tl2' )
-       target = StringIO.StringIO()
+       src = io.StringIO( 'h1\th2\nl1\tl2' )
+       target = io.StringIO()
        new_id = update_pipeline_run_id.write( src, target, 'site_123456789' )
        assert target.getvalue() == 'Pipeline_Run_ID\th1\th2\nsite_123456789\tl1\tl2'
       

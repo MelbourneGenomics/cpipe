@@ -59,7 +59,7 @@ def generate_ped(sample_id, pedigree_info, gender, log):
     if len(parent) != 2:
         write_log(log, 'ERROR: sample {0} has invalid pedigree {1}. There should be 2 parents but there were {2}'.format(sample_id, pedigree_info, len(parent)))
         return None
-    if 1 not in parent.keys() or 2 not in parent.keys():
+    if 1 not in list(parent.keys()) or 2 not in list(parent.keys()):
         write_log(log, 'ERROR: sample {0} has invalid pedigree {1}. Parents should have different genders: {2}.'.format(sample_id, pedigree_info, parent))
         return None
 

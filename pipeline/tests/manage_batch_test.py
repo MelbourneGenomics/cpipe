@@ -2,7 +2,7 @@ import os
 import unittest
 import sys
 import traceback
-import StringIO
+import io
 import shutil
 import argparse
 from contextlib import contextmanager
@@ -67,14 +67,14 @@ class ManageBatchTest(unittest.TestCase):
             self.fail('Failed with error: ' + traceback.format_exc())
 
     def test_show_batches(self):
-        stream = StringIO.StringIO()
+        stream = io.StringIO()
         with suppress_stdout():
             show_batches(stream)
         assert (len(stream.getvalue()) > 0)
 
     def test_show_batch(self):
         self.create_test_batch()
-        stream = StringIO.StringIO()
+        stream = io.StringIO()
         with suppress_stdout():
             show_batch(self.test_batch_name, stream)
         assert (len(stream.getvalue()) > 0)

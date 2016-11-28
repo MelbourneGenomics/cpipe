@@ -48,7 +48,7 @@ def read_config_groovy():
                 result[key] = val
 
         # Now interpolate variables
-        for key, val in result.iteritems():
+        for key, val in list(result.items()):
             interpolate = re.compile(r'\$[\w_]+')
             if type(val) is str:
                 while True:

@@ -69,7 +69,7 @@ def analyze_log(log, result):
            pass
     # finished
     result.write('Stage\tMin\tMax\tAverage\tTotal\t%\n')
-    total = sum([sum(final[key]) for key in final.keys()])
+    total = sum([sum(final[key]) for key in list(final.keys())])
     for key in sorted(final.keys()):
         result.write('{0}\t{1}\t{2}\t{3:.0f}\t{4}\t{5:.0f}\n'.format(key, min(final[key]), max(final[key]), sum(final[key]) / len(final[key]), sum(final[key]), sum(final[key]) * 100 / total))
     result.write('Max concurrency: {0}\n'.format(max_in_progress))

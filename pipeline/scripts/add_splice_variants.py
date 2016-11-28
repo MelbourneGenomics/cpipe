@@ -66,7 +66,7 @@ def process(exons, genome, width):
         #print  ",".join([chrom, str(start), str(end), aachange])
 
         if chrom not in exons:
-            print >>sys.stderr, "WARNING: Chromosome not in capture in output variants: " + chrom
+            print("WARNING: Chromosome not in capture in output variants: " + chrom, file=sys.stderr)
             continue
 
         for exon_start, exon_end, desc in exons[chrom]:
@@ -84,7 +84,7 @@ def process(exons, genome, width):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print "Usage: python add_splice_variants.py <exons.bed> <genome_summary.csv> <width>"
+        print("Usage: python add_splice_variants.py <exons.bed> <genome_summary.csv> <width>")
         sys.exit(1)
 
     process(sys.argv[1], sys.argv[2], sys.argv[3])

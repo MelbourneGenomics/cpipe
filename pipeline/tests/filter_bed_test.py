@@ -27,7 +27,7 @@ import os
 import random
 import re
 import sys
-import StringIO
+import io
 
 sys.path.append('../scripts/')
 import filter_bed
@@ -36,7 +36,7 @@ class FilterBedTest(unittest.TestCase):
 
     def test_negative(self):
         source = ['chr1\t100\t200\tA\t1\t0\n', 'chr1\t150\t100\tA\t2\t0\n', 'chr1\t200\t300\tA\t3\t10\n']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         filter_bed.filter_bed(source, target)
         lines = target.getvalue().split('\n')
         assert lines[0] == 'chr1\t100\t200\tA\t1\t0'
@@ -45,7 +45,7 @@ class FilterBedTest(unittest.TestCase):
 
     def test_exclude(self):
         source = ['chr1\t100\t200\tA\t1\t0\n', 'chr1\t150\t100\tB\t2\t0\n', 'chr1\t200\t300\tC\t3\t10\n']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         exclude = ['A\n', 'X\n']
         filter_bed.filter_bed(source, target, exclude)
         lines = target.getvalue().split('\n')
@@ -54,7 +54,7 @@ class FilterBedTest(unittest.TestCase):
 
     def test_include(self):
         source = ['chr1\t100\t200\tA\t1\t0\n', 'chr1\t150\t100\tB\t2\t0\n', 'chr1\t200\t300\tC\t3\t10\n']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         include = ['C\n', 'X\n']
         filter_bed.filter_bed(source, target, None, include)
         lines = target.getvalue().split('\n')
@@ -63,7 +63,7 @@ class FilterBedTest(unittest.TestCase):
 
     def test_no_genes(self):
         source = ['chr1\t100\t200\n', 'chr1\t200\t300\n']
-        target = StringIO.StringIO()
+        target = io.StringIO()
         filter_bed.filter_bed(source, target, None, None)
         lines = target.getvalue().split('\n')
         assert lines[0] == 'chr1\t100\t200'
