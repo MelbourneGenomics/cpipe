@@ -3,6 +3,8 @@ from pathlib import Path
 import re
 import pandas as pd
 import sys
+from typing import Union, Any
+from typing.io import TextIO
 
 BASE = Path(__file__).parent.parent.parent
 BATCHES = BASE / 'batches'
@@ -15,7 +17,7 @@ CONFIG_GROOVY_UTIL = BASE / "pipeline" / "scripts" / "config_groovy_util.sh"
 def batch_dir(batch_name):
     return os.path.join(BATCHES, batch_name)
 
-def list_batches(out):
+def list_batches(out: Union[None, str, TextIO]):
     '''
         Prints the name of all batches that contain a samples.txt file
     '''
@@ -36,6 +38,10 @@ def list_batches(out):
         return df
     else:
         df.to_csv(out, sep='\t', index=False)
+
+
+def read_metadata(metadata_file: Any):
+    return pd.read_csv(metadata_file, sep='\t')
 
 def read_config_groovy():
     """

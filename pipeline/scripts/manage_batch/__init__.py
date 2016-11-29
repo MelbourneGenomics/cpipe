@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 
-import argparse
-import collections
-import datetime
-import glob
-import shutil
-
 import pandas as pd
-import os
-import os.path
-import fnmatch
+import re
 import sys
 import subprocess
+from pathlib import Path
+from typing import List
+from itertools import groupby
 
-from ..cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir
-from .parser import create_parser
+import pathlib_patches
+from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir, read_metadata
+import cpipe_utility
 
 DEFAULT_PRIORITY = '1'
 FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_Volume", "DNA_Quantity", "DNA_Quality",
@@ -24,7 +20,7 @@ FIELDS = ["Batch", "Sample_ID", "DNA_Tube_ID", "Sex", "DNA_Concentration", "DNA_
           "Library_Preparation", "Barcode_Pool_Size", "Read_Type", "Machine_Type", "Sequencing_Chemistry",
           "Sequencing_Software", "Demultiplex_Software", "Hospital_Centre", "Sequencing_Contact", "Pipeline_Contact",
           "Notes", "Pipeline_Notes", "Analysis_Type"]
-
+"""
 
 
 def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
@@ -115,9 +111,7 @@ def add_batch(batch_name, profile_name, exome_name, data_files, force, log):
                 > samples.txt
         '''.format(
             config_util=CONFIG_GROOVY_UTIL,
-            batches=BATCHES,
-            batch_name=batch_name,
-            classpath=CLASSPATH,
+            batches=BATCHES, batch_name=batch_name, classpath=CLASSPATH,
             base=BASE,
             profile_name=profile_name,
             data_files=data_files
@@ -199,32 +193,130 @@ def show_batch(batch_name, out):
         out.write('samples.txt: not found\n'.format(batch_name))
         # could also show data, target regions
 
+"""
+
+
 def list_batches():
-    list_batches(sys.stdout)
+    cpipe_utility.list_batches(sys.stdout)
 
-def create_batch(batch, data, exome, profile, force):
 
+def add_fastq(batch: Path, fastq: Path, mode: str = 'link'):
+    """
+    Adds a fastq file to the given batch using the method specified by mode
+    :param batch:
+    :param fastq:
+    :param mode:
+    :return:
+    """
+
+    # Make the data subdir
+    data_dir = batch / 'data'
+    data_dir.mkdir()
+
+    # Move the data into the batch
+    target_fastq = data_dir / Path(fastq).stem
+    if mode == 'copy':
+        fastq.copy(target_fastq)
+    elif mode == 'link':
+        fastq.symlink_from(target_fastq)
+    elif mode == 'move':
+        fastq.rename(target_fastq)
+
+
+def add_sample_to_metadata(samples: List[Path], design: str, batch: Path, metadata: pd.DataFrame) -> pd.DataFrame:
+    # The sample ID is the text in the fastq filename before the first underscore
+    ids = [sample.stem.split('_')[0] for sample in samples]
+    id = ids[0]
+    if ids.count(id) != len(ids):
+        raise ValueError('All fastqs from the same sample must have the same id (the text before the first underscore)')
+
+    return metadata.append({
+        'Batch': batch.stem,
+        'Sample_ID': id,
+        'Sex': 'Unknown',
+        'Cohort': design,
+        'Sample_Type': 'Normal',
+        'Fastq_Files': ','.join([str(f.resolve()) for f in samples])
+    })
+
+
+def create_batch(batch: Path, data: list, exome: str, profile: str, force: bool = False, mode: str = 'link'):
     # Handle an existing batch
     if batch.exists():
         if force:
-            shutil.rmtree(batch)
+            batch.rmtree()
         else:
             raise FileExistsError('Batch directory already exists! Use the --force flag to replace an existing batch')
 
+    # Create the batch directory
+    batch.mkdir()
+
+    # Make the metadata file and open it
+    metadata = batch / 'samples.txt'
+    with metadata.open('w') as metadata_file:
+        df = read_metadata(metadata_file)
+
+        # Group fastqs into samples
+        for (id, fastqs) in groupby(data, lambda x: x.split('_')[0]):
+
+            # Move the data into the batch
+            for fastq in fastqs:
+                add_fastq(batch, fastq, mode=mode)
+
+            # Update the metadata file
+            add_sample_to_metadata(fastqs, profile, batch, df)
+
+        # Write out the CSV
+        df.to_csv(metadata_file, sep='\t')
 
 
-def main():
-    '''
-        parse command line
-    '''
+def edit_batch(batch: Path, editor: str = 'editor'):
+    metadata = batch / 'samples.txt'
+    subprocess.run([editor, metadata])
 
-    parser = create_parser()
-    args = parser.parse_args()
 
-    if args.subparser_name == 'list':
-        list_batches()
-    if args.subparser_name == 'create':
-        create_batch()
+def view_batch(batch: Path, sample: str = None):
+    # Read the metadata file
+    metadata = batch / 'samples.txt'
+    df = read_metadata(metadata)
+
+    # Subset the data frame if we only want one sample
+    if sample:
+        df = df[df['Sample_ID' == sample]]
+
+    # Print out each row of the metadata file
+    for (index, series) in df.iterrows():
+        print(series)
+
+
+def validate_metadata(batch: Path):
+    """
+        Validate the input file according to the Melbourne Genomics metadata file format specification
+    """
+    metadata = read_metadata(batch / 'samples.txt')
+    warnings = []
+
+    for (i, series) in metadata.iterrows():
+        for (j, column) in enumerate(series):
+            if re.search('^\w+', column):
+                warnings.append(
+                    'Sample {0} field {1} (column {2}) contains leading whitespace'.format(i, metadata.column, j))
+
+
+def add_sample(batch: Path, samples: List[Path]):
+    # Find the metadata file and read it
+    metadata_file = batch / 'samples.txt'
+    metadata = read_metadata(metadata_file)
+
+    # The design is whatever is most common so far
+    design = metadata['Cohort'].mode
+
+    # Update the metadata file and save it
+    add_sample_to_metadata(samples, design, batch, metadata)
+    metadata.to_csv(metadata_file)
+
+
+'''
 
     if args.command == 'list':  # list all batches
         list_batches()
@@ -243,6 +335,4 @@ def main():
         elif args.command == 'add_sample':  # add additional samples to batch
             add_sample(args.batch, args.profile, args.data, log=sys.stderr)
 
-
-if __name__ == '__main__':
-    main()
+            '''
