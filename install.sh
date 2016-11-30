@@ -125,9 +125,8 @@ fi
                         pyenv/plugins/python-build/bin/python-build ${PYTHON_VERSION} ${SYS_PYTHON}
                 popd
 
-                # Install virtualenv and create a real python installation. Activate it
-                ${SYS_PYBIN}/pip install virtualenv
-                ${SYS_PYBIN}/virtualenv --always-copy --distribute --no-site-packages -p ${SYS_PYBIN}/python ${PYTHON}
+                # Make a virtual environment
+                pyvenv ${PYTHON}
 
                 # Delete the temporary files
                 rm -rf ${TEMP_SUBDIR}

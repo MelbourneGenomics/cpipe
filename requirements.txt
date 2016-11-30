@@ -1,5 +1,5 @@
 python-swiftclient
 python-keystoneclient
-doit
+doit==0.30.0
 pymysql
 pandas
