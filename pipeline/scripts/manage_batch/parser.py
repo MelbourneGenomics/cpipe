@@ -1,13 +1,14 @@
 import argparse
 import shutil
 from pathlib import Path
-from cpipe_utility import DESIGNS, DESIGN_LIST
-from manage_batch import list_batches, create_batch, edit_batch, view_batch, validate_metadata, add_sample
+from cpipe_utility import DESIGN_LIST, list_batches
 
 
 def existing_batch(val):
-    if val in list_batches()['Batch Name']:
-        return val
+    batches = list_batches()
+    row = batches[batches['Batch Name'] == val].iloc[0]
+    if val in list_batches()['Batch Name'].values:
+        return Path(row['Batch Path'])
     else:
         raise argparse.ArgumentTypeError('The batch must be an existing batch with a metadata file')
 
@@ -53,11 +54,10 @@ def editor(path):
 
 def create_parser():
     parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='command')
 
     # list command
     list_parser = subparsers.add_parser('list', help='Lists the batches in the current Cpipe installation')
-    list_parser.set_defaults(func=list_batches)
 
     # create command
     create_batch_parser = subparsers.add_parser('create',
@@ -77,7 +77,6 @@ def create_parser():
     create_batch_parser.add_argument('--mode', '-m', required=False, default='copy',
                                      help='Either "copy", "link" or "move":'
                                           " the method used to put the data files into the batch directory")
-    create_batch_parser.set_defaults(func=create_batch)
 
     # edit command
     edit_parser = subparsers.add_parser('edit', help='Edit the metadata file for the chosen batch')
@@ -86,7 +85,6 @@ def create_parser():
     edit_parser.add_argument('--editor', '-e', type=editor, required=False,
                              help='The name of the executable you want to use to edit '
                                   'the metadata file using', default='editor')
-    edit_parser.set_defaults(func=edit_batch)
 
     # view command
     view_parser = subparsers.add_parser('view',
@@ -95,19 +93,18 @@ def create_parser():
                                                                 'want to view')
     view_parser.add_argument('--sample', '-s', required=False,
                              help='The sample ID of the single sample you want to view the metadata for')
-    view_parser.set_defaults(func=view_batch)
 
     # validate command
-    validate_parser = subparsers.add_parser('validate', help='Validate the metadata file for the chosen batch')
+    validate_parser = subparsers.add_parser('check',
+                                            help='Validate the metadata file for the chosen batch')
     validate_parser.add_argument('batch', type=existing_batch, help='The name of the batch whose metadata file you '
-                                                                    'want to view')
-    validate_parser.set_defaults(func=validate_metadata)
+                                                                    'want to validate')
 
     # add_sample command
-    add_sample_parser = subparsers.add_parser('add_sample', help='Add a sample to an existing metadata file')
+    add_sample_parser = subparsers.add_parser('add_sample',
+                                              help='Add a sample to an existing metadata file')
     add_sample_parser.add_argument('batch', type=existing_batch, help='The name of the batch to which you'
                                                                       'want to add a sample')
     add_sample_parser.add_argument('data', nargs='+', help='The list of fastqs you want to add as samples to the batch')
-    add_sample_parser.set_defaults(func=add_sample)
 
     return parser

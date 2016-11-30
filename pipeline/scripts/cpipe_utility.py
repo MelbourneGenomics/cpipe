@@ -6,7 +6,7 @@ import sys
 from typing import Union, Any
 from typing.io import TextIO
 
-BASE = Path(__file__).parent.parent.parent
+BASE = Path(__file__).parent.parent.parent.resolve()
 BATCHES = BASE / 'batches'
 DESIGNS = BASE / 'designs'
 DESIGN_LIST = set([f.stem for f in DESIGNS.iterdir()])
@@ -17,14 +17,14 @@ CONFIG_GROOVY_UTIL = BASE / "pipeline" / "scripts" / "config_groovy_util.sh"
 def batch_dir(batch_name):
     return os.path.join(BATCHES, batch_name)
 
-def list_batches(out: Union[None, str, TextIO]):
-    '''
+def list_batches():
+    """
         Prints the name of all batches that contain a samples.txt file
-    '''
+    """
 
     # Find all directories that contain a samples.txt and add them to a list
     df = pd.DataFrame(columns=('Batch Name', 'Batch Path'))
-    for root, dirs, files in os.walk(BATCHES):
+    for root, dirs, files in os.walk(str(BATCHES)):
         if 'samples.txt' in files:
             batch_name = os.path.basename(root)
             full_path = os.path.abspath(root)
@@ -33,15 +33,13 @@ def list_batches(out: Union[None, str, TextIO]):
     # Sort them alphabetically by their batch name
     df = df.sort_values(by='Batch Name')
 
-    # Print to output stream if requested, otherwise return the data frame
-    if out is None:
-        return df
-    else:
-        df.to_csv(out, sep='\t', index=False)
+    # Return the data frame
+    return df
 
 
-def read_metadata(metadata_file: Any):
-    return pd.read_csv(metadata_file, sep='\t')
+def read_metadata(metadata_file: Any, parse_num=True):
+    dtype = None if parse_num else str
+    return pd.read_csv(metadata_file, sep='\t', dtype=dtype, na_values=[], keep_default_na=False)
 
 def read_config_groovy():
     """

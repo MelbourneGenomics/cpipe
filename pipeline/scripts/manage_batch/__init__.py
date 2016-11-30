@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import typing
 
 import pandas as pd
 import re
@@ -7,6 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import List
 from itertools import groupby
+import datetime
 
 import pathlib_patches
 from cpipe_utility import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS, batch_dir, read_metadata
@@ -197,7 +199,8 @@ def show_batch(batch_name, out):
 
 
 def list_batches():
-    cpipe_utility.list_batches(sys.stdout)
+    df = cpipe_utility.list_batches()
+    df.to_csv(sys.stdout, sep='\t', index=False)
 
 
 def add_fastq(batch: Path, fastq: Path, mode: str = 'link'):
@@ -289,18 +292,106 @@ def view_batch(batch: Path, sample: str = None):
         print(series)
 
 
+def process_validation(series: pd.Series, message: str, error_list=None) -> (
+        int, str, str):
+    """
+    Takes the given boolean series, and generates a warning for each item in the series that has a value of False
+    :param series: A pandas boolean series. Each item should be True if it passed the validation, and False if it
+    didn't.
+    :param message: The message to print out, after the row and column numbers, indicating the validation error
+    :param error_list: An optional array to add the validation errors to
+    :return: Returns the array of warnings discovered using this validation
+    """
+    warnings = ['Row {} in column "{}" {}'.format(i + 1, series.name, message) for i, row in enumerate(series) if
+                not row]
+
+    if error_list is not None and error_list.extend:
+        error_list.extend(warnings)
+
+    return warnings
+
+
 def validate_metadata(batch: Path):
     """
         Validate the input file according to the Melbourne Genomics metadata file format specification
     """
-    metadata = read_metadata(batch / 'samples.txt')
+    metadata = read_metadata(batch / 'samples.txt', parse_num=False)
     warnings = []
 
+    # Validate leading and trailing whitespace
+    for column in metadata.columns:
+        series = metadata[column]
+        process_validation(~series.str.contains('^\s+'), 'has leading whitespace', warnings)
+        process_validation(~series.str.contains('\s+$'), 'has trailing whitespace', warnings)
+
+    # Validate Batch
+    batches = cpipe_utility.list_batches()
+    process_validation(~metadata['Batch'].isin(batches['Batch Name']), 'does not correspond to a valid batch directory',
+                       warnings)
+
+    # Validate Sample_ID
+    process_validation(~metadata['Sample_ID'].str.contains('_'), 'contains an underscore', warnings)
+
+    # Validate Sex
+    sex_options = ['male', 'm', 'female', 'f', 'unknown']
+    process_validation(metadata['Sex'].str.lower().isin(sex_options), 'must be one of {{{}}}'.format(', '.join(sex_options)),
+                       warnings)
+
+    # Validate numeric columns
+    for column in ('DNA_Concentration', 'DNA_Volume', 'DNA_Quantity', 'DNA_Quality', 'Mean_Coverage', 'Duplicate_Percentage', 'Barcode_Pool_Size'):
+        series = metadata[column]
+        def valid_float(val):
+            if len(val) == 0:
+                return True
+            try:
+                float(val)
+                return True
+            except:
+                return False
+
+        process_validation(series.apply(valid_float), 'does not contain a valid numeric value', warnings)
+
+
+    # Validate date columns
+    for column in ('DNA_Date', 'Capture_Date', 'Sequencing_Date'):
+        series = metadata[column]
+        def valid_date(val):
+            if len(val) == 0:
+                return True
+            try:
+                datetime.datetime.strptime(val, '%Y%m%d')
+                return True
+            except:
+                return False
+
+        process_validation(series.apply(valid_date), 'does not contain a valid date in the format YYYYMMDD', warnings)
+
+
+
+    '''
+       Pedigree file column may be either a pedigree string, empty, import, individual or exclude (case insensitive)
+    '''
+
+    '''
+        Gender may be Male, Female, Unknown or Other
+    '''
+
+    # TODO: Ensure all fastqs are in metadata file, and all metadata file fastqs exist
+
+    '''
     for (i, series) in metadata.iterrows():
         for (j, column) in enumerate(series):
             if re.search('^\w+', column):
                 warnings.append(
                     'Sample {0} field {1} (column {2}) contains leading whitespace'.format(i, metadata.column, j))
+                    '''
+
+    if warnings:
+        for warning in warnings:
+            print(warning, file=sys.stderr)
+        sys.exit(1)
+    else:
+        print('The metadata file for batch "{}" successfully passed the metadata check!'.format(batch))
 
 
 def add_sample(batch: Path, samples: List[Path]):
