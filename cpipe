@@ -98,7 +98,8 @@ case "$1" in
     batch)
         #  e.g. docker run cpipe batch add_batch --batch batch_identifier --profile profile_name
         shift 1
-        python pipeline/scripts/manage_batch.py "$@" < /dev/stdin
+        cd pipeline/scripts
+        python -m manage_batch "$@" < /dev/stdin
     ;;
     genelist)
         # e.g. docker run cpipe genelist show_bed --profile profile_name
