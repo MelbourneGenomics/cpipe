@@ -21,6 +21,7 @@ For more detailed instructions, have a look at the [installation documentation](
 ## Creating your analysis batch
 
 * Next, create the analysis directory and copy in your fastq files.
+
    ```bash
    mkdir -p batches/<batch_identifier>/data
    cp  <fastq_files> batches/<batch_identifier>/data

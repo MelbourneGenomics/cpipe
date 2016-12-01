@@ -33,7 +33,7 @@ Keyword Arguments:
 
 ## Run
 The cpipe run command is the most common use case for cpipe. Just ensure you have a sample batch in the batches directory 
-and run `./cpipe run --batch <batch-name>` and your samples should be analysed. 
+and run `./cpipe --batch <batch-name> run` and your samples should be analysed. 
 
 You can also specify bpipe options (like limiting the system resources) with the `--bpipe-options <OPTS>` flag
 
@@ -56,7 +56,7 @@ Creates a new sample metadata file for a new batch
 Options:
   * `--batch BATCH` (required) Specifies the batch directory in which to create a metadata file
   * `--profile PROFILE` (optional) Specifies the analysis profile to use. Defaults to ALL, the recommended profile
-  * `--exome EXOME` (optional) Specifies a bed file to use as the capture region
+  * `--exome EXOME` (required) Specifies a bed file to use as the capture region
   * `--data [DATA [DATA ...]]` (optional) specifies the fastq files in the batch. Defaults to all files in the data 
   subdirectory, which is the recommended structure for a batch.
   * `--force` (optional) Overrides an existing samples.txt

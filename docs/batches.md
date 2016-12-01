@@ -10,7 +10,7 @@
 
 ## Introduction
 In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
- `cpipe/batches`. For example, a batch named `batch_001` would mean creating a `cpipe/batches/batch_001`gi directory.
+ `cpipe/batches`. For example, a batch named `batch_001` would mean creating a `cpipe/batches/batch_001` directory.
  
 ## Manipulating Batches
 ### Creating a Batch
