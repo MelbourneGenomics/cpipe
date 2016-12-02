@@ -90,11 +90,11 @@ def download_nectar_asset(asset_key, to_temp=True):
                 # Do the actual unzipping
                 unzip_todir(zip_handle, unzip_dir, 'tgz')
 
-                # And delete the zip file + parent directories
-                shutil.rmtree(download_dir)
+            # And delete the zip file + parent directories
+            shutil.rmtree(download_dir)
 
-                # Return the download location so we can pass it to the install tasks
-                return unzip_dir
+            # Return the download location so we can pass it to the install tasks
+            return unzip_dir
 
 def nectar_download(asset_key):
     """
