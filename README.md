@@ -23,6 +23,7 @@ For more detailed instructions, have a look at the [installation documentation](
 ## Creating your analysis batch
 * Choose a batch identifier, which we will refer to as `<batch identifier>` in future commands
 * Next, create the analysis directory and copy in your fastq files.
+
    ```bash
    mkdir -p batches/<batch identifier>/data
    cp  <fastq files> batches/<batch identifier>/data
