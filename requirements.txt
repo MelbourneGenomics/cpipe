@@ -3,3 +3,4 @@ python-keystoneclient
 doit==0.30.0
 pymysql
 pandas
+git+git@github.com:TMiguelT/csvschema.git
