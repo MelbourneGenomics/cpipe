@@ -292,5 +292,6 @@ def task_download_vcfanno_data():
         targets = [VCFANNO_DIR]
         return nectar_install('annotation', {'targets': targets})
     else:
-        raise "this asset can only be installed using the nectar object store"
+        print "this asset can only be installed using the nectar object store"
+        return {}
 
