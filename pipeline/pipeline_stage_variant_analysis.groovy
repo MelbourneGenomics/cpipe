@@ -150,6 +150,31 @@ vcf_post_annotation_filter = {
     stage_status("vcf_post_annotation_filter", "exit", "${sample} ${branch.analysis}");
 }
 
+@filter("vcfanno")
+vcf_vcfanno = {
+    doc "apply vcfanno annotation to vcf"
+    stage_status("vcf_vcfanno", "enter", "${sample} ${branch.analysis}");
+    output.dir="variants"
+    if (VCFANNO_CONFIG != "") {
+        def safe_tmp_dir = [TMPDIR, UUID.randomUUID().toString()].join( File.separator )
+        exec """
+            mkdir -p $safe_tmp_dir 
+
+            sed 's,\$DATA,$DATA,g' < $VCFANNO_CONFIG > $safe_tmp_dir/vcfanno.config
+
+            $VCFANNO_BIN $safe_tmp_dir/vcfanno.config $input.vcf > $output.vcf
+
+            rm -r "$safe_tmp_dir"
+        """
+    }
+    else { // nothing to do
+        exec """
+            cp "$input" "$output"
+        """
+    }
+    stage_status("vcf_vcfanno", "exit", "${sample} ${branch.analysis}");
+}
+
 vcf_to_table = {
     doc "convert to tab delimited format"
     stage_status("vcf_to_table", "enter", "${sample} ${branch.analysis}");
@@ -206,6 +231,7 @@ variant_analysis = segment {
     vcf_filter_child +
     vcf_annotate +
     vcf_post_annotation_filter + // vep filter
+    vcf_vcfanno +
     vcf_to_table +
     filter_table +
     annotate_custom_regions +

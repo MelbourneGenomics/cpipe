@@ -48,6 +48,7 @@ def task_tool_assets():
             'download_vep_libs',
             'download_vep_plugins',
             'download_java_libs',
+            'download_vcfanno',
         ],
     }
 
@@ -419,3 +420,20 @@ def task_download_zlib():
     else:
         return download_task(
             'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION))
+
+def task_download_vcfanno():
+    if has_swift_auth():
+        return nectar_download('vcfanno')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            urlretrieve(
+                'https://github.com/brentp/vcfanno/releases/download/v{}/vcfanno_linux64'.format(VCFANNO_VERSION),
+                os.path.join(temp_dir, 'vcfanno'))
+            return {'dir': temp_dir}
+
+        return {
+            'actions': [action],
+            'uptodate': [False]
+        }
+
