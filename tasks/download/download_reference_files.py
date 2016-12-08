@@ -285,3 +285,13 @@ def task_samtools_index_ucsc_reference():
         ],
         'uptodate': [True]
     }
+
+VCFANNO_DIR = os.path.join(DATA_ROOT, 'annotation')
+def task_download_vcfanno_data():
+    if has_swift_auth():
+        targets = [VCFANNO_DIR]
+        return nectar_install('annotation', {'targets': targets})
+    else:
+        print "this asset can only be installed using the nectar object store"
+        return {}
+

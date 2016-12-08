@@ -160,6 +160,10 @@ commands {
             walltime="24:00:00"
             memory="36"
         }
+        vcfanno {
+            walltime="00:30:00"
+            memory="8"
+        }
         vcf_post_annotation_filter {}
         vcf_to_table {}
         annotate_custom_regions {}
