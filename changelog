@@ -1,0 +1,20 @@
+/********************************************************
+* Tracking changes to vcgs-dev branch
+* 
+* Since cpipe-2.3 is deprecated, updates and VCGS specific 
+* and pipeline changes introduced to 2.4 will be tracked
+* within this branch: vcgs-dev 
+*
+/********************************************************
+/ 2016-12-09  13:00 
+/********************************************************
+- vcfanno step and tool (vcfs not included in commit)
+- some configuration changes (vcgs specific)
+- filter_transcripts.py bug fix (included in 2.4)
+/********************************************************
+/ 2016-12-09  14:49 
+/********************************************************
+- added perl 5.22.1 folder to tools for reference
+- updated perl references in pipeline 
+
+
