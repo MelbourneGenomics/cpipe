@@ -1,0 +1,184 @@
+////////////////////////////////////////////////////////////////////////
+//
+// This file contains bpipe specific configuration parameters.
+//
+// By default, bpipe will run jobs on the same instance that bpipe
+// is run on, but it can be configured to submit jobs to managers
+// such as slurm and torque.
+//
+// This script is copied to bpipe.config by the "doit install" script
+// that is run during the installation process.
+//
+////////////////////////////////////////////////////////////////////////
+
+// Include ngs utils to make them available to pipeline
+libs="../tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:../tools/groovy-ngs-utils/1.0.5/groovy-ngs-utils.jar"
+
+// following is a sample configuration for submitting jobs to torque 
+// uncomment and configure appropriately.
+
+/*
+// uncomment this section to use a queue manager
+
+// --- global queue manager settings ---
+// this section defines the type of queue, account details, and default job size
+
+executor="torque"
+queue="batch"
+cwd = new File(".").canonicalFile.absolutePath
+custom="""#PBS -o localhost:$cwd
+#PBS -e localhost:$cwd
+R {
+  executable="/usr/local/installed/R/3.3.0/lib64/R/bin/Rscript"
+}
+// procs=1
+walltime="24:00:00"
+account="vcgs"
+
+// --- Command specific configuration ---
+// If a specific command requires different settings to the defaults above,
+// see if it is listed in the list of commands below, and add the
+// specific settings as required.
+// 
+// If the command is not listed below
+// it may need to be added to the source code, as well as here.
+// 
+// An "exec" command needs to be associated with a name by adding the name
+// to the end of the exec command. Refer to an existing
+// command to see how that is done.
+
+commands {
+
+    local {
+        executor="local"
+    }
+
+        // --- helpers ---
+        filter_variants {}
+        merge_variants_gvcf {}
+        merge_variants {}
+
+        // --- alignment ---
+        set_sample_info {}
+    fastqc {
+        walltime="01:30:00"
+                memory="4"
+    }
+        trim_fastq {}
+
+
+        bwamem {
+                walltime="24:00:00"
+                jobtype="single"
+                procs=8
+                memory="32"
+        }
+
+    index_bam {
+        memory="4"
+    }
+
+
+    merge_bams {
+        // walltime="12:00:00"
+        // memory="16"
+        walltime="12:00:00"
+        memory="8"
+        }
+
+    dedup {
+        walltime="36:00:00"
+        memory="24"
+    }
+
+
+    realign_target_creator {
+        memory="8"
+        walltime="24:00:00"
+    }
+
+    local_realign {
+        memory="16"
+        walltime="36:00:00"
+                queue="main"
+    }
+
+    recalibrate_bam {
+        walltime="36:00:00"
+        memory="12"
+    }
+
+    count_covariates {
+        walltime="24:00:00"
+        memory="8"
+    }
+
+        // --- germline ---
+
+    gatk_genotype {
+        walltime="36:00:00"
+        memory="24"
+                procs=4
+    }
+
+        // --- initialize ---
+        update_gene_lists {}
+        create_combined_target {}
+        create_synonymous_target {}
+        build_capture_stats {}
+        set_target_info {}
+        sample_similarity_report {}
+        validate_batch {}
+        update_sample_database {}
+
+        // --- reports ---
+        calc_coverage_stats {
+            walltime="24:00:00"
+            memory="4"
+            queue="main"
+        }
+
+        check_ontarget_perc {}
+        calculate_qc_statistics {}
+        gatk_depth_of_coverage {}
+        insert_size_metrics {}
+        gap_report {}
+        summary_report {}
+        exon_qc_report {}
+        qc_excel_report {
+            memory="48"
+            walltime="14:00:00"
+            jobtype="smp" // to get exclusive node
+        }
+        filtered_on_exons {}
+        variant_bams {}
+
+        // --- trio ---
+        genotype_refinement {}
+        
+        // --- variant analysis ---
+        filter_tsv {}
+        vcf_normalize {}
+        vcf_filter_child {}
+        vep {
+            walltime="24:00:00"
+            memory="36"
+        }
+        vcfanno {
+            walltime="00:30:00"
+            memory="8"
+        }
+        vcf_post_annotation_filter {}
+        vcf_to_table {}
+        annotate_custom_regions {}
+        table_to_lovd {}
+        transcript_filter {}
+
+        // --- variant calling ---
+    gatk_call_variants {
+        walltime="36:00:00"
+        memory="12"
+                procs=4
+    }
+}
+*/

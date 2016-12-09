@@ -65,7 +65,7 @@ fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
     transform('.fastq.gz')  to('_fastqc.zip') {
-        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz"
+        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz", "fastqc"
     }
 }
 

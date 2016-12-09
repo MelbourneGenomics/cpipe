@@ -132,7 +132,7 @@ insert_size_metrics = {
     output.dir="qc"
     exec """
         $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.recal.bam O=$output.txt H=$output.pdf
-    """
+    """, "insert_size_metrics"
 
     check {
         exec """

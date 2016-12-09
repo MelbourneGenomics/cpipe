@@ -51,6 +51,7 @@ def filter_tsv(instream, outstream, log):
     log.write('reading...\n')
     count = 0
     counts = {'nm_orig': 0, 'xm_orig': 0, 'other_orig': 0, 'nm_new': 0, 'xm_new': 0}
+    header_line = None
     for count, line in enumerate(instream):
         if first: 
             # get header info
