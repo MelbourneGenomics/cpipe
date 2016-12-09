@@ -210,7 +210,12 @@ EXCLUDE_VARIANT_TYPES="synonymous SNV"
 JAVA="java"
 
 // Support custom perl libraries installed in tools/perl5
-PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
+//PERL5LIB="\$PERL5LIB:$BASE/tools/perl5"
+PERL5LIB=""
+
+// Modify this to the perl 5.22.1 directory
+PERL=""
+
 
 // SNPEFF location
 // Note: snpeff is not needed by default pipeline
@@ -306,3 +311,6 @@ ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/vep_phenotype_associated.sort.bed"
 
 // Whether to enable Seqr export or not
 ENABLE_SEQR_EXPORT=false
+
+// custom annotation for variants in specified bed file
+ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/vep_phenotype_associated.sort.bed"
