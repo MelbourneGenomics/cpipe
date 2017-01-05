@@ -1,14 +1,13 @@
 import argparse
 import shutil
 from pathlib import Path
-from cpipe_utility import DESIGN_LIST, list_batches
+from cpipe_util import Batch, Design
 
 
-def existing_batch(val):
-    batches = list_batches()
-    row = batches[batches['Batch Name'] == val].iloc[0]
-    if val in list_batches()['Batch Name'].values:
-        return Path(row['Batch Path'])
+def existing_batch(batch_name):
+    batch = Batch.find_by_name(batch_name)
+    if batch:
+        return batch
     else:
         raise argparse.ArgumentTypeError('The batch must be an existing batch with a metadata file')
 
@@ -37,8 +36,9 @@ def path_with_ext(exts):
 
 
 def profile(name):
-    if name in DESIGN_LIST:
-        return name
+    design = Design.find_by_name(name)
+    if design:
+        return design
     else:
         raise argparse.ArgumentTypeError(
             'The profile must be an existing profile, namely a directory within the designs directory')
@@ -55,6 +55,8 @@ def editor(path):
 def create_parser():
     parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
     subparsers = parser.add_subparsers(dest='command')
+    parser.add_argument('--mgha', '-m', required=False, default=False,
+                             help='Use MGHA-specific validation rules')
 
     # list command
     list_parser = subparsers.add_parser('list', help='Lists the batches in the current Cpipe installation')
@@ -84,7 +86,8 @@ def create_parser():
                                                                 'want to edit')
     edit_parser.add_argument('--editor', '-e', type=editor, required=False,
                              help='The name of the executable you want to use to edit '
-                                  'the metadata file using', default='editor')
+                                  'the metadata file using. Defaults to visidata, included with cpipe '
+                                  '(https://github.com/saulpw/visidata)', default='vd')
 
     # view command
     view_parser = subparsers.add_parser('view',

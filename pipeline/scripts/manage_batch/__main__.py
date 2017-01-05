@@ -9,11 +9,11 @@ if args.command == 'list':
 elif args.command == 'create':
     create_batch(args.batch, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
 elif args.command == 'edit':
-    edit_batch(args.batch, args.editor)
+    edit_batch(args.batch, args.editor, args.mgha)
 elif args.command == 'view':
     view_batch(args.batch, args.sample)
 elif args.command == 'check':
-    validate_metadata(args.batch)
+    validate_metadata(args.batch, args.mgha)
 elif args.command == 'add_sample':
     add_sample(args.batch, args.data)
 else:
