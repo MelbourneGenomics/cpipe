@@ -94,8 +94,8 @@ def create_parser():
                                         help='View the metadatafile for the chosen batch in a human-readable format')
     view_parser.add_argument('batch', type=existing_batch, help='The name of the batch whose metadata file you '
                                                                 'want to view')
-    view_parser.add_argument('--sample', '-s', required=False,
-                             help='The sample ID of the single sample you want to view the metadata for')
+    # view_parser.add_argument('--sample', '-s', required=False,
+    #                          help='The sample ID of the single sample you want to view the metadata for')
 
     # validate command
     validate_parser = subparsers.add_parser('check',

@@ -11,7 +11,7 @@ elif args.command == 'create':
 elif args.command == 'edit':
     edit_batch(args.batch, args.editor, args.mgha)
 elif args.command == 'view':
-    view_batch(args.batch, args.sample)
+    view_batch(args.batch)#, args.sample)
 elif args.command == 'check':
     validate_metadata(args.batch, args.mgha)
 elif args.command == 'add_sample':

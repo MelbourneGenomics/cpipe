@@ -4,7 +4,7 @@
 set -e
 
 # Set variables
-PYTHON_VERSION="3.5.2"
+PYTHON_VERSION="3.6.0"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
 TEMP_SUBDIR=`mktemp -d`

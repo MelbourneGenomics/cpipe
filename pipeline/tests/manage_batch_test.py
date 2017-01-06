@@ -9,9 +9,8 @@ from contextlib import contextmanager
 
 sys.path.append('../scripts/')
 
-from manage_batch import add_batch, show_batches, show_batch, add_sample, create_parser
-from cpipe_utility import BASE
-
+from manage_batch import list_batches, create_batch, edit_batch, view_batch, validate_metadata, add_sample
+from cpipe_util import Batch, paths, Design
 
 @contextmanager
 def suppress_stdout():
@@ -27,32 +26,25 @@ def suppress_stdout():
             sys.stderr = old_stderr
 
 class ManageBatchTest(unittest.TestCase):
-    test_batch_name = 'test'
-    test_data_dir = os.path.join(BASE, 'pipeline/tests/detect_mutations_test/data')
-    test_data_files = [os.path.join(test_data_dir, f) for f in os.listdir(test_data_dir)]
-    test_batch_dir = os.path.join(BASE, 'batches', test_batch_name)
-    batch_groovy = os.path.join(test_batch_dir, 'config.batch.groovy')
-    sample_metadata = os.path.join(test_batch_dir, 'samples.txt')
 
-    def create_test_batch(self, batch_name=None):
-        batch_name = batch_name or self.test_batch_name
-        with open(os.devnull, "w") as devnull:
-            add_batch(batch_name, 'ALL', None, self.test_data_files, None, log=devnull)
+    def create_test_batch(self, batch_name='test'):
+        create_batch(
+            batch_name,
+            (paths.BASE / 'pipeline/tests/detect_mutations_test/data').iterdir(),
+            paths.DESIGNS / 'genelists/exons.bed',
+            Design('ALL')
+        )
 
     def delete_test_batch(self, batch_name=None):
-        batch_name = batch_name or self.test_batch_name
-        batch_dir = os.path.join(BASE, 'batches', batch_name)
-        shutil.rmtree(batch_dir)
+        Batch(batch_name).delete()
 
-    def test_add_batch(self):
+    def test_create_batch(self):
         """
         Creates a new batch called 'test'
         :return:
         """
         try:
-            # Run the command itself
-            with suppress_stdout():
-                self.create_test_batch()
+            self.create_test_batch()
 
             # Assert
             assert (os.path.exists(self.batch_groovy))
