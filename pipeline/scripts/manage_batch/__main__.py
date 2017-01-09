@@ -1,21 +1,31 @@
+#!/usr/bin/env python3
+import sys
+
 from manage_batch.parser import create_parser
-from manage_batch import list_batches, create_batch, edit_batch, view_batch, validate_metadata, add_sample
+from cpipe_util import Batch
 
 parser = create_parser()
 args = parser.parse_args()
 
 if args.command == 'list':
-    list_batches()
+    for batch in Batch.list_all():
+        print(batch.name)
 elif args.command == 'create':
-    create_batch(args.batch, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
+    Batch.create(args.batch, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
 elif args.command == 'edit':
-    edit_batch(args.batch, args.editor, args.mgha)
+    args.batch.metadata.edit()
 elif args.command == 'view':
-    view_batch(args.batch)#, args.sample)
+    args.batch.metadata.view()
 elif args.command == 'check':
-    validate_metadata(args.batch, args.mgha)
+    warnings = args.batch.metadata.validate()
+    if warnings:
+        for warning in warnings:
+            print(warning, file=sys.stderr)
+        sys.exit(1)
+    else:
+        print(f'The metadata file for batch "{args.batch.name}" successfully passed the metadata check!')
 elif args.command == 'add_sample':
-    add_sample(args.batch, args.data)
+    args.batch.add_sample(args.data)
 else:
     raise ValueError('Unknown command')
 

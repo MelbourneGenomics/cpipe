@@ -1,22 +1,17 @@
 import os
 import typing
-import subprocess
-from pathlib import Path
 from typing import List
 from itertools import groupby
 import pandas as pd
-import sys
-
-from cpipe_util.paths import CONFIG_GROOVY_UTIL, CLASSPATH, BASE, BATCHES, DESIGNS
-from cpipe_util import read_metadata, Batch, Design, pathlib_patches
-import cpipe_util
-from manage_batch.schema import get_schema
 
 from pathlib import Path
 from .paths import BATCHES
-from cpipe_util import read_metadata, pathlib_patches, Design
+from .design import Design
+from .metadata import Metadata
+
 
 class Batch:
+
     def __init__(self, directory=None, name=None):
         if directory and name:
             raise ValueError("You can't specify a directory and a name for the batch. Use one or either")
@@ -28,7 +23,8 @@ class Batch:
             raise ValueError("You must specify a directory or a name for the batch. Use one or either")
 
     @staticmethod
-    def create(batch_name: str, data: typing.Iterable[Path], exome: str, profile: Design, force: bool = False, mode: str = 'link'):
+    def create(batch_name: str, data: typing.Iterable[Path], exome: str, profile: Design, force: bool = False,
+               mode: str = 'link'):
         """
         Creates a new batch and associated config files
         :param batch_name: The name for the new batch
@@ -46,17 +42,18 @@ class Batch:
             if force:
                 batch.path.rmtree()
             else:
-                raise FileExistsError('Batch directory already exists! Use the --force flag to replace an existing batch')
+                raise FileExistsError(
+                    'Batch directory already exists! Use the --force flag to replace an existing batch')
 
         # Create the batch directory
-        batch.create()
+        batch.create_empty()
 
         # Write the config file
         with batch.config.open('w') as config_file:
             config_file.write(f'EXOME_TARGET={exome}')
 
         # Make the metadata file and open it
-        with batch.metadata.open('w') as metadata_file:
+        with batch.metadata.path.open('w') as metadata_file:
             df = pd.DataFrame()
 
             # Group fastqs into samples
@@ -67,26 +64,23 @@ class Batch:
                     batch.add_fastq(batch, fastq, mode=mode)
 
                 # Update the metadata file
-                batch.add_sample_to_metadata(fastqs, profile, batch, df)
+                batch.metadata.add_sample(fastqs, profile, batch, df)
 
             # Write out the CSV
             df.to_csv(metadata_file, sep='\t')
 
     def add_fastq(self, fastq: Path, mode: str = 'link'):
         """
-        Adds a fastq file to the given batch using the method specified by mode
-        :param batch:
-        :param fastq:
-        :param mode:
-        :return:
+        Physically adds a fastq file to the given batch using the method specified by mode
+        :param fastq: The path to the fastq to add
+        :param mode: Either 'link', 'copy', or 'move', indicating the method to be used to add the fastq to the batch
         """
 
         # Make the data subdir
-        data_dir = self.path / 'data'
-        data_dir.mkdir()
+        self.data.mkdir()
 
         # Move the data into the batch
-        target_fastq = data_dir / Path(fastq).stem
+        target_fastq = self.data / Path(fastq).stem
         if mode == 'copy':
             fastq.copy(target_fastq)
         elif mode == 'link':
@@ -94,74 +88,26 @@ class Batch:
         elif mode == 'move':
             fastq.rename(target_fastq)
 
-    def add_sample_to_metadata(self, samples: List[Path], design: Design, metadata: pd.DataFrame) -> pd.DataFrame:
 
-        # The sample ID is the text in the fastq filename before the first underscore
-        ids = [sample.stem.split('_')[0] for sample in samples]
-        id = ids[0]
-        if ids.count(id) != len(ids):
-            raise ValueError('All fastqs from the same sample must have the same id (the text before the first underscore)')
-
-        return metadata.append({
-            'Batch': self.name,
-            'Sample_ID': id,
-            'Sex': 'Unknown',
-            'Cohort': design.name,
-            'Sample_Type': 'Normal',
-            'Fastq_Files': ','.join([str(f.resolve()) for f in samples])
-        })
-
-
-
-    def edit_batch(self, editor: str = 'editor', is_mgha: bool=False):
-        subprocess.run([editor, str(self.metadata)])
-        self.validate_metadata(is_mgha)
-
-
-    def view_batch(self): #sample: str = None):
-        subprocess.run(['vd', str(self.metadata)])
-
-        # # Read the metadata file
-        # metadata = batch.path / 'samples.txt'
-        # df = cpipe_util.read_metadata(metadata)
-        #
-        # # Subset the data frame if we only want one sample
-        # if sample:
-        #     df = df[df['Sample_ID' == sample]]
-        #
-        # # Print out each row of the metadata file
-        # for (index, series) in df.iterrows():
-        #     print(series)
-
-
-    def validate_metadata(self, is_mgha: bool = True):
+    def add_samples(self, samples: List[Path], design: Design, mode: str = None):
         """
-            Validate the input file according to the Melbourne Genomics metadata file format specification
+        Adds the samples to the batch directory and updates the metadata file
+        :param samples:
+        :param design:
+        :param mode:
+        :return:
         """
 
-        metadata = read_metadata(self.path / 'samples.txt', parse_num=False)
-        schema = get_schema(is_mgha)
-        warnings = schema.validate(metadata)
+        for sample in samples:
+            self.add_fastq(sample, mode)
 
-        if warnings:
-            for warning in warnings:
-                print(warning, file=sys.stderr)
-            sys.exit(1)
-        else:
-            print(f'The metadata file for batch "{self}" successfully passed the metadata check!')
-
-
-    def add_sample(self, samples: List[Path]):
-        metadata = self.metadata_df
-
-        # The design is whatever is most common so far
-        design = metadata['Cohort'].mode
-
-        # Update the metadata file and save it
-        self.add_sample_to_metadata(samples, design, metadata)
-        metadata.to_csv(self.metadata)
+        self.add_samples(samples, design)
 
     def delete(self):
+        """
+        Deletes the entire batch directory and all its contents
+        :return:
+        """
         self.path.rmtree()
 
     @property
@@ -169,16 +115,8 @@ class Batch:
         return str(self.path.relative_to(BATCHES))
 
     @property
-    def metadata(self):
-        return self.path / 'samples.txt'
-
-    @property
-    def metadata_df(self):
-        """
-        Returns a pandas DataFrame of the metadata file
-        :return:
-        """
-        return read_metadata(self.metadata)
+    def metadata(self) -> Metadata:
+        return Metadata(self.path / 'samples.txt', self)
 
     @property
     def config(self):
@@ -213,11 +151,13 @@ class Batch:
         """
 
         # Find all directories that contain a samples.txt and add them to a list
-        batches = []
-
-        for root, dirs, files in os.walk(str(BATCHES)):
-            if 'samples.txt' in files:
-                batches.append(Batch(root))
+        batches = [Batch(root) for (root, dirs, files) in os.walk(str(BATCHES)) if 'samples.txt' in files]
 
         # Sort by batch name
         return sorted(batches, key=lambda x: x.name)
+
+    def __str__(self):
+        return self.name
+
+    def __fspath__(self):
+        return self.path

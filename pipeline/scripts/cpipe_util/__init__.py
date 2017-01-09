@@ -4,6 +4,7 @@ from typing import Union, Any
 
 from .batch import Batch
 from .design import Design
+from .metadata import Metadata
 from .paths import CONFIG_GROOVY
 
 def read_metadata(metadata_file: Any, parse_num=True):
