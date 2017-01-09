@@ -27,11 +27,10 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import qc_report
 
-class QCReportTest(unittest.TestCase):
 
+class QCReportTest(unittest.TestCase):
     def test_male(self):
         exome_cov = ['chr1\t100\t200\tg\t1\t20', 'chrX\t100\t200\tg\t1\t10', 'chrY\t100\t200\tg\t1\t10']
         log = io.StringIO()
@@ -51,13 +50,13 @@ class QCReportTest(unittest.TestCase):
         assert result['autosome_mean_coverage'] == 5.
 
     def test_median(self):
-        l = [ 5, 8, 2, 9, -3 ]
+        l = [5, 8, 2, 9, -3]
         assert qc_report.median(l) == 5
-        l = [ -3, 8, 5, 8, 2, 9 ]
+        l = [-3, 8, 5, 8, 2, 9]
         assert qc_report.median(l) == 6.5
 
     def test_parse_metadata(self):
-        m = [ 'Batch\tSample_ID\tDNA_Tube_ID\n', '026\t12345\t\n', '026\t11111\t22222\n' ]
+        m = ['Batch\tSample_ID\tDNA_Tube_ID\n', '026\t12345\t\n', '026\t11111\t22222\n']
         p = qc_report.parse_metadata(m, '12345')
         assert p['dna_tube_id'] == ''
         p = qc_report.parse_metadata(m, '11111')
@@ -74,7 +73,8 @@ class QCReportTest(unittest.TestCase):
         assert result == [50.0, 75.0, 75.0, 50.0, 25.0]
 
     def test_calculate_summary(self):
-        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
+        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15',
+               'chr1\t100\t200\tA\t4\t40']
         log = io.StringIO()
         s = qc_report.calculate_summary(cov, 20, log)
         assert s['mean'] == 16.25
@@ -83,20 +83,25 @@ class QCReportTest(unittest.TestCase):
         assert s['genes']['A']['ok'] == 25.0
 
     def test_report(self):
-        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15', 'chr1\t100\t200\tA\t4\t40']
+        cov = ['chr1\t100\t200\tA\t1\t5', 'chr1\t100\t200\tA\t2\t5', 'chr1\t100\t200\tA\t3\t15',
+               'chr1\t100\t200\tA\t4\t40']
         log = io.StringIO()
         s = qc_report.calculate_summary(cov, 20, log)
 
         exome_cov = ['chr1\t100\t200\tg\t1\t5', 'chrX\t100\t200\tg\t1\t40', 'chrX\t400\t500\tg\t1\t60']
         k = qc_report.calculate_karyotype(exome_cov, log)
 
-        m = [ 'Batch\tSample_ID\tDNA_Tube_ID\tSex\tMean_Coverage\tPrioritised_Genes\n', '026\t12345\t\tFemale\t100.2\t\n', '026\t11111\t22222\t\t\n' ]
+        m = ['Batch\tSample_ID\tDNA_Tube_ID\tSex\tMean_Coverage\tPrioritised_Genes\n',
+             '026\t12345\t\tFemale\t100.2\t\n', '026\t11111\t22222\t\t\n']
         p = qc_report.parse_metadata(m, '12345')
 
         threshold = 20
         categories = qc_report.build_categories('', '', log)
         conversion = 'GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED'
-        metin = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics', 'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE', 'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885', '## HISTOGRAM\tjava.lang.Double' ]
+        metin = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics',
+                 'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE',
+                 'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885',
+                 '## HISTOGRAM\tjava.lang.Double']
         metrics = qc_report.build_metrics(metin, ['12345'], log)
         capture = qc_report.build_capture(['a1bg\t73.719376392'], log=log)
         anonymous = False
@@ -104,7 +109,8 @@ class QCReportTest(unittest.TestCase):
         padding = '20,10,5'
 
         out = io.StringIO()
-        qc_report.generate_report([s], k, p, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log)
+        qc_report.generate_report([s], k, p, threshold, categories, conversion, metrics, capture, anonymous, fragments,
+                                  padding, out, log)
         lines = out.getvalue().split('\n')
         assert lines[0] == '# Sequencing Summary Report for Study 12345'
 
@@ -123,7 +129,10 @@ class QCReportTest(unittest.TestCase):
         assert qc_report.parse_date(d) == '2015-12-30 2016-01-12'
 
     def test_build_metrics(self):
-        p = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics', 'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE', 'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885', '## HISTOGRAM\tjava.lang.Double' ]
+        p = ['## net.sf.picard.metrics.StringHeader', '## METRICS CLASS\tnet.sf.picard.sam.DuplicationMetrics',
+             'LIBRARY\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE',
+             'null\t79055\t45114896\t294963\t57840\t9210954\t2246706\t0.204628\t117222885',
+             '## HISTOGRAM\tjava.lang.Double']
         o = ['12345']
         log = io.StringIO()
         m = qc_report.build_metrics(p, o, log)

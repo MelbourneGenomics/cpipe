@@ -7,7 +7,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import check_metadata
 
 class CheckMetadataTest(unittest.TestCase):

@@ -137,13 +137,13 @@ def median(items):
     '''
     sorted_list = sorted(items)
     if len(items) % 2 == 0:
-        high = len(items) / 2
+        high = len(items) // 2
         return (sorted_list[high] + sorted_list[high-1]) / 2.
     else:
-        mid = (len(items) - 1) / 2
+        mid = (len(items) - 1) // 2
         return sorted_list[mid]
 
-def parse_metadata(meta, study, log):
+def parse_metadata(meta, study, log=None):
     '''
        reads metadata file and returns info about a study
     '''

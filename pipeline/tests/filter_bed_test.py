@@ -29,7 +29,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import filter_bed
 
 class FilterBedTest(unittest.TestCase):

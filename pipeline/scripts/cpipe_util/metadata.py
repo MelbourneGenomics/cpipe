@@ -1,6 +1,7 @@
 import subprocess
 import typing
 from pathlib import Path
+import pandas as pd
 
 from .metadata_schema import get_schema
 import cpipe_util
@@ -18,6 +19,17 @@ class Metadata:
         Returns the metadata file as a pandas data frame
         """
         return cpipe_util.read_metadata(self.path)
+
+    def create_empty(self):
+        """
+        Creates an empty metadata file, containing only the headers
+        """
+        schema = get_schema(is_mgha=False)
+        names = '\t'.join([column.name for column in schema.columns])
+
+        with self.path.open('w') as file:
+            file.write(names)
+
 
     def view(self):  # sample: str = None):
         """
@@ -78,4 +90,5 @@ class Metadata:
             'Cohort': design.name,
             'Sample_Type': 'Normal',
             'Fastq_Files': ','.join([str(f.resolve()) for f in samples])
-        })
+        }, ignore_index=True)\
+            .to_csv(self.path, sep='\t')

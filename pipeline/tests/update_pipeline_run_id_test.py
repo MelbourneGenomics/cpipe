@@ -6,7 +6,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import update_pipeline_run_id
 
 class UpdatePipelineRunIDTest(unittest.TestCase):

@@ -2,13 +2,13 @@ import os
 import typing
 from typing import List
 from itertools import groupby
-import pandas as pd
 
 from pathlib import Path
 from .paths import BATCHES
 from .design import Design
 from .metadata import Metadata
 
+from . import pathlib_patches
 
 class Batch:
 
@@ -49,25 +49,20 @@ class Batch:
         batch.create_empty()
 
         # Write the config file
-        with batch.config.open('w') as config_file:
+        with batch.config_file.open('w') as config_file:
             config_file.write(f'EXOME_TARGET={exome}')
 
-        # Make the metadata file and open it
-        with batch.metadata.path.open('w') as metadata_file:
-            df = pd.DataFrame()
+        # Group fastqs into samples
+        for id, fastqs in groupby(data, lambda x: x.name.split('_')[0]):
 
-            # Group fastqs into samples
-            for id, fastqs in groupby(data, lambda x: x.split('_')[0]):
+            fastqs = list(fastqs)
 
-                # Move the data into the batch
-                for fastq in fastqs:
-                    batch.add_fastq(batch, fastq, mode=mode)
+            # Move the data into the batch
+            for fastq in fastqs:
+                batch.add_fastq(fastq, mode=mode)
 
-                # Update the metadata file
-                batch.metadata.add_sample(fastqs, profile, batch, df)
-
-            # Write out the CSV
-            df.to_csv(metadata_file, sep='\t')
+            # Update the metadata file
+            batch.metadata.add_samples(fastqs, profile)
 
     def add_fastq(self, fastq: Path, mode: str = 'link'):
         """
@@ -77,10 +72,10 @@ class Batch:
         """
 
         # Make the data subdir
-        self.data.mkdir()
+        self.data.mkdir(exist_ok=True)
 
         # Move the data into the batch
-        target_fastq = self.data / Path(fastq).stem
+        target_fastq = self.data / fastq.name
         if mode == 'copy':
             fastq.copy(target_fastq)
         elif mode == 'link':
@@ -116,10 +111,14 @@ class Batch:
 
     @property
     def metadata(self) -> Metadata:
-        return Metadata(self.path / 'samples.txt', self)
+        return Metadata(self.metadata_file, self)
 
     @property
-    def config(self):
+    def metadata_file(self):
+        return self.path / 'samples.txt'
+
+    @property
+    def config_file(self):
         return self.path / 'config.batch.groovy'
 
     @property
@@ -132,8 +131,8 @@ class Batch:
         """
         self.path.mkdir(exist_ok=True)
         self.data.mkdir(exist_ok=True)
-        self.metadata.touch(exist_ok=True)
-        self.config.touch(exist_ok=True)
+        self.metadata.create_empty()
+        self.config_file.touch(exist_ok=True)
 
     @classmethod
     def find_by_name(cls, name: str) -> 'Batch':

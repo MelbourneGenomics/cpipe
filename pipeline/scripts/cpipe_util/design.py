@@ -4,8 +4,8 @@ from .paths import DESIGNS
 
 
 class Design:
-    def __init__(self, directory):
-        self.path = pathlib.Path(directory).resolve()
+    def __init__(self, name):
+        self.path = DESIGNS / name
 
     @property
     def name(self):

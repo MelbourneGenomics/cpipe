@@ -33,8 +33,8 @@ GROOVY_TEST_LIBRARIES="$PWD/tools/groovy/lib/*:$PWD/tools/java_libs/*"
 GROOVYC="${GROOVY}c"
 
 # Python tests
-pushd pipeline/tests
-    python -m unittest discover -s . -p '*_test.py' -v
+pushd pipeline/scripts
+    python -m unittest discover -s ../tests -p '*_test.py' -v
 popd
 
 # Groovy tests

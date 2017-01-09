@@ -7,7 +7,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import mark_batch_finished
 
 class MarkBatchFinishedTest(unittest.TestCase):

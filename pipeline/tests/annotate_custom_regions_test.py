@@ -29,7 +29,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import annotate_custom_regions
 
 class AnnotateCustomRegionsTest(unittest.TestCase):

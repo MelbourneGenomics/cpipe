@@ -7,7 +7,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import correct_sample_metadata_file
 
 class CorrectMetadataTest(unittest.TestCase):

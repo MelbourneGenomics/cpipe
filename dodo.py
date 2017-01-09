@@ -140,8 +140,8 @@ def task_check_java():
         )
 
         # Parse the major and minor versions using a regex
-        parsed = re.search(r'version "(?P<maj>\d+)\.(?P<min>\d+)\.(?P<build>[\d_]+)"', output).groupdict()
-        return (int(parsed['maj']), int(parsed['min']), parsed['build'])
+        parsed = re.search(br'version "(?P<maj>\d+)\.(?P<min>\d+)\.(?P<build>[\d_]+)"', output).groupdict()
+        return int(parsed['maj']), int(parsed['min']), parsed['build']
 
     def check_java():
         (maj, min, build) = parse_java_version()

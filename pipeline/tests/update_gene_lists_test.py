@@ -26,7 +26,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import update_gene_lists
 
 class UpdateGenesListsTest(unittest.TestCase):
