@@ -5,12 +5,15 @@ from typing import Union, Any
 from .batch import Batch
 from .design import Design
 from .metadata import Metadata
-from .paths import CONFIG_GROOVY
+from .paths import CONFIG_GROOVY, VERSION
 
 def read_metadata(metadata_file: Any, parse_num=True):
     dtype = None if parse_num else str
     return pd.read_csv(metadata_file, sep='\t', dtype=dtype, na_values=[], keep_default_na=False)
 
+def get_version():
+    with open(VERSION) as version_file:
+        return version_file.read()
 
 def read_config_groovy():
     """

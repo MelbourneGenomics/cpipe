@@ -27,7 +27,7 @@ def task_install():
 
     return {
         'actions': None,
-        'task_dep': ['copy_config', 'assets'],
+        'task_dep': ['copy_config', 'assets', 'generate_pipeline_id'],
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
@@ -119,6 +119,25 @@ def task_copy_bpipe_config():
         'actions': ['cp {input} {output}'.format(input=input, output=output)],
         'targets': [output],
         'uptodate': [True]
+    }
+
+
+def task_generate_pipeline_id():
+    """
+    Creates a pipeline_id file, with an ID in the format HOSTNAME_2.X.X(version)_1
+    :return:
+    """
+    def action(targets):
+        version = #TODO: Once package is installable
+
+        for file in targets:
+            with open(file, 'w') as id_file:
+                id_file.write(f'{PIPELINE_ID}_')
+
+    return {
+        'targets': ['pipeline_id'],
+        'uptodate': [True],
+        'actions': [action]
     }
 
 
