@@ -29,7 +29,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import generate_peds
 
 class GeneratePedsTest(unittest.TestCase):

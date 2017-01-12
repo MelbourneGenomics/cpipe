@@ -27,13 +27,15 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
+import math
+
 import calculate_qc_statistics
 
-class CalculateQCTest(unittest.TestCase):
 
+class CalculateQCTest(unittest.TestCase):
     def test_calc(self):
-        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-100\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-200\tAAAA\tJJJJ\n']
+        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-100\tAAAA\tJJJJ\n',
+               '0\t3\t2\t3\t4\t5\t6\t7\t200\tAAAA\tJJJJ\n', '0\t3\t2\t3\t4\t5\t6\t7\t-200\tAAAA\tJJJJ\n']
         log = io.StringIO()
         result = calculate_qc_statistics.calculate_statistics(bam, log)
         assert result['fragment_count'] == 2
@@ -46,23 +48,27 @@ class CalculateQCTest(unittest.TestCase):
         assert result['base_pass'] == 16
 
     def test_out(self):
-        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tA\t5\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\tAB\t5I\n', '0\t3\t2\t3\t4\t5\t6\t7\t300\tABC\t555\n', '0\t3\t2\t3\t4\t5\t6\t7\t350\tABCD\t5II5\n']
+        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\tA\t5\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\tAB\t5I\n',
+               '0\t3\t2\t3\t4\t5\t6\t7\t300\tABC\t555\n', '0\t3\t2\t3\t4\t5\t6\t7\t350\tABCD\t5II5\n']
         log = io.StringIO()
         out = io.StringIO()
         calculate_qc_statistics.main(bam, out, log)
         lines = out.getvalue().split('\n')
-        assert lines[0] == 'fragment_count\t4'
+        assert tuple(lines[0].split('\t')) == ('fragment_count', '4')
         assert lines[1] == 'fragment_mean\t237.5'
-        assert lines[2] == 'fragment_sd\t110.86778913'
+        assert lines[2].split('\t')[0] == 'fragment_sd' and math.isclose(110.86, float(lines[2].split('\t')[1]),
+                                                                         rel_tol=1e-03)
         assert lines[3] == 'read_count\t4'
         assert lines[4] == 'read_mean\t2.5'
-        assert lines[5] == 'read_sd\t1.29099444874'
+        assert lines[5].split('\t')[0] == 'read_sd' and math.isclose(1.29099444874, float(lines[5].split('\t')[1]),
+                                                                         rel_tol=1e-03)
         assert lines[6] == 'base_count\t10'
         assert lines[7] == 'base_pass\t3'
 
     def test_filtered(self):
         # should only include lines 1 and 4 in fragment count
-        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\t9\t10\n', '0\t7\t2\t3\t4\t5\t6\t7\t500\t9\t10\n', '0\t2\t2\t3\t4\t5\t6\t7\t1000\t9\t10\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\t9\t10\n']
+        bam = ['0\t3\t2\t3\t4\t5\t6\t7\t100\t9\t10\n', '0\t7\t2\t3\t4\t5\t6\t7\t500\t9\t10\n',
+               '0\t2\t2\t3\t4\t5\t6\t7\t1000\t9\t10\n', '0\t3\t2\t3\t4\t5\t6\t7\t200\t9\t10\n']
         log = io.StringIO()
         result = calculate_qc_statistics.calculate_statistics(bam, log)
         assert result['fragment_count'] == 2

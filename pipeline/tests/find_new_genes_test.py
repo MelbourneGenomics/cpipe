@@ -27,7 +27,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import find_new_genes
 
 class FindNewGenesTest(unittest.TestCase):

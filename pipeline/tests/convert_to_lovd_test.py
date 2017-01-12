@@ -29,7 +29,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import convert_to_lovd
 
 class ConvertToLovdTest(unittest.TestCase):

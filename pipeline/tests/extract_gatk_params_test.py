@@ -29,7 +29,6 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import extract_gatk_table_params
 
 class ExtractGATKParamsTest(unittest.TestCase):

@@ -27,22 +27,20 @@ import re
 import sys
 import io
 
-sys.path.append('../scripts/')
 import genelist_to_bed
 
-class GeneListToBedTest(unittest.TestCase):
 
+class GeneListToBedTest(unittest.TestCase):
     def test_exclude(self):
-      bed_in = io.StringIO( 'c1\t1\t2\tabc\nc1\t3\t4\tdef\nc1\t5\t6\tghi' )
-      bed_out = io.StringIO()
-      log = io.StringIO()
-      genelist_to_bed.filter_bed( ['sample_genelist.txt'], bed_in, bed_out, log, exclude=['ghi'] )
-      assert bed_out.getvalue() == 'c1\t1\t2\tabc\nc1\t3\t4\tdef\n'
-      
+        bed_in = io.StringIO('c1\t1\t2\tabc\nc1\t3\t4\tdef\nc1\t5\t6\tghi')
+        bed_out = io.StringIO()
+        log = io.StringIO()
+        genelist_to_bed.filter_bed(['../tests/sample_genelist.txt'], bed_in, bed_out, log, exclude=['ghi'])
+        assert bed_out.getvalue() == 'c1\t1\t2\tabc\nc1\t3\t4\tdef\n'
+
     def test_notfound(self):
-      bed_in = io.StringIO( 'c1\t1\t2\tabc\nc1\t5\t6\tghi' )
-      bed_out = io.StringIO()
-      log = io.StringIO()
-      genelist_to_bed.filter_bed( ['sample_genelist.txt'], bed_in, bed_out, log, exclude=['ghi'] )
-      assert bed_out.getvalue() == 'c1\t1\t2\tabc\n'
-      
+        bed_in = io.StringIO('c1\t1\t2\tabc\nc1\t5\t6\tghi')
+        bed_out = io.StringIO()
+        log = io.StringIO()
+        genelist_to_bed.filter_bed(['../tests/sample_genelist.txt'], bed_in, bed_out, log, exclude=['ghi'])
+        assert bed_out.getvalue() == 'c1\t1\t2\tabc\n'
