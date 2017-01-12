@@ -164,7 +164,10 @@ commands {
             memory="4"
             queue="main"
         }
-
+        check_coverage {
+            walltime="04:00:00"
+            memory="12"
+        }
         check_ontarget_perc {
             walltime="04:00:00"
         }
@@ -216,6 +219,10 @@ commands {
         vep {
             walltime="12:00:00"
             memory="48"
+        }
+        vcfanno {
+            walltime="00:30:00"
+            memory="8"
         }
         vcf_post_annotation_filter {
             walltime="01:00:00"
