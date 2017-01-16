@@ -7,6 +7,7 @@ set -e
 PYTHON_VERSION="3.6.0"
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
+export CPIPE_ROOT=$ROOT
 TEMP_SUBDIR=`mktemp -d`
 SYS_PYTHON=${ROOT}/tools
 SYS_PYBIN=${SYS_PYTHON}/bin
@@ -141,7 +142,7 @@ fi
 
         # Install pip dependencies
         if (( USE_PIP )); then
-            pip install -q -r requirements.txt
+            pip install ${ROOT}/lib -q
         fi ;
 
     } > ${OUTPUT_STREAM}

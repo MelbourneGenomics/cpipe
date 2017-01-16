@@ -53,4 +53,4 @@ def editor(path):
         raise argparse.ArgumentTypeError(
             'The editor you provide must be a valid executable accessible within your $PATH!')
 
-__all__ = [existing_batch, batch_name, path_with_ext, profile, editor]
+__all__ = ["existing_batch", "batch_name", "path_with_ext", "profile", "editor"]

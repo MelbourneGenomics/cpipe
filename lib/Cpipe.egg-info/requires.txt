@@ -1,0 +1,7 @@
+python-swiftclient
+python-keystoneclient
+doit==0.30.0
+pymysql
+pandas
+pandas_schema
+visidata==0.37

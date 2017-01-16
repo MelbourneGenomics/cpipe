@@ -68,7 +68,7 @@ bash_header = '''
     source {}
 '''.format(ENVIRONMENT_FILE)
 MANUAL_INSTALL = get_var('mode', 'auto')
-PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8'))
+PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8').strip())
 
 def replace_symlink(target, link):
     if os.path.islink(link) or os.path.isfile(link):

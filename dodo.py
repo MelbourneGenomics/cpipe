@@ -13,6 +13,8 @@ from os import path
 import re
 import subprocess
 
+from cpipe import get_version
+
 DOIT_CONFIG = {
     'default_tasks': ['install'],
     'backend': 'json'
@@ -128,11 +130,11 @@ def task_generate_pipeline_id():
     :return:
     """
     def action(targets):
-        version = #TODO: Once package is installable
+        version = get_version()
 
         for file in targets:
             with open(file, 'w') as id_file:
-                id_file.write(f'{PIPELINE_ID}_')
+                id_file.write(f'{PIPELINE_ID}_{version}_1')
 
     return {
         'targets': ['pipeline_id'],
