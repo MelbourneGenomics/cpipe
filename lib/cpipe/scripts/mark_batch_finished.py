@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -19,7 +19,7 @@
 # along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
 ###########################################################################
-'''
+"""
 
 import argparse
 import datetime
@@ -28,9 +28,9 @@ import os.path
 import sys
 
 def run(cmd, log, dry=False):
-    '''
+    """
         execute a command and log
-    '''
+    """
     if dry:
         log.write('would execute: {0}\n'.format(cmd))
     else:
@@ -38,9 +38,9 @@ def run(cmd, log, dry=False):
         os.system(cmd)
 
 def mark_batch_finished(directory, log, read_only, move, dry=False):
-    '''
+    """
         mark a batch read-only and move to completion
-    '''
+    """
     # first mark as read only
     batch_dir = os.path.split(directory)[0] # e.g. ./batches/123
     if read_only:

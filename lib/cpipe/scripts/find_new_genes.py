@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -30,7 +30,7 @@
 #     - cohort.notfound.genes.txt
 #     - cohort.excluded.genes.txt
 ####################################################################################
-'''
+"""
 
 import argparse
 import os
@@ -38,9 +38,9 @@ import re
 import sys
 
 def generate_new_genes(sample_lines, log, reference_genes, excluded_genes, reference_source, excluded_source):
-    '''
+    """
         given samples, make files of the form CS.extra.genes.txt and CS.extra.excluded.genes.txt
-    '''
+    """
     # get list of reference genes
     reference = set()
     for line in reference_genes:
@@ -90,9 +90,9 @@ def generate_new_genes(sample_lines, log, reference_genes, excluded_genes, refer
     return result
 
 def write_genes(additions, target, log, dummy=False):
-    '''
+    """
         writes e.g. CS.add.genes.txt, CS.excluded.genes.txt, CS.notfound.genes.txt
-    '''
+    """
     for cohort in additions:
         for category in additions[cohort]:
             if dummy:
@@ -104,9 +104,9 @@ def write_genes(additions, target, log, dummy=False):
                         fh_out.write('%s\n' % gene)
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Generate bed files')
     parser.add_argument('--reference', required=True, help='reference bed file') # input
     parser.add_argument('--exclude', required=True, help='file containing genes to exclude') # input

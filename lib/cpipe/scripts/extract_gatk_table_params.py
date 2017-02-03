@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 
  This file is part of Cpipe.
@@ -22,17 +22,17 @@
 Description:
     extract field names from a vcf for use in the GATK command VariantsToTable
 Usage:
-    python extract_gatk_table_params < vcf_file 
+    python extract_gatk_table_params < vcf_file
 ###########################################################################
-'''
+"""
 
 import re
 import sys
 
 def extract_parameters(vcf, target):
-    '''
+    """
         extract field names from a vcf for use in the GATK command VariantsToTable
-    '''
+    """
     result = []
     for line in vcf:
         if not line.startswith('#'):

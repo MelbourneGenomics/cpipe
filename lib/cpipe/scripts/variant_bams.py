@@ -25,7 +25,7 @@ from subprocess import call
 from argparse import (ArgumentParser, FileType, ArgumentDefaultsHelpFormatter)
 
 def parse_args():
-    "Parse the input arguments, use '-h' for help"
+    """Parse the input arguments, use '-h' for help"""
     parser = ArgumentParser(description='Produce a bam file of reads overlaping a variant. By default, reads overlaping the region 100bp upstream and downstream of the variant are included.',
     formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(

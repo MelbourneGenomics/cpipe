@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -21,15 +21,15 @@
 ###########################################################################
 # Update fields in the metadata file
 ###########################################################################
-'''
+"""
 
 import argparse
 import sys
 
 def update_metadata(sample_in, sample_out, log, sample, name, value):
-    '''
+    """
         update sample with new value
-    '''
+    """
     if len(sample_in) == 0:
         log.write('ERROR: file is empty\n')
         return 1
@@ -62,9 +62,9 @@ def update_metadata(sample_in, sample_out, log, sample, name, value):
         log.write('ERROR: sample "{0}" not found in: {1}\n'.format(sample, ', '.join(samples)))
 
 def main():
-    '''
+    """
         update metadata file from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Update metadata')
     parser.add_argument('--sample_id', required=True, help='sample ID to update')
     parser.add_argument('--name', required=True, help='name of field to update')

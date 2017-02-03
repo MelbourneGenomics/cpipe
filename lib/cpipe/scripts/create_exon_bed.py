@@ -75,13 +75,13 @@ def check_overlap(existing_exons,newexon):
         if newexon == existing:
            return i
         # overlaps start point
-        elif start<existing[0] and end > existing[0]:
+        elif start<existing[0] < end:
             return i
         # contained within existing
         elif start>=existing[0] and end <= existing[1]:
             return i
         # overlaps end point
-        elif start<=existing[1] and end > existing[1]:
+        elif start<=existing[1] < end:
             return i
         elif start<=existing[0] and end >= existing[1]:
             return i

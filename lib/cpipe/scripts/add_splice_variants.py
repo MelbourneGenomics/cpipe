@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -24,15 +24,16 @@
 # Reads a file of exons (arg1) and the genome annotation file from annovar
 # (arg2) and outputs all the variants that are within <n> base pairs of an exon
 # (arg3)
-'''
+"""
 
 import csv
 import sys
 
+
 def process(exons, genome, width):
-    '''
+    """
       write variants to stdout
-    '''
+    """
     search_width = int(width)
     exon_file = csv.reader(open(exons), delimiter='\t')
 
@@ -43,48 +44,53 @@ def process(exons, genome, width):
         exons.setdefault(chrom, []).append([int(start), int(end), desc])
         count += 1
 
-    #print "Parsed %d exons (%d chromosomes)" % (count, len(exons))
+    # print "Parsed %d exons (%d chromosomes)" % (count, len(exons))
 
     wout = csv.writer(sys.stdout)
 
     # Now read the annovar file
     annovar_file = csv.reader(open(genome))
-    #header = annovar_file.next()
+    # header = annovar_file.next()
 
-    #w.writerow(header)
+    # w.writerow(header)
 
     for line in annovar_file:
-        #gene = l[1]
-        #if gene != 'CACNB2':
+        # gene = l[1]
+        # if gene != 'CACNB2':
         #     continue
 
         chrom = line[21]
         start = int(line[22])
         end = int(line[23])
-        #aachange = line[3]
+        # aachange = line[3]
 
-        #print  ",".join([chrom, str(start), str(end), aachange])
+        # print  ",".join([chrom, str(start), str(end), aachange])
 
         if chrom not in exons:
             print("WARNING: Chromosome not in capture in output variants: " + chrom, file=sys.stderr)
             continue
 
         for exon_start, exon_end, desc in exons[chrom]:
-            #if exon_start == 18439811 and start == 18439809:
-            #print "Exon [%d,%d] " % (exon_start, exon_end)
-            if end <= exon_start and end > exon_start - search_width:
-                line[0] = "extra_splicing;"+line[0]
+            # if exon_start == 18439811 and start == 18439809:
+            # print "Exon [%d,%d] " % (exon_start, exon_end)
+            if exon_start >= end > exon_start - search_width:
+                line[0] = "extra_splicing;" + line[0]
                 wout.writerow(line)
-            elif start >= exon_end and start < exon_end + search_width:
-                line[0] = "extra_splicing;"+line[0]
+            elif exon_end <= start < exon_end + search_width:
+                line[0] = "extra_splicing;" + line[0]
                 wout.writerow(line)
             else:
                 # Not interesting
                 pass
 
-if __name__ == '__main__':
+
+def main():
     if len(sys.argv) < 4:
         print("Usage: python add_splice_variants.py <exons.bed> <genome_summary.csv> <width>")
         sys.exit(1)
 
     process(sys.argv[1], sys.argv[2], sys.argv[3])
+
+
+if __name__ == '__main__':
+    main()

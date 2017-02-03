@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -41,7 +41,7 @@
 # --fragments: file containing fragment details
 #
 ##############################################################################
-'''
+"""
 
 import collections
 import datetime
@@ -52,21 +52,21 @@ import sys
 MEAN_RANGE = 0.8 # calculate proportion of coverage within this fraction of the mean
 
 def write_log(log, msg):
-    '''
+    """
         write a date stamped message to log
-    '''
+    """
     now = datetime.datetime.now().strftime('%y%m%d-%H%M%S')
     if log is not None:
         log.write('%s: %s\n' % (now, msg))
 
 def calculate_karyotype(exome_cov, log=None):
-    '''
+    """
         * calculate the mean coverage on chr1 and chr22, chrX, and chrY
               (calculated by number of reads overlapping each position in exome)
         * if chrY coverage < 5 and chrX coverage > 30: sample is female
         * else if chrX coverage / autosome coverage < 0.7: sample is male
         * else sample is other
-    '''
+    """
     write_log(log, 'calculating karyotype...')
     stats = collections.defaultdict(int)
     idx = 0
@@ -113,9 +113,9 @@ def calculate_karyotype(exome_cov, log=None):
     return result
 
 def write_karyotype(target, karyotype, meta):
-    '''
+    """
         write karyotype details to target
-    '''
+    """
     target.write('Sex\t{0}\n'.format(meta['sex'].upper()))
     target.write('Inferred Sex\t{0}\n'.format(karyotype['sex']))
     target.write('xCoverage\t{0}\n'.format(karyotype['x_mean_coverage']))
@@ -123,18 +123,18 @@ def write_karyotype(target, karyotype, meta):
     target.write('autosomeCoverage\t{0}\n'.format(karyotype['autosome_mean_coverage']))
 
 def mean(items):
-    '''
+    """
         compute the mean of a list of items
-    '''
+    """
     if len(items) == 0:
         return 0
     else:
         return sum(items) / float(len(items))
 
 def median(items):
-    '''
+    """
       return the median of a list of items
-    '''
+    """
     sorted_list = sorted(items)
     if len(items) % 2 == 0:
         high = len(items) // 2
@@ -144,9 +144,9 @@ def median(items):
         return sorted_list[mid]
 
 def parse_metadata(meta, study, log=None):
-    '''
+    """
        reads metadata file and returns info about a study
-    '''
+    """
     header = None
     for line in meta:
         if header is None:
@@ -166,14 +166,14 @@ def parse_metadata(meta, study, log=None):
     return None
 
 def calculate_mean_stats(overall_stats, overall_mean, log):
-    '''
+    """
         calculate coverage stats of the form: [in mean range, cov >1, >10, >20, >50]
-    '''
+    """
     write_log(log, 'calculating coverage stats...')
     mean_stats = [0, 0, 0, 0, 0]
 
     for coverage in overall_stats:
-        if coverage > overall_mean * (1.0 - MEAN_RANGE) and coverage < overall_mean * (1.0 + MEAN_RANGE):
+        if overall_mean * (1.0 - MEAN_RANGE) < coverage < overall_mean * (1.0 + MEAN_RANGE):
             mean_stats[0] += 1
         if coverage >= 1:
             mean_stats[1] += 1
@@ -191,9 +191,9 @@ def calculate_mean_stats(overall_stats, overall_mean, log):
     return mean_stats
  
 def calculate_summary(report_cov, threshold, log):
-    '''
+    """
       calculate a summary of coverage across genes in report_cov
-    '''
+    """
     write_log(log, 'calculating gene summaries...')
     stats = collections.defaultdict(list)
     total_ok = collections.defaultdict(int)
@@ -232,23 +232,23 @@ def calculate_summary(report_cov, threshold, log):
         return {'mean': overall_mean, 'median': 0, 'genes': gene_results, 'mean_stats': mean_stats}
 
 def is_ok(percent, conversion):
-    '''return the status for a gene'''
+    """return the status for a gene"""
     for cand in conversion.split(','):
         fields = cand.split(':')
         if percent >= int(fields[1]):
             return '<span style="color:{0};">{1}</span>'.format(fields[2], fields[0])
 
 def category(gene, categories):
-    '''return the category for a gene'''
+    """return the category for a gene"""
     if gene.lower() in categories:
         return int(categories[gene.lower()])
     else:
         return 0
 
 def build_metrics(picard, ontarget, log):
-    '''
+    """
         parse metric details from picard file
-    '''
+    """
     stage = 0
     result = {}
     for line in picard:
@@ -273,9 +273,9 @@ def build_metrics(picard, ontarget, log):
     write_log(log, "ERROR: failed to parse metrics file")
 
 def parse_tsv(tsv):
-    '''
+    """
         turn lines of the form key\tvalue into a dictionary
-    '''
+    """
     result = {}
     for line in tsv:
         fields = line.strip('\n').split()
@@ -284,9 +284,9 @@ def parse_tsv(tsv):
     return result
 
 def parse_date(date):
-    '''
+    """
       convert yyyymmdd into something nicer
-    '''
+    """
     dates = date.strip('"')
     result = []
     for date in dates.split(' '):
@@ -298,26 +298,26 @@ def parse_date(date):
         return 'N/A'
 
 def parse_genes(genes):
-    '''
+    """
       convert prioritized genes into a list
-    '''
+    """
     genes = genes.strip('"')
     genes = re.sub('G?[0-9]:', '', genes)
     return re.sub(', *', ' ', genes)
 
 def find_first_of(meta, keys, default='N/A'):
-    '''
+    """
         return the value of the first key from keys found in meta, otherwise return default
-    '''
+    """
     for key in keys:
         if key in meta and meta[key] != '':
             return meta[key]
     return default
 
 def group_number(number):
-    '''
+    """
         add separators to numbers in a 2.6 compatible way without relying on locale
-    '''
+    """
     s = '%d' % number
     groups = []
     while s and s[-1].isdigit():
@@ -326,9 +326,9 @@ def group_number(number):
     return s + ','.join(reversed(groups))
 
 def generate_report(summaries, karyotype, meta, threshold, categories, conversion, metrics, capture, anonymous, fragments, padding, out, log):
-    '''
+    """
         generate a report from the provided summary
-    '''
+    """
     if anonymous:
         meta['sample_id'] = 'ANONYMOUS'
 
@@ -427,9 +427,9 @@ def generate_report(summaries, karyotype, meta, threshold, categories, conversio
 
 
 def build_categories(categories, prioritized, log):
-    '''
+    """
         build a dictionary that maps genes to categories
-    '''
+    """
     result = {}
     for line in categories:
         if line.startswith('#'):
@@ -455,9 +455,9 @@ def build_categories(categories, prioritized, log):
     return result
 
 def build_capture(coverage, log):
-    '''
+    """
         data for percent in capture
-    '''
+    """
     result = {}
     for idx, line in enumerate(coverage):
         field = line.strip('\n').split()
@@ -467,9 +467,9 @@ def build_capture(coverage, log):
     return result
 
 def main():
-    '''
+    """
         parse command line and execute
-    '''
+    """
     import argparse
     parser = argparse.ArgumentParser(description='Generate coverage report')
     parser.add_argument('--report_cov', nargs='*', required=True, help='intersected coverage file(s) with genes from bedtools')

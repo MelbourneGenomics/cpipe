@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -25,7 +25,7 @@
 # Usage:
 #   filter_transcripts.py < variants.tsv 1>filtered.tsv
 ####################################################################################
-'''
+"""
 
 import argparse
 import collections
@@ -39,11 +39,11 @@ TRANSCRIPT_COLUMN = 'Feature'
 IDENTIFYING_COLUMNS = ['CHROM', 'POS', 'REF', 'ALT']
 
 def filter_tsv(instream, outstream, log):
-    '''
-        read instream and filter out XM transcripts that are in a location that 
+    """
+        read instream and filter out XM transcripts that are in a location that
         already has an NM transcript.
         write filtered transcripts to outstream.
-    '''
+    """
     # get header
     first = True
     include = collections.defaultdict(list)
@@ -115,9 +115,9 @@ def filter_tsv(instream, outstream, log):
     log.write('done writing {0} lines. stats: {1}\n'.format(count, counts))
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Filter TSV')
     args = parser.parse_args()
     filter_tsv(sys.stdin, sys.stdout, sys.stderr)

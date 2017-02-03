@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -27,7 +27,7 @@
 # Usage:
 #   update_gene_lists --source dir --target dir
 ####################################################################################
-'''
+"""
 
 import argparse
 import datetime
@@ -38,15 +38,15 @@ import sys
 CATEGORY = '1'
 
 def write_log(log, msg):
-    '''
+    """
         write date stamped msg to log
-    '''
+    """
     log.write('%s: %s\n' % (datetime.datetime.now().strftime('%y%m%d-%H%M%S'), msg))
 
 def update_gene_lists(source_dir, target_dir, log):
-    '''
+    """
         adds genes from files of the form source_dir/*.add.genes.txt to gene lists in target_dir/cohort/cohort.genes.txt
-    '''
+    """
     for filename in glob.glob(os.path.join(source_dir, '*.add.genes.txt')):
         cohort = os.path.basename(filename).split('.')[0]
         # find corresponding flagship
@@ -85,9 +85,9 @@ def update_gene_lists(source_dir, target_dir, log):
             write_log(log, 'ERROR: target gene list %s does not exist' % target)
 
 def main():
-    '''
+    """
         update gene lists from command line options
-    '''
+    """
     parser = argparse.ArgumentParser(description='Generate bed files')
     parser.add_argument('--source', required=True, help='source of extra genes') # input
     parser.add_argument('--target', required=True, help='target containing gene files to update') # input

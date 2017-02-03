@@ -10,8 +10,15 @@ setup(
     version="2.5",
     packages=find_packages(),
 
-    # Copy the scripts to the python bin directory, allowing them to be used from any directory
-    scripts=[str(p) for p in scripts.iterdir() if p.is_file() and p.stem != '__init__'],
+    # Copy the non-python scripts to the python bin directory, allowing them to be used from any directory
+    # scripts=[str(p) for p in scripts.iterdir() if p.is_file()],
+
+    # Create executables from a number of python modules
+    entry_points={
+        'console_scripts': [
+            'cpipe = cpipe.scripts.cpipe',
+        ]
+    },
     install_requires=[
         'python-swiftclient',
         'python-keystoneclient',

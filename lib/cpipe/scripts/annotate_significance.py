@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -54,7 +54,7 @@
 # Date:     23/1/2014
 #
 ####################################################################################
-'''
+"""
 
 import argparse
 import collections
@@ -156,39 +156,39 @@ class Annovar(object):
         elif self.ExonicFunc == "unknown":
             return 0
         else:
-            log.warn("variant %s:%s %s/%s func=%s failed to be categorized", self.Chr, self.Start, self.Ref, self.Alt, self.ExonicFunc)
+            log.warning("variant %s:%s %s/%s func=%s failed to be categorized", self.Chr, self.Start, self.Ref, self.Alt, self.ExonicFunc)
             return 9
 
     def is_noncoding(self):
-        '''is the variant non coding'''
+        """is the variant non coding"""
         return self.Func in self.ANNOVAR_EXONIC_FUNCS["noncoding"]
 
     def is_missense(self):
-        '''is the variant missense'''
+        """is the variant missense"""
         return self.ExonicFunc in self.ANNOVAR_EXONIC_FUNCS["missense"]
 
     def is_truncating(self):
-        '''is the variant truncating or splicing'''
+        """is the variant truncating or splicing"""
         return self.ExonicFunc in self.ANNOVAR_EXONIC_FUNCS["truncating"] or self.Func in ["splicing", "exonic;splicing"]
 
     def is_rare(self):
-        '''Return true iff at least one database has the variant at > the MAF_THRESHOLD'''
+        """Return true iff at least one database has the variant at > the MAF_THRESHOLD"""
         log.debug("MAF values for %s:%s are %s", self.Chr, self.Start, [self.maf_value(f) for f in self.POPULATION_FREQ_FIELDS])
         return not any([self.maf_value(f) > self.MAF_THRESHOLD for f in self.POPULATION_FREQ_FIELDS])
 
     def is_very_rare(self):
-        '''Return true iff at least one database has the variant at > the MAF_THRESHOLD_VERY_RARE'''
+        """Return true iff at least one database has the variant at > the MAF_THRESHOLD_VERY_RARE"""
         return not any([self.maf_value(f) > self.MAF_THRESHOLD_VERY_RARE for f in self.POPULATION_FREQ_FIELDS])
 
     def is_novel(self):
-        '''return true iff the variant has no MAF in any database AND no DBSNP ID'''
+        """return true iff the variant has no MAF in any database AND no DBSNP ID"""
         return not any([self.maf_value(f) > 0.0 for f in self.POPULATION_FREQ_FIELDS]) and (self.snp138 in ["", "."])
 
     def is_conserved(self):
-        '''
+        """
             Clarification 27/5/2014:
             ONLY if condel score is missing, then it can categorised as a 3 if CONSERVED by Annovar
-        '''
+        """
         condel_str = self.Condel
         if condel_str != "":
             return float(condel_str) >= 0.7
@@ -197,16 +197,16 @@ class Annovar(object):
 
     @staticmethod
     def init_columns(cols):
-        '''
+        """
             prepare column names in annovar
-        '''
+        """
         Annovar.columns = cols #+ ["MapQ", "QD"]
 
     def maf_value(self, name):
-        '''
+        """
             Trying to be compatible with multiple versions of Annovar, each having different
             names for this column
-        '''
+        """
         if name == "exac03" and "ExAC_Freq" in self.columns:
             name = "ExAC_Freq"
         if name == "exac03" and "ExAC_ALL" in self.columns:
@@ -221,15 +221,15 @@ class Annovar(object):
         return self.line[self.columns.index(name)]
 
     def set_value(self, name, value):
-        '''
+        """
             update value of a given field at the current line
-        '''
+        """
         self.line[self.columns.index(name)] = value
 
 def process_annovar(annovar, output, synonymous=None):
-    '''
+    """
         annotate priority
-    '''
+    """
     log.info("started processing...")
     # prepare synonymous set
     synonymous_set = set()
@@ -256,10 +256,10 @@ def process_annovar(annovar, output, synonymous=None):
             is_header = False
             # Note: Annovar does not seem to provide Qual and Depth headings itself
             if "Qual" not in line:
-                line = line + ["Qual"]
+                line += ["Qual"]
 
             if "Depth" not in line:
-                line = line + ["Depth"]
+                line += ["Depth"]
 
             Annovar.init_columns(line)
 
@@ -285,9 +285,9 @@ def process_annovar(annovar, output, synonymous=None):
 ####################################################################################
 
 def main():
-    '''
+    """
         Parse command line options
-    '''
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--annovar', required=True, help='annovar file')
     parser.add_argument('--rare', required=False, help='threshold for rare')

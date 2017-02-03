@@ -124,6 +124,10 @@ class Batch:
     def data(self):
         return self.path / 'data'
 
+    @property
+    def analysis(self):
+        return self.path / 'analysis'
+
     def create_empty(self):
         """
         Creates all the important files and directories, but does not populate them with any files or content

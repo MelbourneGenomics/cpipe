@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -19,7 +19,7 @@
 # along with Cpipe.  If not, see <http:#www.gnu.org/licenses/>.
 #
 ###########################################################################
-'''
+"""
 
 import argparse
 import datetime
@@ -30,16 +30,18 @@ import sys
 
 DEFAULT_PRIORITY = '1'
 
+
 def write_log(log, msg):
-    '''
+    """
         write timestamped log message
-    '''
+    """
     log.write('%s: %s\n' % (datetime.datetime.now().strftime('%y%m%d-%H%M%S'), msg))
 
+
 def add_profile(profile_name, fh_out):
-    '''
+    """
         add ./designs/profile_name/profile_name.genes.txt
-    '''
+    """
     directory = './designs/{0}'.format(profile_name)
     target = './designs/{0}/{0}.genes.txt'.format(profile_name)
     if os.path.isfile(target):
@@ -53,27 +55,30 @@ def add_profile(profile_name, fh_out):
             transcript_target = './designs/{0}/{0}.transcripts.txt'.format(profile_name)
             open(transcript_target, 'w')
 
+
 def list_profiles(fh_out):
-    '''
+    """
         look for files of the form designs/X/X.genes.txt
-    '''
+    """
     for profile in glob.glob('./designs/*/*.genes.txt'):
         if 'genelists' not in profile:
             fh_out.write('{0}\n'.format(os.path.basename(profile).split('.')[0]))
 
+
 def list_genes(profile, fh_out):
-    '''
+    """
         list genes in a profile
-    '''
+    """
     for line in open('./designs/{0}/{0}.genes.txt'.format(profile), 'r'):
         if line.startswith('#'):
             continue
         fh_out.write('{0}\n'.format(line.strip().split()[0]))
 
+
 def add_genes(profile, fh_in, fh_out, force=False):
-    '''
+    """
         load existing genes from the list
-    '''
+    """
     existing = {}
     for line in open('./designs/{0}/{0}.genes.txt'.format(profile), 'r'):
         if line.startswith('#'):
@@ -113,13 +118,15 @@ def add_genes(profile, fh_in, fh_out, force=False):
         else:
             fh_out.write('No new genes to add\n')
 
-    else: # !proceed and !force
-        fh_out.write('Not adding genes due to previous warnings. Use --force if you are sure you want to add these genes\n')
+    else:  # !proceed and !force
+        fh_out.write(
+            'Not adding genes due to previous warnings. Use --force if you are sure you want to add these genes\n')
+
 
 def add_bed(profile, fh_in, log, force=False):
-    '''
+    """
         use a bed file for the profile
-    '''
+    """
     proceed = True
     validation = build_validation_sets()
     skipped = 0
@@ -143,7 +150,7 @@ def add_bed(profile, fh_in, log, force=False):
             skipped += 1
 
     if skipped > 0:
-        log.write('WARNING: Skipped {0} lines out of {1} total in bed file\n'.format(skipped, lines+1))
+        log.write('WARNING: Skipped {0} lines out of {1} total in bed file\n'.format(skipped, lines + 1))
 
     if len(new_genes) == 0:
         log.write('WARNING: No genes found in bed file\n')
@@ -162,10 +169,11 @@ def add_bed(profile, fh_in, log, force=False):
                 target.write(line)
         log.write('Done\n')
 
+
 def remove_bed(profile, log):
-    '''
+    """
         remove bed file from profile
-    '''
+    """
     target = './designs/{0}/{0}.bed'.format(profile)
     if os.path.exists(target):
         os.remove(target)
@@ -173,10 +181,11 @@ def remove_bed(profile, log):
     else:
         log.write('ERROR: profile {0} does not have a custom bed file\n'.format(profile))
 
+
 def show_bed(profile, log):
-    '''
+    """
         write bed file if it exists
-    '''
+    """
     target = './designs/{0}/{0}.bed'.format(profile)
     if os.path.exists(target):
         for line in open(target, 'r'):
@@ -186,10 +195,11 @@ def show_bed(profile, log):
     else:
         log.write('ERROR: profile {0} does not have a custom bed file\n'.format(profile))
 
+
 def remove_genes(profile, fh_in, fh_out, force=False):
-    '''
+    """
         load existing genes from the list, remove selected, write back
-    '''
+    """
     existing = {}
     for line in open('./designs/{0}/{0}.genes.txt'.format(profile), 'r'):
         if line.startswith('#'):
@@ -217,12 +227,14 @@ def remove_genes(profile, fh_in, fh_out, force=False):
                 target.write('{0}\t{1}\n'.format(gene, existing[gene]))
         fh_out.write('Done\n')
     else:
-        fh_out.write('Not updating gene list due to previous warnings. Use --force if you are sure you want to add these genes\n')
+        fh_out.write(
+            'Not updating gene list due to previous warnings. Use --force if you are sure you want to add these genes\n')
+
 
 def build_validation_sets():
-    '''
+    """
         build sets of genes that are included/excluded
-    '''
+    """
     incidentalome = set()
     for line in open('./designs/genelists/incidentalome.genes.txt', 'r'):
         if line.startswith('#'):
@@ -237,10 +249,11 @@ def build_validation_sets():
 
     return {'incidentalome': incidentalome, 'exons': exons}
 
+
 def validate(profile, fh_out):
-    '''
+    """
         check against incidentalome and exons
-    '''
+    """
     validation = build_validation_sets()
 
     found_incidentalome = set()
@@ -254,18 +267,20 @@ def validate(profile, fh_out):
         if gene not in validation['exons']:
             not_found_exons.add(gene)
     fh_out.write('examined:              \t{0}\n'.format(len(all_genes)))
-    fh_out.write('found on incidentalome:\t{0}\t{1}\n'.format(len(found_incidentalome), ' '.join(sorted(list(found_incidentalome)))))
-    fh_out.write('not found:             \t{0}\t{1}\n'.format(len(not_found_exons), ' '.join(sorted(list(not_found_exons)))))
+    fh_out.write('found on incidentalome:\t{0}\t{1}\n'.format(len(found_incidentalome),
+                                                              ' '.join(sorted(list(found_incidentalome)))))
+    fh_out.write(
+        'not found:             \t{0}\t{1}\n'.format(len(not_found_exons), ' '.join(sorted(list(not_found_exons)))))
 
-def main():
-    '''
-        parse command line
-    '''
-    parser = argparse.ArgumentParser(description='Manage gene lists')
-    parser.add_argument('command', help='command to execute', choices=['add_profile', 'show_profiles', 'show_genes', 'add_genes', 'remove_genes', 'validate', 'add_bed', 'remove_bed', 'show_bed'])
+
+def setup_parser(parser: argparse.ArgumentParser):
+    parser.add_argument('command', help='command to execute',
+                        choices=['add_profile', 'show_profiles', 'show_genes', 'add_genes', 'remove_genes', 'validate',
+                                 'add_bed', 'remove_bed', 'show_bed'])
     parser.add_argument('--profile', required=False, help='profile to update')
     parser.add_argument('--force', action='store_true', help='force addition of genes')
-    args = parser.parse_args()
+
+def execute(args, parser):
 
     log = sys.stdout
     fh_in = sys.stdin
@@ -293,6 +308,15 @@ def main():
             remove_bed(args.profile, log)
         elif args.command == 'show_bed':
             show_bed(args.profile, log)
+
+def main():
+    """
+        parse command line
+    """
+    parser = argparse.ArgumentParser(description='Manage gene lists')
+    setup_parser(parser)
+    args = parser.parse_args()
+    execute(args, parser)
 
 
 if __name__ == '__main__':

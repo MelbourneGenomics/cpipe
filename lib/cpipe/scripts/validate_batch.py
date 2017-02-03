@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -23,7 +23,7 @@
 # * Validate batch results and generate a markdown flavoured report
 #
 ##############################################################################
-'''
+"""
 
 import argparse
 import collections
@@ -36,24 +36,24 @@ import os
 #    return subprocess.Popen(["pdftotext",file,"-"], stdout=subprocess.PIPE).communicate()[0]
 
 def md_to_text(md_file):
-    '''
+    """
         given md file, return all lines
-    '''
+    """
     return open(md_file, 'r').readlines()
 
 def extract_sample(sample_file):
-    '''
+    """
         determine sample ID from filename
-    '''
+    """
     sample_file = os.path.basename(sample_file) # remove leading directories
     if '_' in sample_file:
         sample_file = sample_file.rsplit("_", 1)[-1] # remove pipeline run id
     return sample_file.split(".")[0] # remove extensions
 
 def check_sex(dir_name):
-    '''
+    """
         compare inferred sex from karyotype file to sample sex
-    '''
+    """
     print("\n# Gender Validation")
     print("Sample     | Outcome  | Sex    | Inferred")
     print("-----------|----------|--------|---------")
@@ -73,9 +73,9 @@ def check_sex(dir_name):
             print(("%s | %s | %s | %s" % (sample.ljust(10), outcome.ljust(8), result["Sex"].ljust(6), result["Inferred Sex"].ljust(8))))
 
 def check_gene_coverage(dir_name, bad_threshold=15):
-    '''
+    """
         calculate gene coverage from qc reports
-    '''
+    """
     print(("\n# Gene coverage by sample (flagged if >%i%% fail)" % bad_threshold))
     print("Sample     | Outcome  | % Fail | Good | Pass | Fail | Total")
     print("-----------|----------|--------|------|------|------|------")
@@ -96,9 +96,9 @@ def check_gene_coverage(dir_name, bad_threshold=15):
         print(("%s | %s | %s | %4i | %4i | %4i | %5i" % (sample.ljust(10), outcome.ljust(8), str('%.1f' % bad_percent).rjust(6), result['GOOD'], result['PASS'], result['FAIL'], total)))
 
 def check_observed_mean_coverage(dir_name, bad_threshold=90):
-    '''
+    """
         extract observed mean coverage from each sample qc report
-    '''
+    """
     print(("\n# Observed mean coverage by sample (flagged if coverage <%i)" % bad_threshold))
     print("Sample     | Outcome  | OMC")
     print("-----------|----------|------")
@@ -116,9 +116,9 @@ def check_observed_mean_coverage(dir_name, bad_threshold=90):
                     print(("%s | %s | Unexpected string: %s" % (sample, "**FAIL**", line)))
 
 def check_individual_genes(dir_name, bad_threshold=75):
-    '''
+    """
         find genes that fail across multiple samples
-    '''
+    """
     print(("\n# Individual genes with >%i%% fail across samples" % bad_threshold))
     print("Gene     | Outcome  | % Fail | Good | Pass | Fail | Total")
     print("---------|----------|--------|------|------|------|------")
@@ -148,9 +148,9 @@ def check_individual_genes(dir_name, bad_threshold=75):
             print(("%s | %s | %s | %4i | %4i | %4i | %4i" % (key.ljust(8), outcome.ljust(8), str('%.1f' % value).rjust(6), genes[key]['GOOD'], genes[key]['PASS'], genes[key]['FAIL'], sum([genes[key][status] for status in genes[key]]))))
 
 def show_not_found(handle, title):
-    '''
+    """
         list genes not found
-    '''
+    """
     print(("# Requested Genes not found in %s" % title))
     found = False
     for line in handle:
@@ -160,9 +160,9 @@ def show_not_found(handle, title):
         print("None")
 
 def main():
-    '''
+    """
         validate batch from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Validate cpipe output')
     parser.add_argument('--dir', default='./results', help='results directory')
     parser.add_argument('--gene_coverage', default=15, help='report genes with coverage below this')

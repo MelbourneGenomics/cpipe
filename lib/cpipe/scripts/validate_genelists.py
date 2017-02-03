@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -25,15 +25,15 @@
 # Usage:
 #     validate_genelists.py --exclude exclusionfile genefile(s)...
 ####################################################################################
-'''
+"""
 
 import argparse
 import sys
 
 def find_excluded(exclude_fh, files, out):
-    '''
+    """
         given a file containing genes to exclude, read files and find genes matching exclusion list
-    '''
+    """
     excluded = set()
     for line in exclude_fh:
         if line.startswith('#'):
@@ -57,9 +57,9 @@ def find_excluded(exclude_fh, files, out):
     out.write('TOTAL | {0} excluded gene(s) found | {1}\n'.format(len(total), ' '.join(sorted(list(total)))))
 
 def main():
-    '''
+    """
         execute from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Validate gene list')
     parser.add_argument('--exclude', help='file containing genes to exclude')
     parser.add_argument('list', nargs='+', help='list of files to test')

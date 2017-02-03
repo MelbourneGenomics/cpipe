@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -29,7 +29,7 @@
 # --bed: bed file to check
 #
 ##############################################################################
-'''
+"""
 
 import argparse
 import collections
@@ -41,25 +41,27 @@ NOT_FOUND = ''
 FOUND = '1'
 CHROM = 'CHROM'
 POS = 'POS'
-SEPARATOR = ';' # if found more than once
+SEPARATOR = ';'  # if found more than once
 
 # interval matching from https://bitbucket.org/james_taylor/bx-python/raw/ebf9a4b352d3/lib/bx/intervals/operations/quicksect.py
 import random
 
+
 class IntervalTree(object):
-    '''
+    """
          fast interval finder
-    '''
+    """
+
     def __init__(self):
-        '''
+        """
             dictionary of intervals
-        '''
+        """
         self.chroms = {}
 
     def insert(self, interval, linenum=0, other=None):
-        '''
+        """
             add a new interval
-        '''
+        """
         chrom = interval.chrom
         start = interval.start
         end = interval.end
@@ -69,9 +71,9 @@ class IntervalTree(object):
             self.chroms[chrom] = IntervalNode(start, end, linenum, other)
 
     def intersect(self, interval, report_func):
-        '''
+        """
             add a new interval
-        '''
+        """
         chrom = interval.chrom
         start = interval.start
         end = interval.end
@@ -79,25 +81,26 @@ class IntervalTree(object):
             self.chroms[chrom].intersect(start, end, report_func)
 
     def traverse(self, func):
-        '''
+        """
             iterate over all intervals
-        '''
+        """
         for item in list(self.chroms.values()):
             item.traverse(func)
 
+
 class IntervalNode(object):
-    '''
+    """
         an interval in a tree
-    '''
+    """
 
     def __init__(self, start, end, linenum=0, other=None):
-        '''
+        """
         Python lacks the binomial distribution, so we convert a
         uniform into a binomial because it naturally scales with
         tree size.  Also, python's uniform is perfect since the
         upper limit is not inclusive, which gives us undefined here.
-        '''
-        self.priority = math.ceil((-1.0 / math.log(.5))* math.log(-1.0 / (random.uniform(0, 1)- 1)))
+        """
+        self.priority = math.ceil((-1.0 / math.log(.5)) * math.log(-1.0 / (random.uniform(0, 1) - 1)))
         self.start = start
         self.end = end
         self.maxend = self.end
@@ -108,9 +111,9 @@ class IntervalNode(object):
         self.other = other
 
     def insert(self, start, end, linenum=0, other=None):
-        '''
+        """
             add an interval to the tree
-        '''
+        """
         root = self
         if start > self.start:
             # insert to right tree
@@ -142,9 +145,9 @@ class IntervalNode(object):
         return root
 
     def rotateright(self):
-        '''
+        """
             rearrange tree
-        '''
+        """
         root = self.left
         self.left = self.left.right
         root.right = self
@@ -158,10 +161,11 @@ class IntervalNode(object):
             self.maxend = max(self.end, self.left.maxend)
             self.minend = min(self.end, self.left.minend)
         return root
+
     def rotateleft(self):
-        '''
+        """
             rearrange tree
-        '''
+        """
         root = self.right
         self.right = self.right.left
         root.left = self
@@ -177,9 +181,9 @@ class IntervalNode(object):
         return root
 
     def intersect(self, start, end, report_func):
-        '''
+        """
             find intersection
-        '''
+        """
         if start < self.end and end > self.start:
             report_func(self)
         if self.left and start < self.left.maxend:
@@ -188,33 +192,37 @@ class IntervalNode(object):
             self.right.intersect(start, end, report_func)
 
     def traverse(self, func):
-        '''
+        """
             find all
-        '''
+        """
         if self.left:
             self.left.traverse(func)
         func(self)
         if self.right:
             self.right.traverse(func)
 
+
 Interval = collections.namedtuple('Interval', ['start', 'end', 'chrom'])
 
+
 def find_region(chrom, position, regions):
-    '''
+    """
         returns the name of the overlap else None if no overlap found
-    '''
+    """
     result = None
     if chrom in regions.chroms:
         target = []
-        regions.chroms[chrom].intersect(position, position + 1, lambda x: target.append(x)) # find overlap and add to target
+        regions.chroms[chrom].intersect(position, position + 1,
+                                        lambda x: target.append(x))  # find overlap and add to target
         if len(target) > 0:
             return SEPARATOR.join(sorted(set([x.other['name'] for x in target])))
     return result
 
+
 def annotate(source, target, regions, log):
-    '''
+    """
         add annotation field to target by reading source and considering regions
-    '''
+    """
     log.write('annotate: starting...\n')
     first = True
     found = 0
@@ -242,10 +250,11 @@ def annotate(source, target, regions, log):
         target.write('{0}\n'.format('\t'.join(fields)))
     log.write('annotate: found {0} overlapping positions\n'.format(found))
 
+
 def build_regions(bed_fh, log):
-    '''
+    """
         build the interval tree from the bed file
-    '''
+    """
     log.write('processing bed file...\n')
     result = IntervalTree()
     lines = 0
@@ -256,19 +265,21 @@ def build_regions(bed_fh, log):
         if len(fields) < 4:
             result.insert(Interval(start=int(fields[1]), end=int(fields[2]), chrom=fields[0]), other={'name': FOUND})
         else:
-            result.insert(Interval(start=int(fields[1]), end=int(fields[2]), chrom=fields[0]), other={'name': fields[3]})
+            result.insert(Interval(start=int(fields[1]), end=int(fields[2]), chrom=fields[0]),
+                          other={'name': fields[3]})
     log.write('processing bed file: done processing {0} lines...\n'.format(lines + 1))
     return result
 
-def main(source, target, log):
-    '''
+
+def main(source=sys.stdin, target=sys.stdout, log=sys.stderr):
+    """
         run from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--bed', required=True, help='bed file containing regions to search')
     args = parser.parse_args()
     annotate(source, target, build_regions(open(args.bed, 'r'), log), log)
 
-if __name__ == '__main__':
-    main(sys.stdin, sys.stdout, sys.stderr)
 
+if __name__ == '__main__':
+    main()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -24,7 +24,7 @@
 # see main() for usage info
 #
 ###########################################################################
-'''
+"""
 
 import datetime
 import os
@@ -35,9 +35,9 @@ import sys
 SCHEMA_VERSION=0
 
 def update_sample_db(db, sample, run_id, analysis, capture, pipeline_version, log):
-    '''
-        create table if required 
-    '''
+    """
+        create table if required
+    """
     conn = sqlite3.connect(db)
 
     # ensure database schema is up to date
@@ -63,9 +63,9 @@ def update_sample_db(db, sample, run_id, analysis, capture, pipeline_version, lo
     log.write('update_sample_db: writing record to {0}: done\n'.format(db))
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     import argparse
     parser = argparse.ArgumentParser(description='write details of analysis for this sample to a sqlite database')
     parser.add_argument('--db', required=True, help='database file')

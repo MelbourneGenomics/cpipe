@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -28,7 +28,7 @@
 #   See main() for arguments
 #
 ###########################################################################
-'''
+"""
 
 import collections
 import glob
@@ -36,9 +36,9 @@ import os.path
 import sys
 
 def generate_report(source_dir, log):
-    '''
+    """
         generate data showing which variants are in which vcf files
-    '''
+    """
     log.write('filter_report: reading files from {0}\n'.format(source_dir))
     data = collections.defaultdict(dict)
     processed = 0
@@ -63,7 +63,7 @@ def generate_report(source_dir, log):
     return data
 
 def to_seen(seen):
-    '''
+    """
         string representation of set of stages
         assume stages are:
             merge.dedup.realign.recal.g
@@ -73,7 +73,7 @@ def to_seen(seen):
             genotype.soi
             genotype.soi.vep
             genotype.soi.vep.post_filter
-    '''
+    """
     if 'genotype.soi.vep.post_filter' in seen:
         return 'FINAL'
     elif 'merge.dedup.realign.recal.genotype.raw' in seen:
@@ -85,9 +85,9 @@ def to_seen(seen):
     
     
 def write_report(data, target, log):
-    '''
+    """
         write tsv to target
-    '''
+    """
     log.write('write_report: starting...\n')
     target.write('{0}\t{1}\t{2}\t{3}\n'.format('Sample', 'Chr', 'Pos', 'Seen'))
     for sample in sorted(data.keys()):

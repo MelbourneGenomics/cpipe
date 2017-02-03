@@ -55,12 +55,17 @@ def report_gene( name, gene, fn, out, separator, display, use_header=False ):
 
 def examine( gene, batch, sample, out ):
   # stage 1 is VEP: *NA18507.merge.dedup.realign.recal.filter_variants.merge_variants.vep.sort.vcf  
-  report_gene( 'VEP', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.vcf'.format( batch, sample ), sys.stdout, separator='\t', display=set( [0, 1, 3, 4] ) )
-  report_gene( 'Annovar', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.hg19_multianno.csv'.format( batch, sample ), sys.stdout, separator=',', display=set( ['Chr', 'Start', 'Ref', 'Alt', 'Func', 'Priority_Index'] ), use_header=True )
-  report_gene( 'Significance', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.hg19_multianno.con.sig.csv'.format( batch, sample ), sys.stdout, separator=',', display=set( ['Chr', 'Start', 'Ref', 'Alt', 'Func', 'Priority_Index'] ), use_header=True )
-  report_gene( 'Final', gene, './batches/{0}/analysis/results/*{1}.annovarx.csv'.format( batch, sample ), sys.stdout, separator=',', display=set( ['Chr', 'Start', 'Ref', 'Alt', 'Priority_Index', '#Obs'] ), use_header=True )
+  report_gene( 'VEP', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.vcf'.format( batch, sample ), sys.stdout, separator='\t', display={
+  0, 1, 3, 4})
+  report_gene( 'Annovar', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.hg19_multianno.csv'.format( batch, sample ), sys.stdout, separator=',', display={
+  'Chr', 'Start', 'Ref', 'Alt', 'Func', 'Priority_Index'}, use_header=True)
+  report_gene( 'Significance', gene, './batches/{0}/analysis/variants/*{1}.merge.dedup.realign.recal.filter*.vep.sort.hg19_multianno.con.sig.csv'.format( batch, sample ), sys.stdout, separator=',', display={
+  'Chr', 'Start', 'Ref', 'Alt', 'Func', 'Priority_Index'}, use_header=True)
+  report_gene( 'Final', gene, './batches/{0}/analysis/results/*{1}.annovarx.csv'.format( batch, sample ), sys.stdout, separator=',', display={
+  'Chr', 'Start', 'Ref', 'Alt', 'Priority_Index', '#Obs'}, use_header=True)
   # alternative results
-  report_gene( 'Final', gene, './batches/{0}/results/*{1}.annovarx.csv'.format( batch, sample ), sys.stdout, separator=',', display=set( ['Chr', 'Start', 'Ref', 'Alt', 'Priority_Index', '#Obs'] ), use_header=True )
+  report_gene( 'Final', gene, './batches/{0}/results/*{1}.annovarx.csv'.format( batch, sample ), sys.stdout, separator=',', display={
+  'Chr', 'Start', 'Ref', 'Alt', 'Priority_Index', '#Obs'}, use_header=True)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Examine variant filtering')

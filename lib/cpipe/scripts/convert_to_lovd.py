@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-'''
+"""
 ===========================================================================
   convert vcf table output by GATK to lovd format
 
   Usage:
     python convert_to_lovd.py --vcf source_vcf < table.tsv > table.lovd
 ===========================================================================
-'''
+"""
 
 import argparse
 import collections
@@ -23,9 +23,9 @@ EMPTY_AFTER = ''
 MAX_WARNINGS = 100
 
 def write_log_factory(params):
-    '''
+    """
       write a datestamped log message
-    '''
+    """
     def write_log_fn(fh, msg):
         if msg.startswith('WARNING'):
             params[0] -= 1
@@ -40,9 +40,9 @@ def write_log_factory(params):
 write_log = write_log_factory([MAX_WARNINGS])
 
 def get_ann_fields(vcf, log):
-    '''
+    """
         extract ANN fields from vcf header
-    '''
+    """
     write_log(log, 'parsing vcf...')
     result = None
     for line in vcf:
@@ -56,9 +56,9 @@ def get_ann_fields(vcf, log):
     write_log(log, 'WARNING: parsing vcf: ANN INFO field not found. Variants have not been annotated.')
 
 def process_table(source, target, ann_headers, log):
-    '''
+    """
         write tab separated columns, expanding ANN fields and writing one transcript per line
-    '''
+    """
     write_log(log, 'processing table...')
     count = 0
     warnings = 0
@@ -98,9 +98,9 @@ def process_table(source, target, ann_headers, log):
     write_log(log, 'processing table: finished {0} records. {1} warnings. transcript counts: {2}'.format(count, warnings, transcript_counts))
 
 def main():
-    '''
+    """
         run via command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Convert table to lovd')
     parser.add_argument('--vcf', required=True, help='original vcf')
     args = parser.parse_args() 

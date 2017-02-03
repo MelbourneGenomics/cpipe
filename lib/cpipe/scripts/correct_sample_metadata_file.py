@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -23,7 +23,7 @@
 # Purpose:
 # * remove spaces intelligently from the priority gene list column
 ####################################################################################
-'''
+"""
 
 import re
 import sys
@@ -31,11 +31,11 @@ import sys
 GENELIST_COLUMN = 'Prioritised_Genes'
 
 def correct_column(value):
-    '''
+    """
         takes spaces out of the gene list while leaving in spaces that separate categories
         @value: uncorrected genelist
         @returns: corrected genelist
-    '''
+    """
     parts = re.split('( *[^0-9:]*[0-9]+:)', value.strip()) # 3:
     corrected = []
     for part in parts:
@@ -46,11 +46,11 @@ def correct_column(value):
     return ''.join(corrected)
 
 def correct_metadata(src, dest):
-    '''
+    """
         corrects the genelist column
         @src: file like object containing sample metadata
         @dest: file like object to receive corrected sample metadata
-    '''
+    """
     first = True
     target_column = None
     for line in src:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -27,7 +27,7 @@
 # Output files:
 #     combination of all regions
 ####################################################################################
-'''
+"""
 
 import argparse
 import datetime
@@ -35,17 +35,17 @@ import os
 import sys
 
 def write_log(log, msg):
-    '''
+    """
         write a date stamped message to log
-    '''
+    """
     now = datetime.datetime.now().strftime('%y%m%d-%H%M%S')
     if log is not None:
         log.write('%s: %s\n' % (now, msg))
 
 def build_genelist(genes, genefiles, beds, log):
-    '''
+    """
         add genes from genefiles to genes, unless genefile is in beds
-    '''
+    """
     if genefiles is not None:
         for filename in genefiles:
             if os.path.basename(filename).split('.')[0] in beds:
@@ -67,9 +67,9 @@ def build_genelist(genes, genefiles, beds, log):
 
 
 def combine_target_regions(genefiles, genefiles_required, bedfiles, exons, target_fh, log):
-    '''
+    """
         generate a bed file from genefiles and bedfiles
-    '''
+    """
     # write all bed files unaltered
     beds = set()
     if bedfiles is not None:
@@ -108,9 +108,9 @@ def combine_target_regions(genefiles, genefiles_required, bedfiles, exons, targe
             write_log(log, 'WARNING: writing filtered exons: {0} genes extracted from {1} specified. Not found: {2}'.format(len(found), len(genes), ' '.join(sorted(list(genes.difference(found))))))
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Generate bed files')
     parser.add_argument('--genefiles', nargs='*', help='list of files containing genes') # input
     parser.add_argument('--genefiles_required', nargs='*', help='list of files containing genes that cannot be skipped') # input

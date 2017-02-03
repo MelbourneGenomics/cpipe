@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -26,7 +26,7 @@
 # In the future we may look at previous stages to determine why a variant was filtered
 # In the meantime, look at evaluate_variant.py
 ###########################################################################
-'''
+"""
 
 import argparse
 import csv
@@ -34,9 +34,9 @@ import glob
 import sys
 
 def find_variants(handle):
-    '''
+    """
         builds a dictionary of variants in the provided vcf
-    '''
+    """
     csvfh = csv.reader(handle, delimiter=',', quotechar='"')
     indexes = None
     data_indexes = None
@@ -63,9 +63,9 @@ def find_variants(handle):
     return result, extra
 
 def compare(dir1, dir2, sample1, sample2, out, common=False):
-    '''
+    """
         compare the annovars
-    '''
+    """
     a1fn = glob.glob('{0}/analysis/results/*{1}.annovarx.csv'.format(dir1, sample1))[0]
     a2fn = glob.glob('{0}/analysis/results/*{1}.annovarx.csv'.format(dir2, sample2))[0]
     a1result, a1extra = find_variants(open(a1fn, 'r'))
@@ -90,9 +90,9 @@ def compare(dir1, dir2, sample1, sample2, out, common=False):
         out.write('{0}\n'.format(a2extra[sample]))
 
 def main():
-    '''
+    """
         execute via command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Compare two analyses')
     parser.add_argument('--dir1', required=True, help='batch 1 directory')
     parser.add_argument('--dir2', required=True, help='batch 2 directory')

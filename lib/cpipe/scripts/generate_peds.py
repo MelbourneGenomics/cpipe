@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -26,7 +26,7 @@
 #   See main() for arguments
 #
 ###########################################################################
-'''
+"""
 
 import datetime
 import sys
@@ -36,12 +36,11 @@ def write_log(fh, msg):
     fh.write('{0}: {1}\n'.format(now, msg))
 
 def generate_ped(sample_id, pedigree_info, gender, log):
-    '''
+    """
         generate a ped file from the provided info
-    '''
-    lines = []
-    lines.append('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format('#FID', 'IID', 'PID', 'MID', 'Sex', 'Phenotype'))
-    
+    """
+    lines = ['{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format('#FID', 'IID', 'PID', 'MID', 'Sex', 'Phenotype')]
+
     # extract pedigree info
     if '=' not in pedigree_info:
         write_log(log, 'ERROR: sample {0} has invalid pedigree {1}. Format should be fid=mid,pid'.format(sample_id, pedigree_info))
@@ -69,9 +68,9 @@ def generate_ped(sample_id, pedigree_info, gender, log):
     return lines
 
 def generate_peds(metadata, log_fh):
-    '''
+    """
         returns a dictionary of the form sample -> ped
-    '''
+    """
     result = {}
     header = None
     sample_id = None
@@ -113,9 +112,9 @@ def generate_peds(metadata, log_fh):
     return result
 
 def write_peds(prefix, data):
-    '''
+    """
          write each item to the filesystem
-    '''
+    """
     for key in data:
         with open('{0}{1}.ped'.format(prefix, key), 'w') as fh_out:
             if data[key] is not None:

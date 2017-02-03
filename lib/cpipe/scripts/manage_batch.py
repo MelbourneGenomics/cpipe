@@ -9,13 +9,13 @@ from cpipe.batch import Batch
 import argparse
 
 
-def create_parser() -> argparse.ArgumentParser:
+def setup_parser(parser: argparse.ArgumentParser):
     """
     Creates the argument parser for the manage batch script
     """
 
-    parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
     subparsers = parser.add_subparsers(dest='command')
+    parser.set_defaults(func=execute)
     parser.add_argument('--mgha', '-m', required=False, default=False,
                         help='Use MGHA-specific validation rules')
 
@@ -98,7 +98,12 @@ def execute(args: argparse.Namespace):
         raise ValueError('Unknown command')
 
 
-if __name__ == '__main__':
-    parser = create_parser()
+def main():
+    parser = argparse.ArgumentParser(description='Manage Cpipe batches and metadata files')
+    setup_parser(parser)
     args = parser.parse_args()
     execute(args)
+
+
+if __name__ == '__main__':
+    main()

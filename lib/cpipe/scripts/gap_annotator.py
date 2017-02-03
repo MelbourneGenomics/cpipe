@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -30,7 +30,7 @@
 #   1.1 01-jul-2016 PG use bed co-ordinates
 #   1.2 31-aug-2016 PG change column ordering, column names, AA calculation
 ###########################################################################
-'''
+"""
 
 import collections
 import datetime
@@ -50,20 +50,20 @@ INCLUDE_END = 0
 
 
 class IntervalTree(object):
-    '''
+    """
          fast interval finder
-    '''
+    """
 
     def __init__(self):
-        '''
+        """
             dictionary of intervals
-        '''
+        """
         self.chroms = {}
 
     def insert(self, interval, linenum=0, other=None):
-        '''
+        """
             add a new interval
-        '''
+        """
         chrom = interval.chrom
         start = interval.start
         end = interval.end
@@ -73,9 +73,9 @@ class IntervalTree(object):
             self.chroms[chrom] = IntervalNode(start, end, linenum, other)
 
     def intersect(self, interval, report_func):
-        '''
+        """
             add a new interval
-        '''
+        """
         chrom = interval.chrom
         start = interval.start
         end = interval.end
@@ -83,25 +83,25 @@ class IntervalTree(object):
             self.chroms[chrom].intersect(start, end, report_func)
 
     def traverse(self, func):
-        '''
+        """
             iterate over all intervals
-        '''
+        """
         for item in list(self.chroms.values()):
             item.traverse(func)
 
 
 class IntervalNode(object):
-    '''
+    """
         an interval in a tree
-    '''
+    """
 
     def __init__(self, start, end, linenum=0, other=None):
-        '''
+        """
         Python lacks the binomial distribution, so we convert a
         uniform into a binomial because it naturally scales with
         tree size.  Also, python's uniform is perfect since the
         upper limit is not inclusive, which gives us undefined here.
-        '''
+        """
         self.priority = math.ceil((-1.0 / math.log(.5)) * math.log(-1.0 / (random.uniform(0, 1) - 1)))
         self.start = start
         self.end = end
@@ -113,9 +113,9 @@ class IntervalNode(object):
         self.other = other
 
     def insert(self, start, end, linenum=0, other=None):
-        '''
+        """
             add an interval to the tree
-        '''
+        """
         root = self
         if start > self.start:
             # insert to right tree
@@ -147,9 +147,9 @@ class IntervalNode(object):
         return root
 
     def rotateright(self):
-        '''
+        """
             rearrange tree
-        '''
+        """
         root = self.left
         self.left = self.left.right
         root.right = self
@@ -165,9 +165,9 @@ class IntervalNode(object):
         return root
 
     def rotateleft(self):
-        '''
+        """
             rearrange tree
-        '''
+        """
         root = self.right
         self.right = self.right.left
         root.left = self
@@ -183,9 +183,9 @@ class IntervalNode(object):
         return root
 
     def intersect(self, start, end, report_func):
-        '''
+        """
             find intersection
-        '''
+        """
         if start < self.end and end > self.start:
             report_func(self)
         if self.left and start < self.left.maxend:
@@ -194,9 +194,9 @@ class IntervalNode(object):
             self.right.intersect(start, end, report_func)
 
     def traverse(self, func):
-        '''
+        """
             find all
-        '''
+        """
         if self.left:
             self.left.traverse(func)
         func(self)
@@ -205,15 +205,15 @@ class IntervalNode(object):
 
 
 def traversal_handler_builder(gap_start, gap_end):
-    '''
+    """
         helper to traverse all
-    '''
+    """
     data = [None, 3e9, None]  # current best [interval, distance, direction_to_interval]
 
     def traversal_handler(interval):
-        '''
+        """
             closure for traversal
-        '''
+        """
         if data[0] is None:
             data[0] = interval
             if interval.start >= gap_end:
@@ -235,10 +235,10 @@ def traversal_handler_builder(gap_start, gap_end):
 
 
 def annotate_gap_from_ref(gap, data_source, log):
-    '''
+    """
         given a gap, annotate it
         return annotations, one for each overlap found
-    '''
+    """
     # find overlapping cds interval, or nearest
     target = []
     if gap['chr'] in data_source['cds'].chroms:
@@ -299,9 +299,9 @@ def annotate_gap_from_ref(gap, data_source, log):
 
 
 def annotate_gap_from_bed(gap, bed, log):
-    '''
+    """
         find overlaps in specified  bed
-    '''
+    """
     result = []
     if gap['chr'] in bed.chroms:
         target = []
@@ -315,26 +315,26 @@ def annotate_gap_from_bed(gap, bed, log):
 
 
 def write_log(log, msg):
-    '''
+    """
         write a date stamped message to log
-    '''
+    """
     now = datetime.datetime.now().strftime('%y%m%d-%H%M%S')
     if log is not None:
         log.write('%s: %s\n' % (now, msg))
 
 
 def run(cmd, log):
-    '''
+    """
         executes a system command
-    '''
+    """
     write_log(log, 'executing {0}\n'.format(cmd))
     os.system(cmd)
 
 
 def mean(items):
-    '''
+    """
         geometric average of a set of items
-    '''
+    """
     if len(items) == 0:
         return 0.
 
@@ -342,9 +342,9 @@ def mean(items):
 
 
 def median(items):
-    '''
+    """
       return the median of a list of items
-    '''
+    """
     sorted_list = sorted(items)
     if len(items) % 2 == 0:
         high = len(items) // 2
@@ -367,16 +367,16 @@ DEFAULT_NA = 'N/A'
 
 
 def write_line(target, items):
-    '''
+    """
         write csv to output
-    '''
+    """
     target.write('{0}\n'.format(','.join([str(item) for item in items])))
 
 
 def write_gap(gap, target, data_source, log, beds):
-    '''
+    """
       write out the found gap
-    '''
+    """
     # note that we want to write start and end as inclusive
 
     # annotate from bed files
@@ -467,9 +467,9 @@ def write_gap(gap, target, data_source, log, beds):
 
 
 def find_gaps(coverage, min_width, max_coverage, target, data_source, log, beds=None):
-    '''
+    """
         find gaps and annotate
-    '''
+    """
     if beds is None:
         beds = {}
     target.write('{0}\n'.format(','.join(HEADLINE + sorted(beds.keys()))))
@@ -524,21 +524,21 @@ Interval = collections.namedtuple('Interval', ['start', 'end', 'chrom'])
 
 
 def find_intersect(candidate_start, candidate_end, range_start, range_end):
-    '''
+    """
         find the overlapping region
-    '''
+    """
     if candidate_end <= range_start or candidate_start >= range_end:
         return None
     else:
-        return (max(candidate_start, range_start), min(candidate_end, range_end))
+        return max(candidate_start, range_start), min(candidate_end, range_end)
 
 
 def init_db(target, log, exclusions=None):
-    '''
+    """
         prepare annotation db
         @target: is refgene, and expects the following fields:
          - name(1), chrom(2), strand(3), cds_start(6), cds_end(7), count(8), exon_start(9), exon_end(10)
-    '''
+    """
     write_log(log, 'starting init_db...')
     if exclusions is None:
         exclusions = set()
@@ -594,9 +594,9 @@ def init_db(target, log, exclusions=None):
 
 
 def init_bed(target, target_name, log):
-    '''
+    """
         prepare interval file for bed
-    '''
+    """
     write_log(log, 'processing {0}...'.format(target_name))
     result = IntervalTree()
     i = 0
@@ -610,18 +610,18 @@ def init_bed(target, target_name, log):
 
 
 def download_db(log):
-    '''
+    """
         download data from ucsc
-    '''
+    """
     write_log(log, 'download_db: starting...')
     run("mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e 'select * from refGene' hg19 > gap.db", log)
     write_log(log, 'download_db: done')
 
 
 def build_exclusion_list(incoming_fh):
-    '''
+    """
         build a list of transcripts to exclude
-    '''
+    """
     result = set()
     for line in incoming_fh:
         result.add(line.strip().upper())
@@ -629,9 +629,9 @@ def build_exclusion_list(incoming_fh):
 
 
 def main():
-    '''
+    """
         parse command line and execute
-    '''
+    """
     import argparse
     parser = argparse.ArgumentParser(description='Generate gap report')
     parser.add_argument('--max_low_coverage', required=False, type=int, default=-1,

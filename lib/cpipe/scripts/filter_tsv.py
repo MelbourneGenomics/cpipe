@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 ###########################################################################
 #
 # This file is part of Cpipe.
@@ -24,24 +24,24 @@
 # Usage:
 #   filter_tsv.py --qual 20 < variants.tsv 1>filtered.tsv
 ####################################################################################
-'''
+"""
 
 import argparse
 import datetime
 import sys
 
 def write_log(log, msg):
-    '''
+    """
         write a date stamped message to log
-    '''
+    """
     now = datetime.datetime.now().strftime('%y%m%d-%H%M%S')
     if log is not None:
         log.write('%s: %s\n' % (now, msg))
 
 def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats, proband=''):
-    '''
+    """
         return true if the variant passes filter cutoffs
-    '''
+    """
     result = True
     # AF
     try:
@@ -93,9 +93,9 @@ def allow_variant(headers, fields, af_min, qual_min, dp_min, ad_min, stats, prob
     return result
 
 def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, proband='', reverse=False):
-    '''
+    """
         given variants from src, write to target those that pass the filter requirements
-    '''
+    """
     write_log(log, 'filter_tsv: starting. requirement: af >= {0} qual >= {1} dp >= {2} ad >= {3} proband "{4}"'.format(af_min, qual_min, dp_min, ad_min, proband))
     written = filtered = 0
     stats = {'AF': 0, 'DP': 0, 'QUAL': 0, 'AD': 0}
@@ -119,9 +119,9 @@ def filter_tsv(src, target, log, af_min=0.15, qual_min=5, dp_min=5, ad_min=2, pr
     write_log(log, 'filter_tsv: done. wrote {0} filtered {1} ({2:.1f}%). breakdown: {3}'.format(written, filtered, 100. * filtered / total, ', '.join(['{0}: {1} ({2:.1f}%)'.format(x, stats[x], 100. * stats[x] / total) for x in stats])))
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     parser = argparse.ArgumentParser(description='Filter TSVs')
     parser.add_argument('--af', type=float, default=0.15, help='minimum allele frequency')
     parser.add_argument('--qual', type=int, default=5, help='minimum quality')

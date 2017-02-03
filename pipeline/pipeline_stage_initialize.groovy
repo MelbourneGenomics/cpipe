@@ -289,36 +289,6 @@ set_target_info = {
     println "Target $target_name is processing samples $target_samples"
 }
 
-create_splice_site_bed = {
-    // note: this stage requires annovar
-
-    // If no splice region window is defined, simply set the 
-    if(!splice_region_window) {
-        branch.splice_region_bed_flag = ""
-        return
-    }
-
-    msg "Setting regions for calling / annotation of splice variants to $splice_region_window bp past exon boundary"
-
-    output.dir="../design"
-    produce(target_name + ".splice.bed", target_name + ".exons.bed") {
-        exec """
-            python $SCRIPTS/create_exon_bed.py  
-                -c -s $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file -
-              | $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $splice_region_window -i - > $output.bed
-
-            python $SCRIPTS/create_exon_bed.py  
-                -c $target_bed_file $ANNOVAR_DB/hg19_refGene.txt $transcripts_file $output2.bed
-        """
-
-        branch.splice_region_bed_flag = "-L $output1.bed"
-        branch.exon_bed_file = output2.bed
-    }
-
-    println "Splice region flat = $splice_region_bed_flag"
-    println "Exon bed file = $exon_bed_file"
-}
-
 sample_similarity_report = {
 
     doc "Create a report indicating the difference in count of variants for each combination of samples"

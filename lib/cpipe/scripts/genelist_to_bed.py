@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 # This script has been deprecated and may be removed.
 # Refer to combine_target_regions.py to generate bedfiles from gene lists
 ###########################################################################
@@ -28,12 +28,12 @@
 #     optional arguments:
 #     --exclude a file containing genes to exclude
 ####################################################################################
-'''
+"""
 
 import sys
 
 def filter_bed(genelists, bed_in, bed_out, log, exclude=None):
-    ''' get the list of proposed genes '''
+    """ get the list of proposed genes """
     genes = set()
     for arg in genelists:
         for line in open(arg, 'r'):
@@ -83,9 +83,9 @@ def filter_bed(genelists, bed_in, bed_out, log, exclude=None):
         log.write('Excluded: %s\n' % ' '.join(sorted(list(blocked))))
 
 def main():
-    '''
+    """
         run from command line
-    '''
+    """
     import argparse
     parser = argparse.ArgumentParser(description='Convert genelists to bed file')
     parser.add_argument('--exclude', dest='exclude', required=False, help='file containing genes to exclude')
