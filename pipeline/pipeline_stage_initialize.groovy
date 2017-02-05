@@ -334,7 +334,7 @@ sample_similarity_report = {
     // noverify has been added as a workaround to this stage failing with a java verification error
     produce("similarity_report.txt") {
         exec """
-            $JAVA -Xmx4g -noverify -cp $GROOVY_HOME/embeddable/groovy-all-2.4.6.jar:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
+            $JAVA -Xmx4g -cp -noverify $GROOVY_ALL_JAR:$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar VCFSimilarity $inputs.vcf > $output.txt
              """
     }
 }

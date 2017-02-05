@@ -142,8 +142,19 @@ SAMTOOLS="$TOOLS/samtools/1.3"
 // FastQC tool
 FASTQC="$TOOLS/fastqc/0.11.5"
 
+// Location of groovy installation
+GROOVY_VERSION="2.4.8"
+
+GROOVY_HOME="$TOOLS/groovy/$GROOVY_VERSION"
+
+// GROOVY binary
+GROOVY="$GROOVY_HOME/bin/groovy"
+
+// Groovy JAR for running Groovy compiled classes within pipeline
+GROOVY_ALL_JAR="$GROOVY_HOME/embeddable/groovy-all-${GROOVY_VERSION}.jar"
+
 // Utilties for processing NGS data in Java/Groovy
-GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.5"
+GROOVY_NGS="$TOOLS/groovy-ngs-utils/1.0.6"
 
 // Set location of Variant Effect Predictor here
 // and store it in the local directory called 'vep_cache'
