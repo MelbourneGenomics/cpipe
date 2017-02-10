@@ -260,16 +260,23 @@ transcript_filter = {
  }
 
 variant_analysis = segment {
-    vcf_normalize +
-    vcf_filter_child +
-    [ 
-        vcf_annotate +
-        vcf_post_annotation_filter + // vep filter
-        vcf_vcfanno +
-        vcf_to_table +
-        filter_table +
-        annotate_custom_regions +
-        table_to_lovd +
-        transcript_filter 
-   ] + (ENABLE_SEQR_EXPORT ?  [ vcf_annotate.using(USE_REFSEQ:false) + create_seqr_project ] : [])
+    def standard_analysis =
+        [
+            vcf_annotate +
+            vcf_post_annotation_filter + // vep filter
+            vcf_vcfanno +
+            vcf_to_table +
+            filter_table +
+            annotate_custom_regions +
+            table_to_lovd +
+            transcript_filter
+       ]
+
+    if(ENABLE_SEQR_EXPORT) {
+         vcf_normalize + vcf_filter_child + [ standard_analysis, vcf_annotate.using(USE_REFSEQ:false) + create_seqr_project]
+    }
+    else {
+         vcf_normalize + vcf_filter_child + standard_analysis                                                                                                                                         
+    }
 }
+
