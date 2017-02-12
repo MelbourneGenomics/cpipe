@@ -1,5 +1,8 @@
 import groovy.util.logging.Log
 
+import java.nio.file.Files
+import java.util.zip.GZIPOutputStream
+
 /**
  * 
  * Creates a directory structure with all the necessary files ready to import into Seqr
@@ -8,6 +11,7 @@ import groovy.util.logging.Log
  */
 @Log
 class CreateSeqrProject {
+    private List<String> vcfs
     
     private Set allParents
     
@@ -34,7 +38,33 @@ class CreateSeqrProject {
         
         createPEDFile()
         
+        copyVCFs()
+        
         createYAMLFile()
+    }
+    
+    /**
+     * Copy all the VCFs for the project into the seqr project directory.
+     * 
+     * To save space, they are gzipped. Strictly would not be necessary, but
+     * is nice to make a completely independent Seqr directory for export.
+     */
+    void copyVCFs() {
+        vcfs = getVCFFiles()
+        
+        File variantsDir = new File(seqrDir, "variants")
+        variantsDir.mkdirs()
+        
+        vcfs.each { vcfPath ->
+            File vcfGzFile = new File(variantsDir, new File(vcfPath).name + '.gz')
+            vcfGzFile.withOutputStream { os ->
+                
+                log.info "Gzip $vcfPath to $vcfGzFile.absolutePath"
+                new GZIPOutputStream(os).withStream { vcfGzStream ->
+                    Files.copy(new File(vcfPath).toPath(), vcfGzStream) 
+                }
+            }
+        }
     }
     
     /**
@@ -48,6 +78,8 @@ class CreateSeqrProject {
      * Create the final YAML file, ready for import
      */
     void createYAMLFile() {
+        
+        
         // Create the YAML file
         new File(seqrDir,"project.yaml").text = 
         """
@@ -61,7 +93,7 @@ class CreateSeqrProject {
               - 'samples.ped'
             
             vcf_files:
-            ${getVCFFiles().collect {"  - " + it}*.plus('\n').join('')}
+            ${vcfs.collect {"  - variants/" + new File(it).name}*.plus('\n').join('')}
 
         """.stripIndent()
     }
