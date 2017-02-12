@@ -106,7 +106,7 @@ vcf_annotate = {
                 grep '^#' $input.vcf > $output.vcf;
             else
                 PATH="$PATH:$HTSLIB"
-                perl $VEP/variant_effect_predictor.pl 
+                $PERL $VEP/variant_effect_predictor.pl 
                     --allele_number
                     --assembly GRCh37 
                     --cache 
