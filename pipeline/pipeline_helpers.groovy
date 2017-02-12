@@ -24,13 +24,22 @@
 
 // remove spaces from gene lists and point to a new sample metadata file
 // note that this isn't run through bpipe
-correct_sample_metadata_file = {
+correct_sample_metadata_file = { sample_meta_data_file ->
     def target = new File('results')
     if( !target.exists() ) {
         target.mkdirs()
     }
-    [ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $it > results/samples.corrected" ].execute().waitFor()
-    return "results/samples.corrected"
+    
+    def outputFile = "results/samples.corrected"
+    
+    if(file(outputFile).exists() && file(outputFile).lastModified() > file(sample_meta_data_file).lastModified()) {
+        println "Skip creating corrected meta data file (up-to-date)"
+    }
+    else {
+        println "Creating corrected meta data file"
+        println([ "sh", "-c", "python $SCRIPTS/correct_sample_metadata_file.py < $sample_meta_data_file > $outputFile" ].execute().text)
+    }
+    return outputFile
 }
 
 /////////////////////////////////////////////////////////
