@@ -96,11 +96,11 @@ check_tools = {
         """
     }
 
-    if(file(GROOVY_NGS).name != "1.0.5")
-        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.5 (current = ${file(GROOVY_NGS).name}). Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
+    if(file(GROOVY_NGS).name != "1.0.6")
+        fail "This version of Cpipe requires GROOVY_NGS >= 1.0.6 (current = ${file(GROOVY_NGS).name}). Please edit config.groovy to set the latest version of tools/groovy-ngs-utils"
 
-    if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.6") 
-        fail "This version of Cpipe requires GROOVY >= 2.4.6. Please edit config.groovy to set the latest version of GROOVY"
+    if(file(GROOVY)?.parentFile?.parentFile?.name != "2.4.8") 
+        fail "This version of Cpipe requires GROOVY >= 2.4.8. Please edit config.groovy to set the latest version of GROOVY"
 
     branch.UPDATE_VARIANT_DB = UPDATE_VARIANT_DB
     branch.ANNOTATION_VARIANT_DB = ANNOTATION_VARIANT_DB
