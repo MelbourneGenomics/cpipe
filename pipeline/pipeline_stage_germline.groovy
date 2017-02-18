@@ -36,8 +36,7 @@ germline_genotype_gvcfs = {
     // java -Xmx24g -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T GenotypeGVCFs -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --disable_auto_index_creation_and_locking_when_reading_rods --num_threads 1 --variant 00NA12877.hap.raw.g.vcf --variant 00NA12878.hap.raw.g.vcf --variant 00NA12879.hap.raw.g.vcf --out txxxx.genotype.raw.fewerA.vcf -ped txxxx.ped -log txxxx.GenotypeGVCFs.fewerA.log --dbsnp /vlsci/VR0320/shared/production/1.0.4/hg19/dbsnp_138.hg19.vcf -A AlleleBalance -A VariantType
     output.dir="variants"
 
-    var call_conf:5.0, 
-        emit_conf:5.0
+    var call_conf:5.0
 
     produce("${sample}.individual.genotype.raw.vcf") {
         from("variants/${sample}.hc.g.vcf") {
@@ -53,7 +52,6 @@ germline_genotype_gvcfs = {
                     -A AlleleBalance
                     -A VariantType
                     -stand_call_conf $call_conf 
-                    -stand_emit_conf $emit_conf
             """, "gatk_genotype"
         }
     }
