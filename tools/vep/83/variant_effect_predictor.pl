@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+ #!$PERLDIR/bin/perl 
 
 =head1 LICENSE
 
