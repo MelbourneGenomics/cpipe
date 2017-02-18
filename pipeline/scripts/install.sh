@@ -172,8 +172,10 @@ fi
             cp -v pipeline/config.groovy.template pipeline/config.groovy
         fi
 
+
         BASE=`pwd`
         set_config_variable BASE "$BASE"
+
         load_config
 }
 
@@ -248,9 +250,9 @@ else
         # convert ../vep_cache to absolute path
         VEP_CACHE=`echo "$VEP" | sed 's/\/[^\/]*$/\/vep_cache/'`
         msg "INFO: VEP is installing homo_sapiens_vep"
-        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        $PERL INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_vep --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         msg "INFO: VEP is installing homo_sapiens_refseq"
-        perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
+        $PERL INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_refseq --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         #msg "INFO: VEP is installing homo_sapiens_merged"
         #perl INSTALL.pl --CACHEDIR $VEP_CACHE --AUTO acf --SPECIES homo_sapiens_merged --ASSEMBLY GRCh37 || err "Failed to run VEP installer"
         # we don't run convert_cache as it (currently) messes up the frequency data (gmaf, etc)
