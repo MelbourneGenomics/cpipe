@@ -313,4 +313,6 @@ ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/vep_phenotype_associated.sort.bed"
 ENABLE_SEQR_EXPORT=false
 
 // custom annotation for variants in specified bed file
-ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/vep_phenotype_associated.sort.bed"
+// VCGS specific
+GAP_ANNOTATOR_CUSTOM_BEDS="$ANNOTATIONS/ENSEMBL/GRCH37/Homo_sapiens_clinically_associated_ensemble-release-82.snvs.bed"
+ANNOTATE_CUSTOM_REGIONS="$ANNOTATIONS/ENSEMBL/GRCH37/Homo_sapiens_clinically_associated_ensemble-release-82.snvs.bed"
