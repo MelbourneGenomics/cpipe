@@ -363,17 +363,21 @@ def generate_report(summaries, karyotype, meta, threshold, categories, conversio
     out.write('**Observed Mean Coverage**   | {0:.1f}\n'.format(summary['mean']))
     out.write('**Observed Median Coverage** | {0}\n'.format(summary['median']))
 
-    mapped_reads = int(metrics['read_pairs_examined']) * 2
-    on_target_reads = metrics['on_target']
-    unmapped_reads = int(metrics['unmapped_reads'])
-    total_reads = unmapped_reads + mapped_reads + int(metrics['unpaired_reads_examined'])
+    mapped_reads = int(metrics.get('read_pairs_examined','0')) * 2
+    on_target_reads = metrics.get('on_target',0)
+    unmapped_reads = int(metrics.get('unmapped_reads','0'))
+    total_reads = unmapped_reads + mapped_reads + int(metrics.get('unpaired_reads_examined',0))
+    
+    def perc(a,b):
+        return 100. * float(a+1) / float(b+1)
 
     # this is for python2.6 compatibility with 000 separators
     out.write('**Total Reads** | {0}\n'.format(group_number(total_reads)))
-    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(unmapped_reads), 100. * unmapped_reads / total_reads))
-    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(mapped_reads), 100. * mapped_reads / total_reads))
+    out.write('**Unmapped Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(unmapped_reads), perc(unmapped_reads,total_reads)))
+    out.write('**Mapped Paired Reads (% of total)** | {0} ({1:.1f}%)\n'.format(group_number(mapped_reads), perc(mapped_reads, total_reads)))
 
-    out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(100. * on_target_reads / mapped_reads, 100. * (1. - 1. * on_target_reads / mapped_reads)))
+    out.write('**% Mapped On Target (% off target)** | {0:.1f}% ({1:.1f}%)\n'.format(perc(on_target_reads, mapped_reads), 
+                                                                                     100. * (1. - 1. * (on_target_reads+1) / (mapped_reads+1))))
 
     # coverage uniformity
     out.write('**% Coverage within 80% of Mean** | {0:.1f}%\n'.format(summary['mean_stats'][0]))
@@ -509,12 +513,18 @@ def main():
     if args.write_karyotype:
         write_karyotype(open(args.write_karyotype, 'w'), karyotype, sample)
     categories = build_categories(open(args.gc, 'r'), sample['prioritised_genes'], log=sys.stderr)
-    metrics = build_metrics(open(args.metrics, 'r'), open(args.ontarget, 'r'), log=sys.stderr)
+    
+    if args.metrics:
+        metrics = build_metrics(open(args.metrics, 'r'), open(args.ontarget, 'r'), log=sys.stderr)
+    else:
+        metrics = {}
+        
     capture = build_capture(open(args.gene_cov, 'r'), log=sys.stderr)
     if args.fragments:
         fragments = parse_tsv(open(args.fragments, 'r'))
     else:
         fragments = None
+        
     generate_report(summaries, karyotype, sample, args.threshold, categories, args.classes, metrics, capture, args.anonymous, fragments, args.padding, out=sys.stdout, log=sys.stderr)
 
 if __name__ == '__main__':
