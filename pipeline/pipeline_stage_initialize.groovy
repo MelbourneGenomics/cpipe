@@ -291,6 +291,10 @@ set_target_info = {
     println "Target $target_name is processing samples $target_samples"
 }
 
+init_analysis_profile = {
+    // dummy stage provided to allow for customization of each analysis profile
+}
+
 create_splice_site_bed = {
     // note: this stage requires annovar
 
@@ -475,7 +479,7 @@ finish_batch_run = segment {
 
 // configure target regions and other settings for each profile
 initialize_profiles = segment {
-    set_target_info // + 
+    set_target_info + init_analysis_profile
     // create_splice_site_bed // currently disabled, not used (and requires annovar)
 }
 
