@@ -1,0 +1,3 @@
+[submodule "tools/haloplex_dsd"]
+	path = tools/haloplex_dsd
+	url = git@git.mcri.edu.au:simon.sadedin/haloplex_dsd.git
