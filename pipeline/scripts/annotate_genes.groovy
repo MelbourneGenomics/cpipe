@@ -47,16 +47,10 @@ if(args.size() > 1) {
 }
 
 // Load refgene database to check annotations here
-refGenes = null
+RefGenes refGenes = null
 if(opts.r) {
     err.println "Loading genes from RefGene database ..."
-    refGenes = new BED()
-    new File(opts.r).eachLine { line->
-        def fields = line.split('\t')
-        def (chr,start,end,gene) = [fields[2],fields[4].toInteger(),fields[5].toInteger(),fields[12]]
-        
-        refGenes.add(chr,start,end,gene)
-    }
+    refGenes = new RefGenes(opts.r)
     err.println "Finished."
 }
 
@@ -80,7 +74,7 @@ new BED(args[0]).eachRange { chr, start,end ->
                 gene_chr[gene] = chr
 
         if(refGenes != null) {
-            overlappingGenes = refGenes.getOverlaps(chr,start,end)*.extra.unique()
+            overlappingGenes = refGenes.getGenes(new Region(chr,start,end)).unique()
             if(!(gene in overlappingGenes)) {
                 if(geneBed)
                     err.println "ERROR: Gene $gene is annotated to both $chr and ${gene_chr[gene]} at $chr:$start-${end}. Correct gene is ${overlappingGenes} from UCSC annotations"
