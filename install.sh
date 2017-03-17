@@ -4,7 +4,8 @@
 set -e
 
 # Set variables
-PYTHON_VERSION="3.6.0"
+PYTHON_VERSION='3.6.0'
+PYTHON_INTERPRETER='python3.6'
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
 export CPIPE_ROOT=$ROOT
@@ -127,7 +128,7 @@ fi
                 popd
 
                 # Make a virtual environment
-                pyvenv ${PYTHON}
+                ${PYTHON_INTERPRETER} -m venv ${PYTHON}
 
                 # Delete the temporary files
                 rm -rf ${TEMP_SUBDIR}

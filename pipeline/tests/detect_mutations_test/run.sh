@@ -4,13 +4,14 @@
 #
 HERE=`pwd`
 
-# The variant database we will use - we do not want to interfere with any 
+# The variant database we will use - we do not want to interfere with any
 # previous variant database
 VARIANT_DB=$HERE/variants.db
 
-BATCH_DIR=$BASE/batches/mutation_detection
+BATCH_NAME=mutation_detection
+BATCH_DIR=${CPIPE_ROOT}/batches/${BATCH_NAME}
 
-cd $BASE
+cd ${CPIPE_ROOT}
 if [ -e $BATCH_DIR ];
 then
     rm -rf $BATCH_DIR
@@ -19,11 +20,8 @@ fi
 msg "Creating directories ..."
 mkdir -p $BATCH_DIR/data || err "Unable to create batch directory"
 
-msg "Copying test data ..."
-cp -v $HERE/data/*.fastq.gz $BATCH_DIR/data || err "Unable to copy data to batch directory"
-
 msg "Creating batch using CARDIOM analysis profile ..."
-./pipeline/scripts/create_batch.sh `basename $BATCH_DIR` CARDIOM || err "Failed to create batch"
+manage_batch create ${BATCH_NAME} --profile CARDIOM --data ${HERE}/data/*.fastq.gz --exome ${CPIPE_ROOT}/designs/genelists/exons.bed --force || err "Failed to create batch"
 
 pushd $BATCH_DIR/analysis
 

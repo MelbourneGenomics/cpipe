@@ -3,6 +3,7 @@ import os
 
 BASE = Path(os.environ.get('CPIPE_ROOT'))
 BATCHES = BASE / 'batches'
+PIPELINE = BASE / 'pipeline'
 DESIGNS = BASE / 'designs'
 DESIGN_LIST = set([f.stem for f in DESIGNS.iterdir()])
 CLASSPATH = BASE / 'tools/java_libs'

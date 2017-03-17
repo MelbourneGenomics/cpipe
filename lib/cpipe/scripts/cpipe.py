@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import unittest
 from subprocess import check_output
 from os import environ
 from cpipe import arg_validation
@@ -19,7 +20,7 @@ def run(cmd, **kwargs):
 
 def check_java(args):
     """Run the java check if necessary"""
-    if args.check_java:
+    if args.no_java_check is not None:
         DoitMain().run(['check_java'])
 
 
@@ -34,8 +35,10 @@ def run_pipeline(args):
 
 def test_pipeline(args):
     check_java(args)
-    run(paths / 'pipeline/scripts/run_unit_tests.sh')
-    run(f"{paths / 'pipeline/scripts/run_tests.sh'} detect_mutations_test")
+    testsuite = unittest.TestLoader().discover('cpipe.test', pattern='*')
+    unittest.TextTestRunner(verbosity=1).run(testsuite)
+
+    run('run_tests detect_mutations_test')
 
 
 def main():
@@ -45,7 +48,7 @@ def main():
     # Run command
     run_parser = subparsers.add_parser('run', help='Runs the analysis pipeline')
     run_parser.add_argument('batch', type=arg_validation.existing_batch)
-    run_parser.add_argument('--no-java-check', '-j', type=arg_validation.existing_batch)
+    run_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
     run_parser.add_argument('bpipe_opts', type=arg_validation.existing_batch, nargs=argparse.REMAINDER)
     run_parser.set_defaults(func=run_pipeline)
 
@@ -56,6 +59,7 @@ def main():
 
     # Test command
     test_parser = subparsers.add_parser('test', help='Run the cpipe test suite')
+    test_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
     test_parser.set_defaults(func=test_pipeline)
 
     # Design command

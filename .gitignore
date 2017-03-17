@@ -4,3 +4,4 @@
 /tasks/nectar/current.manifest.json
 *.pyc
 *.swp
+tmpdata

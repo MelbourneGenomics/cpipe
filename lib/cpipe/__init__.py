@@ -66,6 +66,3 @@ def read_config_groovy():
                         break
 
         return result
-
-
-__all__ = ["Batch", "Design", "read_config_groovy", "read_metadata"]

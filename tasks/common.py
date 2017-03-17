@@ -70,6 +70,7 @@ bash_header = '''
 MANUAL_INSTALL = get_var('mode', 'auto')
 PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8').strip())
 
+
 def replace_symlink(target, link):
     if os.path.islink(link) or os.path.isfile(link):
         os.unlink(link)
@@ -190,7 +191,6 @@ def cmd(command, **kwargs):
 
 
 def sh(command, **kwargs):
-
     # Set default options and override then with the user specified options
     defaults = {
         'executable': 'bash',
@@ -200,6 +200,7 @@ def sh(command, **kwargs):
     }
     defaults.update(kwargs)
     subprocess.check_call(bash_header + command, **defaults)
+
 
 def has_swift_auth():
     swift_credentials = {
@@ -215,11 +216,14 @@ def has_swift_auth():
     # from the object store
     return swift_credentials.issubset(list(os.environ.keys()))
 
+
 def manual_install():
     return MANUAL_INSTALL == 'manual'
 
+
 def swift_install():
     return MANUAL_INSTALL == 'auto'
+
 
 def in_docker():
     return os.path.exists('/.dockerenv')

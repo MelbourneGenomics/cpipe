@@ -27,14 +27,14 @@ def setup_parser(parser: argparse.ArgumentParser):
                                                 help='Creates a new batch, including data, metadata file and configuration file')
     create_batch_parser.add_argument('name', type=batch_name, help='The name for the new batch')
     create_batch_parser.add_argument('--data', '-d', required=True, help='The fastq files to add to the batch',
-                                     nargs='+', type=path_with_ext(['fastq', '.gz']))
+                                     nargs='+', type=path_with_ext(['.fastq', '.gz']))
     create_batch_parser.add_argument('--exome', '-e', required=True,
                                      help='A bed file indicating which regions are covered by the sequencing '
-                                          'procedure', type=path_with_ext(['bed']))
+                                          'procedure', type=path_with_ext(['.bed']))
     create_batch_parser.add_argument('--profile', '-p', required=False,
                                      help='The analysis profile (gene list) to use for '
                                           'the analysis of this batch', type=profile, default='ALL')
-    create_batch_parser.add_argument('--force', '-f', required=False, default=False,
+    create_batch_parser.add_argument('--force', '-f', required=False, default=False, nargs='?', const=True,
                                      help='Replace an existing batch with'
                                           ' that name, if it already exists')
     create_batch_parser.add_argument('--mode', '-m', required=False, default='copy',
@@ -79,7 +79,7 @@ def execute(args: argparse.Namespace):
         for batch in Batch.list_all():
             print(batch.name)
     elif args.command == 'create':
-        Batch.create(args.batch, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
+        Batch.create(args.name, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
     elif args.command == 'edit':
         args.batch.metadata.edit()
     elif args.command == 'view':

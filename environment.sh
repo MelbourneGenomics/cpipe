@@ -1,10 +1,26 @@
 #!/usr/bin/env bash
+# Local variables
+CONFIG_FILE=${CPIPE_ROOT}/pipeline/config.groovy
 
 # Util functions
 function join() {
     local IFS=$1
     shift
     echo "$*"
+}
+
+function load_config {
+    CONFIG=`sed 's/\/\/.*$//' $CONFIG_FILE`
+    eval "$CONFIG"
+}
+
+function set_config_variable {
+    NAME="$1"
+    VALUE="$2"
+    cp "$CONFIG_FILE" "$CONFIG_FILE.tmp"
+    sed 's,'^[\s]*$NAME'=\("\?\).*$,'$NAME'=\1'$VALUE'\1,g' ${CONFIG_FILE}.tmp > "$CONFIG_FILE"
+    rm "${CONFIG_FILE}.tmp"
+    load_config
 }
 
 # Work out the directory name
@@ -29,7 +45,6 @@ export TMPDIR #TMPDIR is set in config.groovy.
 export CPIPE_ROOT=${ROOT}
 
 # Load config groovy
-source ${ROOT}/lib/config_groovy_util.sh
 load_config
 
 # Load virtualenv
