@@ -3,6 +3,8 @@ import argparse
 import unittest
 from subprocess import check_output
 from os import environ
+
+import subprocess
 from cpipe import arg_validation
 from collections.abc import Sequence
 from doit.doit_cmd import DoitMain
@@ -12,11 +14,10 @@ from cpipe import paths
 
 
 def run(cmd, **kwargs):
-    if isinstance(cmd, Sequence) and not isinstance(cmd, str):
-        check_output(cmd, cwd=environ.get('CPIPE_ROOT'), **kwargs)
-    else:
-        check_output(cmd, shell=True, cwd=environ.get('CPIPE_ROOT'), **kwargs)
+    if isinstance(cmd, str):
+        kwargs['shell'] = True
 
+    subprocess.run(cmd, cwd=environ.get('CPIPE_ROOT'), **kwargs)
 
 def check_java(args):
     """Run the java check if necessary"""
@@ -70,6 +71,7 @@ def main():
     # Parse then execute
     args = parser.parse_args()
     args.func(args)
+
 
 if __name__ == '__main__':
     main()

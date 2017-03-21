@@ -49,7 +49,7 @@ class Batch:
 
         # Write the config file
         with batch.config_file.open('w') as config_file:
-            config_file.write(f'EXOME_TARGET={exome}')
+            config_file.write(f'EXOME_TARGET="{exome}"')
 
         # Group fastqs into samples
         for id, fastqs in groupby(data, lambda x: x.name.split('_')[0]):
@@ -134,6 +134,7 @@ class Batch:
         """
         self.path.mkdir(exist_ok=True)
         self.data.mkdir(exist_ok=True)
+        self.analysis.mkdir(exist_ok=True)
         self.metadata.create_empty()
         self.config_file.touch(exist_ok=True)
 

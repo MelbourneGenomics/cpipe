@@ -30,20 +30,22 @@ import sys
 
 GENELIST_COLUMN = 'Prioritised_Genes'
 
+
 def correct_column(value):
     """
         takes spaces out of the gene list while leaving in spaces that separate categories
         @value: uncorrected genelist
         @returns: corrected genelist
     """
-    parts = re.split('( *[^0-9:]*[0-9]+:)', value.strip()) # 3:
+    parts = re.split('( *[^0-9:]*[0-9]+:)', value.strip())  # 3:
     corrected = []
     for part in parts:
         if part.endswith(':'):
-            corrected.append(re.sub('^ +', ' ', part)) # ensure max 1 space separating gene list
+            corrected.append(re.sub('^ +', ' ', part))  # ensure max 1 space separating gene list
         else:
-            corrected.append(part.replace(' ', '')) # no spaces in actual gene list
+            corrected.append(part.replace(' ', ''))  # no spaces in actual gene list
     return ''.join(corrected)
+
 
 def correct_metadata(src, dest):
     """
@@ -71,6 +73,10 @@ def correct_metadata(src, dest):
                 fields[target_column] = correct_column(fields[target_column])
                 dest.write('%s\n' % ('\t'.join(fields)))
 
-if __name__ == '__main__':
+
+def main():
     correct_metadata(sys.stdin, sys.stdout)
 
+
+if __name__ == '__main__':
+    main()
