@@ -44,19 +44,19 @@ calc_coverage_stats = {
         exec """
           mkdir -p "$safe_tmp_dir"
         
-          $BEDTOOLS/bin/bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET | sort -k 1,1 -k2,2n > "$safe_tmp_dir/intersect.bed"
+          bedtools intersect -a $target_bed_file.${sample}.bed -b $EXOME_TARGET | sort -k 1,1 -k2,2n > "$safe_tmp_dir/intersect.bed"
 
-          $BEDTOOLS/bin/bedtools bamtobed -i $input.recal.bam | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
+          bedtools bamtobed -i $input.recal.bam | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
 
-          $BEDTOOLS/bin/coverageBed -d -sorted -a "$safe_tmp_dir/intersect.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output.cov.gz
+          bin/coverageBed -d -sorted -a "$safe_tmp_dir/intersect.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output.cov.gz
 
           sort -k 1,1 -k2,2n < $EXOME_TARGET > "$safe_tmp_dir/exome.bed"
 
-          $SAMTOOLS/samtools view -b -q $EXOME_MAPQ $input.recal.bam | $BEDTOOLS/bin/bedtools bamtobed -i stdin | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
+          samtools view -b -q $EXOME_MAPQ $input.recal.bam | $BEDTOOLS/bin/bedtools bamtobed -i stdin | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
 
-          $BEDTOOLS/bin/coverageBed -d -sorted -a "$safe_tmp_dir/exome.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output2.exome.gz
+          coverageBed -d -sorted -a "$safe_tmp_dir/exome.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output2.exome.gz
         
-          $SAMTOOLS/samtools view -L $COMBINED_TARGET $input.recal.bam | wc | awk '{ print \$1 }' > $output3.ontarget.txt
+          samtools view -L $COMBINED_TARGET $input.recal.bam | wc | awk '{ print \$1 }' > $output3.ontarget.txt
 
           rm -r "$safe_tmp_dir"
         """, "calc_coverage_stats"
@@ -91,7 +91,7 @@ calculate_qc_statistics = {
     // transform("bam") to(sample + ".fragments.tsv") {
     produce("${sample}.fragments.tsv") {
         exec """
-            $SAMTOOLS/samtools view $input.recal.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
+            samtools view $input.recal.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
         """, "calculate_qc_statistics"
     }
     stage_status("calculate_qc_statistics", "exit", sample)
@@ -163,7 +163,7 @@ gap_report = {
     produce("${run_id}_${sample}.gap.csv") {
         from("$input_coverage_file") {
             exec """
-                python $SCRIPTS/gap_annotator.py --max_low_coverage $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input_coverage_file --db $BASE/designs/genelists/refgene.txt --beds ${GAP_ANNOTATOR_CUSTOM_BEDS} > $output.csv
+                gap_annotator --max_low_coverage $LOW_COVERAGE_THRESHOLD --min_gap_width $LOW_COVERAGE_WIDTH --coverage $input_coverage_file --db $BASE/designs/genelists/refgene.txt --beds ${GAP_ANNOTATOR_CUSTOM_BEDS} > $output.csv
             """, "gap_report"
         }
     }
@@ -185,9 +185,9 @@ summary_report = {
     produce("${run_id}_${sample}.summary.htm", "${run_id}_${sample}.summary.md", "${run_id}_${sample}.summary.karyotype.tsv") {
         from("$input_exome_file", "$input_ontarget_file", "$input_fragments_file") {
             exec """
-                python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold $QC_THRESHOLD --classes GOOD:$QC_GOOD:GREEN,PASS:$QC_PASS:ORANGE,FAIL:$QC_FAIL:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
+                qc_report --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold $QC_THRESHOLD --classes GOOD:$QC_GOOD:GREEN,PASS:$QC_PASS:ORANGE,FAIL:$QC_FAIL:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
-                python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+                markdown2 --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
             """, "summary_report"
         }
 
@@ -225,7 +225,7 @@ summary_report_trio = {
             exec """
                 cat ${sample_string} > $output.md
 
-                python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+                markdown2 --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
             """
         }
     }

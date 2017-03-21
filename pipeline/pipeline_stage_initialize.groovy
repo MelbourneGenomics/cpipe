@@ -116,9 +116,9 @@ update_gene_lists = {
             exec """
                 mkdir -p "../design"
 
-                python $SCRIPTS/find_new_genes.py --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $input1
+                find_new_genes --reference "$BASE/designs/genelists/exons.bed" --exclude "$BASE/designs/genelists/incidentalome.genes.txt" --target ../design < $input1
 
-                python $SCRIPTS/update_gene_lists.py --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
+                update_gene_lists --source ../design --target "$BASE/designs" --log "$BASE/designs/genelists/changes.genes.log"
 
                 touch $output1
             """, "update_gene_lists"
@@ -143,10 +143,10 @@ create_combined_target = {
 
     produce("combined_target_regions.bed") {
         exec """
-            python $SCRIPTS/combine_target_regions.py --genefiles $diseaseGeneLists --genefiles_required ../design/*.addonce.*.genes.txt --bedfiles $diseaseBedFiles $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed |
-            cut -f 1,2,3 | 
-            $BEDTOOLS/bin/bedtools sort | 
-            $BEDTOOLS/bin/bedtools merge > $output.bed
+            combine_target_regions --genefiles $diseaseGeneLists --genefiles_required ../design/*.addonce.*.genes.txt --bedfiles $diseaseBedFiles $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed |
+            cut -f 1,2,3 |
+            bedtools sort |
+            bedtools merge > $output.bed
         """, "create_combined_target"
     }
 
@@ -166,11 +166,11 @@ create_synonymous_target = {
         exec """
             mkdir -p "$safe_tmp_dir"
 
-            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b $ALLOW_SYNONYMOUS_INTRON > "$safe_tmp_dir/intron.bed"
+            bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b $ALLOW_SYNONYMOUS_INTRON > "$safe_tmp_dir/intron.bed"
 
-            $BEDTOOLS/bin/bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b -$ALLOW_SYNONYMOUS_EXON | python $SCRIPTS/filter_bed.py > "$safe_tmp_dir/exon.bed"
+            bedtools slop -i $input.bed -g $HG19_CHROM_INFO -b -$ALLOW_SYNONYMOUS_EXON | filter_bed > "$safe_tmp_dir/exon.bed"
 
-            $BEDTOOLS/bin/bedtools subtract -a "$safe_tmp_dir/intron.bed" -b "$safe_tmp_dir/exon.bed" > $output.bed
+            bedtools subtract -a "$safe_tmp_dir/intron.bed" -b "$safe_tmp_dir/exon.bed" > $output.bed
 
             rm -r "$safe_tmp_dir"
         """, "create_synonymous_target"
@@ -184,7 +184,7 @@ build_capture_stats = {
     output.dir = "qc"
     produce( "exon_coverage_stats.txt" ) {
         exec """
-            python $SCRIPTS/calculate_exon_coverage.py --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
+            calculate_exon_coverage --capture $EXOME_TARGET --exons $BASE/designs/genelists/exons.bed > qc/exon_coverage_stats.txt
         """, "build_capture_stats"
     }
     stage_status("build_capture_stats", "exit", "n/a");
@@ -195,7 +195,7 @@ generate_pipeline_id = {
     output.dir="results"
     produce("run_id") {
       exec """
-        python $SCRIPTS/update_pipeline_run_id.py --id $ID_FILE --increment True > $output
+      update_pipeline_run_id --id $ID_FILE --increment True > $output
       """
     }
    // This line is necessary on some distributed file systems (e.g. MCRI) to ensure that
@@ -240,9 +240,9 @@ set_target_info = {
         exec """
             if [ -e $BASE/designs/$target_name/${target_name}.bed ];
             then
-                python $SCRIPTS/combine_target_regions.py --bedfiles $BASE/designs/$target_name/${target_name}.bed --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
+                combine_target_regions --bedfiles $BASE/designs/$target_name/${target_name}.bed --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
             else
-                python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
+                combine_target_regions --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.*.genes.txt --exons $BASE/designs/genelists/exons.bed > $target_bed_file;
             fi
         """, "set_target_info"
     }
@@ -315,12 +315,12 @@ validate_batch = {
           fi
 
           if [ -e $BASE/designs/genelists/incidentalome.genes.txt ]; then
-            python $SCRIPTS/validate_genelists.py --exclude $BASE/designs/genelists/incidentalome.genes.txt $diseaseGeneLists > results/excluded_genes_analyzed.txt;
+            validate_genelists --exclude $BASE/designs/genelists/incidentalome.genes.txt $diseaseGeneLists > results/excluded_genes_analyzed.txt;
           fi
 
-          python $SCRIPTS/validate_batch.py --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
+          validate_batch --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
 
-          python $SCRIPTS/markdown2.py --extras tables < results/${run_id}_batch_validation.md | python $SCRIPTS/prettify_markdown.py > results/${run_id}_batch_validation.html
+          markdown2 --extras tables < results/${run_id}_batch_validation.md | python $SCRIPTS/prettify_markdown.py > results/${run_id}_batch_validation.html
       """, "validate_batch"
     }
 }
@@ -331,7 +331,7 @@ write_run_info = {
 
     produce("${run_id}_pipeline_run_info.txt") {
         exec """
-            python $SCRIPTS/write_run_info.py --run_id ${run_id} --base "$BASE" > $output.txt
+            write_run_info --run_id ${run_id} --base "$BASE" > $output.txt
         """
     }
 }
@@ -344,7 +344,7 @@ create_sample_metadata = {
     produce("results/samples.meta") {
         from(sample_metadata_file) {
             exec """
-                python $SCRIPTS/update_pipeline_run_id.py --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
+                update_pipeline_run_id --id results/run_id --parse True < $sample_metadata_file > results/samples.meta
             """
         }
     }
@@ -361,7 +361,7 @@ generate_ped_files = {
             exec """
                 mkdir -p results
 
-                python $SCRIPTS/generate_peds.py --prefix "results/${run_id}_family_" < $sample_metadata_file 2>&1 | tee "results/${run_id}_families.log"
+                generate_peds --prefix "results/${run_id}_family_" < $sample_metadata_file 2>&1 | tee "results/${run_id}_families.log"
             """
         }
     }
@@ -374,7 +374,7 @@ update_sample_database = {
 
     if (SAMPLE_DB && SAMPLE_DB != '') {
         exec """
-            python $SCRIPTS/update_sample_db.py --db "$SAMPLE_DB" --sample "${sample}" --run_id "${run_id}" --analysis "${analysis}" --capture "${EXOME_TARGET}" --pipeline_version "`cat $BASE/version.txt`"
+            update_sample_db --db "$SAMPLE_DB" --sample "${sample}" --run_id "${run_id}" --analysis "${analysis}" --capture "${EXOME_TARGET}" --pipeline_version "`cat $BASE/version.txt`"
         """, "update_sample_database"
     }
     else {
@@ -397,7 +397,7 @@ mark_batch_finished = {
     }
     
     exec """
-        python $SCRIPTS/mark_batch_finished.py $commandline
+        mark_batch_finished $commandline
     """
     stage_status("mark_batch_finished", "exit", "");
 }

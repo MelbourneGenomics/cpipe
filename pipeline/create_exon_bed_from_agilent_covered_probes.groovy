@@ -23,7 +23,7 @@ load '../config.groovy'
 covered_probes_to_genes = {
     output.dir = "work"
     exec """
-	groovy $SCRIPTS/agilent_covered_probes_to_genes  $input.bed > $output.bed
+	agilent_covered_probes_to_genes  $input.bed > $output.bed
     """
 }
 
@@ -31,7 +31,7 @@ covered_probes_to_genes = {
 create_exon_bed = {
     output.dir = "work"
     exec """
-	python $SCRIPTS/create_exon_bed.py -c $input.bed $BASE/tools/annovar/humandb/hg19_refGene.txt $input.txt $output.bed
+	create_exon_bed -c $input.bed $BASE/tools/annovar/humandb/hg19_refGene.txt $input.txt $output.bed
     """
 }
 
@@ -39,7 +39,7 @@ create_exon_bed = {
 sort_bed = {
     output.dir = "work"
     exec """
-	$BEDTOOLS/bin/bedtools sort -i $input.bed > $output.bed
+	bedtools sort -i $input.bed > $output.bed
     """
 }
 

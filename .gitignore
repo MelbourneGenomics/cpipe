@@ -2,6 +2,13 @@
 /data/
 /pipeline/config.groovy
 /tasks/nectar/current.manifest.json
+**.doit.db
+.idea
+.bpipe
 *.pyc
 *.swp
 tmpdata
+batches
+!designs/ALL
+**.log
+**.bak
