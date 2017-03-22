@@ -1,15 +1,8 @@
-import os
 from setuptools import setup, find_packages
 from pathlib import Path
 import pkgutil
-import cpipe.scripts
 
-# root = pathlib.Path(__file__).parent.parent.resolve()
-scripts = Path('scripts')
-
-entry_points = []
-for importer, module, ispkg in pkgutil.walk_packages(path=cpipe.scripts.__path__):
-    entry_points.append(f'{module} = cpipe.scripts.{module}:main')
+scripts = Path('cpipe/scripts').resolve()
 
 setup(
     name="Cpipe",
@@ -22,7 +15,11 @@ setup(
 
     # Create executables from a number of python modules
     entry_points={
-        'console_scripts': entry_points
+        'console_scripts': [
+            f'{module} = cpipe.scripts.{module}:main'
+            for _, module, _ in pkgutil.walk_packages(path=[str(scripts)])
+            ]
+
     },
 
     install_requires=[
