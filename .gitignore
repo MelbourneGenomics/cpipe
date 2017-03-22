@@ -12,3 +12,4 @@ batches
 !designs/ALL
 **.log
 **.bak
+lib/*.egg-info/

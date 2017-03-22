@@ -12,6 +12,7 @@ export CPIPE_ROOT=$ROOT
 TEMP_SUBDIR=`mktemp -d`
 SYS_PYTHON=${ROOT}/tools
 SYS_PYBIN=${SYS_PYTHON}/bin
+SYS_INTERPRETER=${SYS_PYBIN}/${PYTHON_INTERPRETER}
 PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
@@ -128,7 +129,7 @@ fi
                 popd
 
                 # Make a virtual environment
-                ${PYTHON_INTERPRETER} -m venv ${PYTHON}
+                ${SYS_INTERPRETER} -m venv ${PYTHON}
 
                 # Delete the temporary files
                 rm -rf ${TEMP_SUBDIR}
@@ -143,7 +144,8 @@ fi
 
         # Install pip dependencies
         if (( USE_PIP )); then
-            pip install ${ROOT}/lib -q
+            pip install --upgrade setuptools pip
+            pip install -e ${ROOT}/lib -q
         fi ;
 
     } > ${OUTPUT_STREAM}

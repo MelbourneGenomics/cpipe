@@ -34,7 +34,9 @@ export CPIPE_ROOT=${ROOT}
 CONFIG_FILE=${CPIPE_ROOT}/pipeline/config.groovy
 
 # Load config groovy
-load_config
+if [[ -f ${CONFIG_FILE} ]] ; then
+    load_config
+fi
 
 # Add all tool directories and bin folders to PATH
 export SYS_JAVA=`which java` # Export the old system java before we override it
@@ -50,5 +52,5 @@ export JAVA_OPTS #Pass JAVA_OPTS to the script in c_libs/bin/java
 export TMPDIR #TMPDIR is set in config.groovy.
 
 # Load virtualenv
-source ${TOOLS}/python/bin/activate
+source ${CPIPE_ROOT}/tools/python/bin/activate
 
