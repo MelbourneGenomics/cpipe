@@ -72,7 +72,7 @@ vcf_annotate = {
     output.dir="variants"
     
     // NB we write an empty output file for the case where vep doesn't write anything
-    //    /usr/bin/env bash $SCRIPTS/vcf_annotate.sh "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
+    //    vcf_annotate "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
     exec """
         export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5";
 
@@ -126,7 +126,7 @@ vcf_post_annotation_filter = {
     output.dir="variants"
     // PERL5LIB="/vlsci/VR0320/shared/production/2.2.0/tools/vep/83" perl /vlsci/VR0320/shared/production/2.2.0/tools/vep/83/filter_vep.pl --input_file txxxx.genotype.raw.split.norm.ChildOnly.vep.83.vcf --format vcf --filter "Consequence not matches stream" --only_matched --filter "BIOTYPE match protein_coding" --filter "Feature" -o txxxx.genotype.raw.split.norm.ChildOnly.vep.83.FILTER.vcf
     // first copy input to output, otherwise filter_vep creates an empty file
-    // /usr/bin/env bash $SCRIPTS/vcf_post_annotation_filter.sh "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
+    // /usr/bin/env bash vcf_post_annotation_filter "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
     exec """
         VARIANTS=`grep -c -v '^#' < $input.vcf`
 

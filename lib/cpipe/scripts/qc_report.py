@@ -493,7 +493,7 @@ def main():
 
     # calculate karyotype for the main sample from exome_cov
     if args.exome_cov.endswith('.gz'):
-        exome_cov_fh = gzip.open(args.exome_cov, 'r')
+        exome_cov_fh = gzip.open(args.exome_cov, 'rt')
     else:
         exome_cov_fh = open(args.exome_cov, 'r')
     karyotype = calculate_karyotype(exome_cov_fh, log=sys.stderr)
@@ -502,7 +502,7 @@ def main():
     summaries = []
     for report_cov in args.report_cov:
         if report_cov.endswith('.gz'):
-            report_cov_fh = gzip.open(report_cov, 'r')
+            report_cov_fh = gzip.open(report_cov, 'rt')
         else:
             report_cov_fh = open(report_cov, 'r')
         summary = calculate_summary(report_cov_fh, args.threshold, log=sys.stderr)

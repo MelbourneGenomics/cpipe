@@ -308,10 +308,10 @@ validate_batch = {
     String diseaseGeneLists = ANALYSIS_PROFILES.collect { "$BASE/designs/${it}/${it}.genes.txt" }.join(" ")
     produce("results/missing_from_exons.genes.txt", "results/${run_id}_batch_validation.md", "results/${run_id}_batch_validation.html") {
       exec """
-          cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/exons.bed > results/missing_from_exons.genes.txt
+          cat ../design/*.genes.txt | find_missing_genes $BASE/designs/genelists/exons.bed > results/missing_from_exons.genes.txt
 
           if [ -e $BASE/designs/genelists/annovar.bed ]; then
-            cat ../design/*.genes.txt | python $SCRIPTS/find_missing_genes.py $BASE/designs/genelists/annovar.bed > results/missing_from_annovar.genes.txt;
+            cat ../design/*.genes.txt | find_missing_genes $BASE/designs/genelists/annovar.bed > results/missing_from_annovar.genes.txt;
           fi
 
           if [ -e $BASE/designs/genelists/incidentalome.genes.txt ]; then
@@ -320,7 +320,7 @@ validate_batch = {
 
           validate_batch --missing_exons results/missing_from_exons.genes.txt --missing_annovar results/missing_from_annovar.genes.txt --excluded_genes results/excluded_genes_analyzed.txt > results/${run_id}_batch_validation.md
 
-          markdown2 --extras tables < results/${run_id}_batch_validation.md | python $SCRIPTS/prettify_markdown.py > results/${run_id}_batch_validation.html
+          markdown2 --extras tables < results/${run_id}_batch_validation.md | prettify_markdown > results/${run_id}_batch_validation.html
       """, "validate_batch"
     }
 }

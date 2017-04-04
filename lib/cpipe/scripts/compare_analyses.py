@@ -21,7 +21,7 @@
 ###########################################################################
 # Compare two analyses.
 # This looks at the annovarx.csv output and shows differences between the two
-# python ~/compare_analyses.py --dir1 ./prod/batches/b1 --dir2 ./stage/batches/b2 --sample1 123456789 --sample2 9877654321
+# compare_analyses.py --dir1 ./prod/batches/b1 --dir2 ./stage/batches/b2 --sample1 123456789 --sample2 9877654321
 #
 # In the future we may look at previous stages to determine why a variant was filtered
 # In the meantime, look at evaluate_variant.py

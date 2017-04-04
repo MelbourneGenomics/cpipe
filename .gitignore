@@ -2,6 +2,9 @@
 /data/
 /pipeline/config.groovy
 /tasks/nectar/current.manifest.json
+samples.db
+pipeline_id
+swift_credentials.sh
 **.doit.db
 .idea
 .bpipe

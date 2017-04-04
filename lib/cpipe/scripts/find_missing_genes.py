@@ -28,21 +28,25 @@
 
 import sys
 
-# read bed genes
-ref = set()
-for line in open( sys.argv[1], 'r' ):
-  fields = line.strip().split( '\t' )
-  if len(fields) > 3:
-    ref.add( fields[3].upper() )
+def main():
+  # read bed genes
+  ref = set()
+  for line in open( sys.argv[1], 'r' ):
+    fields = line.strip().split( '\t' )
+    if len(fields) > 3:
+      ref.add( fields[3].upper() )
 
-# read genes
-missing = set()
-for line in sys.stdin:
-  if line.startswith( '#' ):
-    continue
-  fields = line.strip().split('\t')
-  candidate = fields[0].upper()
-  if candidate not in ref and candidate != '1' and candidate != 'HGNC_SYMBOL':
-    missing.add( candidate )
+  # read genes
+  missing = set()
+  for line in sys.stdin:
+    if line.startswith( '#' ):
+      continue
+    fields = line.strip().split('\t')
+    candidate = fields[0].upper()
+    if candidate not in ref and candidate != '1' and candidate != 'HGNC_SYMBOL':
+      missing.add( candidate )
 
-print(('\n'.join( sorted( list( missing ) ) )))
+  print(('\n'.join( sorted( list( missing ) ) )))
+
+if __name__ == '__main__':
+  main()

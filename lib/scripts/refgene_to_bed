@@ -25,7 +25,7 @@
 #   This is not part of the pipeline run and is an administrative tool
 #
 ####################################################################################
-python refgene_to_bed.py | sort -k1,1 -k2,2n > tmp$$
-#$BEDTOOLS/bin/bedtools merge -i tmp$$ -nms | python refgene_to_bed.py post
-bedtools merge -i tmp$$ -nms | python refgene_to_bed.py post
+refgene_to_bed | sort -k1,1 -k2,2n > tmp$$
+#$BEDTOOLS/bin/bedtools merge -i tmp$$ -nms | refgene_to_bed post
+bedtools merge -i tmp$$ -nms | refgene_to_bed post
 rm tmp$$

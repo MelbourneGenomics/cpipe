@@ -666,7 +666,7 @@ def main():
 
     # coverage data
     if args.coverage.endswith('.gz'):
-        coverage_fh = gzip.open(args.coverage, 'r')
+        coverage_fh = gzip.open(args.coverage, 'rt')
     else:
         coverage_fh = open(args.coverage, 'r')
 

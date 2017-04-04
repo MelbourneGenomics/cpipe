@@ -121,7 +121,7 @@ fi
 if [ ! -f "$EXOME_TARGET" ];
 then
     EXOME_TARGET="$BASE/designs/${TARGET}/initial-"`basename $EXOME_TARGET`
-    python ./pipeline/scripts/genelist_to_bed.py "designs/${TARGET}/${TARGET}.genes.txt" < "$BASE/designs/genelists/exons.bed" > ${EXOME_TARGET}
+    genelist_to_bed "designs/${TARGET}/${TARGET}.genes.txt" < "$BASE/designs/genelists/exons.bed" > ${EXOME_TARGET}
     #err "No file called ${EXOME_TARGET} could be found. You may need to specify this file with an absolute path"
 fi
 

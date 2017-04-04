@@ -48,7 +48,7 @@ calc_coverage_stats = {
 
           bedtools bamtobed -i $input.recal.bam | sort -k 1,1 -k2,2n > "$safe_tmp_dir/bam.bed"
 
-          bin/coverageBed -d -sorted -a "$safe_tmp_dir/intersect.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output.cov.gz
+          coverageBed -d -sorted -a "$safe_tmp_dir/intersect.bed" -b "$safe_tmp_dir/bam.bed" | gzip > $output.cov.gz
 
           sort -k 1,1 -k2,2n < $EXOME_TARGET > "$safe_tmp_dir/exome.bed"
 
@@ -91,7 +91,7 @@ calculate_qc_statistics = {
     // transform("bam") to(sample + ".fragments.tsv") {
     produce("${sample}.fragments.tsv") {
         exec """
-            samtools view $input.recal.bam | python $SCRIPTS/calculate_qc_statistics.py > $output.tsv
+            samtools view $input.recal.bam | calculate_qc_statistics > $output.tsv
         """, "calculate_qc_statistics"
     }
     stage_status("calculate_qc_statistics", "exit", sample)
@@ -187,7 +187,7 @@ summary_report = {
             exec """
                 qc_report --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold $QC_THRESHOLD --classes GOOD:$QC_GOOD:GREEN,PASS:$QC_PASS:ORANGE,FAIL:$QC_FAIL:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 
-                markdown2 --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+                markdown2 --extras tables < $output.md | prettify_markdown > $output.htm
             """, "summary_report"
         }
 
@@ -225,7 +225,7 @@ summary_report_trio = {
             exec """
                 cat ${sample_string} > $output.md
 
-                markdown2 --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+                markdown2 --extras tables < $output.md | prettify_markdown > $output.htm
             """
         }
     }
@@ -253,9 +253,9 @@ summary_report_trio = {
 //     produce("${run_id}_${sample}.trio.summary.htm", "${run_id}_${sample}.trio.summary.md") {
 //         from("$input_exome_file", "$input_ontarget_file", "$input_fragments_file") {
 //             exec """
-//                 python $SCRIPTS/qc_report.py --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
+//                 qc_report --report_cov $input_coverage_file --exome_cov $input_exome_file --ontarget $input_ontarget_file ${inputs.metrics.withFlag("--metrics")} --study $sample --meta $sample_metadata_file --threshold 20 --classes GOOD:95:GREEN,PASS:80:ORANGE,FAIL:0:RED --gc $target_gene_file --gene_cov qc/exon_coverage_stats.txt --write_karyotype $output.tsv --fragments $input_fragments_file --padding $INTERVAL_PADDING_CALL,$INTERVAL_PADDING_INDEL,$INTERVAL_PADDING_SNV > $output.md
 // 
-//                 python $SCRIPTS/markdown2.py --extras tables < $output.md | python $SCRIPTS/prettify_markdown.py > $output.htm
+//                 markdown2 --extras tables < $output.md | prettify_markdown > $output.htm
 //             """
 //         }
 //     }
@@ -280,7 +280,7 @@ exon_qc_report = {
 
     produce("${sample}.exon.qc.xlsx", "${sample}.exon.qc.tsv") {
         exec """
-             JAVA_OPTS="-Xmx3g" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" $SCRIPTS/exon_qc_report.groovy 
+             JAVA_OPTS="-Xmx3g" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" exon_qc_report 
                 -cov $input.cov.gz
                 -targets $target_bed_file
                 -refgene $ANNOVAR_DB/hg19_refGene.txt 
@@ -359,7 +359,7 @@ qc_excel_report = {
     def samples = sample_info.grep { it.value.target == target_name }.collect { it.value.sample }
     produce(target_name + ".qc.xlsx") {
             exec """
-                JAVA_OPTS="-Xmx16g -Djava.awt.headless=true" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" $SCRIPTS/qc_excel_report.groovy 
+                JAVA_OPTS="-Xmx16g -Djava.awt.headless=true" $GROOVY -cp "$BASE/tools/groovy-hts-sample-info/v1.1/groovy-hts-sample-info.jar:$GROOVY_NGS/groovy-ngs-utils.jar:$EXCEL/excel.jar" qc_excel_report 
                     -s ${target_samples.join(",")} 
                     -t $LOW_COVERAGE_THRESHOLD
                     -w $LOW_COVERAGE_WIDTH
@@ -379,7 +379,7 @@ provenance_report = {
     branch.sample = branch.name
     output.dir = "results"
     produce(run_id + '_' + sample + ".provenance.pdf") {
-       send report("scripts/provenance_report.groovy") to file: output.pdf
+       send report("templates/provenance_report.groovy") to file: output.pdf
     }
     stage_status("provenance_report", "exit", sample)
 }
@@ -408,10 +408,10 @@ filtered_on_exons = {
 
        produce("${run_id}_${branch.name}.filtered_on_exons.bam", "${run_id}_${branch.name}.filtered_on_exons.bam.bai") {
            exec """
-               python $SCRIPTS/filter_bed.py --include $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
+               filter_bed --include $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
                $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - > $safe_tmp 
             
-               python $SCRIPTS/filter_bed.py --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
+               filter_bed --exclude $BASE/designs/genelists/incidentalome.genes.txt < $BED_FILE |
                $BEDTOOLS/bin/bedtools slop -g $HG19_CHROM_INFO -b $GENE_BAM_PADDING -i - | 
                $BEDTOOLS/bin/bedtools subtract -a - -b $safe_tmp | 
                sort -k1,1 -k2,2n |
@@ -432,7 +432,7 @@ variant_filtering_report = {
     output.dir = "variants"
     produce("variant_filtering_report.tsv") {
         exec """
-            python $SCRIPTS/variant_filtering.py  --source_dir $output.dir > $output
+            variant_filtering  --source_dir $output.dir > $output
         """
     }
 }
@@ -450,7 +450,7 @@ variant_bams = {
         // TODO should these be generated from the HC output?
         produce(branch.name + ".variant_bams_log.txt") {
             exec """
-                python $SCRIPTS/variant_bams.py --bam $input.recal.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
+                variant_bams --bam $input.recal.bam --tsv $input.tsv --outdir $output.dir --log $output.txt --samtoolsdir $SAMTOOLS
             """, "variant_bams"
         }
     }

@@ -58,7 +58,7 @@ def mark_batch_finished(directory, log, read_only, move, dry=False):
         run('mv {0} {1}'.format(batch_dir, new_location), log, dry)
         run('ln -s {1} {0}'.format(batch_dir, new_location), log, dry) # bpipe still needs to know about the old directory
     
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Mark Cpipe batch as complete')
     parser.add_argument('--dry', required=False, default=False, action='store_true', help='dry run')
     parser.add_argument('--read_only', required=False, default=False, action='store_true', help='mark files read only')
@@ -66,3 +66,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     mark_batch_finished(os.getcwd(), sys.stderr, read_only=args.read_only, move=args.move, dry=args.dry)
+
+if __name__ == '__main__':
+    main()

@@ -46,5 +46,8 @@ def extract_parameters(vcf, target):
             result.append('-GF {0}'.format(m.group(1)))
     target.write(' '.join(result))
 
-if __name__ == '__main__':
+def main():
     extract_parameters(sys.stdin, sys.stdout)
+
+if __name__ == '__main__':
+    main()
