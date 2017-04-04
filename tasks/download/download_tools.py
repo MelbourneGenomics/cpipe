@@ -3,8 +3,6 @@ The download_* tasks are different from the install tasks because they
  - Do something that is platform independent (no compiling C code)
  - Remain all in one directory so we can zip it up
 '''
-from doit.tools import run_once
-
 from tasks.common import *
 from tasks.nectar.nectar_util import *
 
@@ -334,7 +332,7 @@ def task_download_groovy_ngs_utils():
             temp_dir = tempfile.mkdtemp()
             sh('''
                 git init
-                git remote add origin https://github.com/ssadedin/groovy-ngs-utils
+                git remote add origin https://github.com/MelbourneGenomics/groovy-hts-sample-info
                 git fetch
                 git checkout -t origin/master
                 git reset --hard {ngs_commit}
