@@ -330,17 +330,18 @@ def task_download_groovy_ngs_utils():
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
+            print(temp_dir)
             sh('''
-                git init
-                git remote add origin https://github.com/MelbourneGenomics/groovy-hts-sample-info
+                git clone https://github.com/MelbourneGenomics/groovy-hts-sample-info
+                cd groovy-hts-sample-info
                 git fetch
-                git checkout -t origin/master
+                git checkout origin/master
                 git reset --hard {ngs_commit}
                 ./gradlew jar
-                mv build/libs/groovy-ngs-utils.jar . 
+                mv build/libs/groovy-hts-sample-info.jar . 
                 bash -O extglob -O dotglob -c 'rm -rf !(*.jar)'
             '''.format(ngs_commit=GROOVY_NGS_COMMIT), cwd=temp_dir)
-            return {'dir': temp_dir}
+            return {'dir': os.path.join(temp_dir, 'groovy-hts-sample-info')}
 
         return {
             'actions': [action],

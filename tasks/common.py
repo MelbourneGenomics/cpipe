@@ -6,7 +6,7 @@ import tempfile
 import stat
 import sys
 from urllib.request import urlopen, urlretrieve
-from io import StringIO
+from io import BytesIO
 from doit.action import CmdAction
 from doit.tools import create_folder
 from doit import get_var
@@ -31,7 +31,7 @@ PERL_VERSION = "5.24.0"
 R_VERSION = "3.3.1"
 GROOVY_VERSION = "2.4.7"
 CPSUITE_VERSION = "1.2.7"
-GROOVY_NGS_COMMIT = "fa1ad5f"
+GROOVY_NGS_COMMIT = "562ba2a64e"
 JUNIT_XML_COMMIT = "9893370"
 FASTQC_VERSION = "0.11.5"
 PICARD_VERSION = "2.6.0"
@@ -63,10 +63,7 @@ GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
 ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
 
 # Utility variables
-bash_header = '''
-    set -e
-    source {}
-'''.format(ENVIRONMENT_FILE)
+bash_header = 'set -e\n'.format(ENVIRONMENT_FILE)
 MANUAL_INSTALL = get_var('mode', 'auto')
 PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8').strip())
 
@@ -148,7 +145,7 @@ def download_zip(url_str, directory, type=None):
     """
 
     url = urlopen(url_str)
-    input = StringIO(url.read())
+    input = BytesIO(url.read())
 
     # Try to deduce the type from the URL
     if not type:
@@ -195,8 +192,7 @@ def sh(command, **kwargs):
     defaults = {
         'executable': 'bash',
         'shell': True,
-        'cwd': ROOT,
-        'stdout': sys.stdout
+        'cwd': ROOT
     }
     defaults.update(kwargs)
     subprocess.check_call(bash_header + command, **defaults)

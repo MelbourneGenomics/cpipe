@@ -1,0 +1,20 @@
+apply plugin:'java'
+apply plugin: 'maven'
+group = 'com.github.MelbourneGenomics'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile 'com.github.MelbourneGenomics:groovy-hts-sample-info:562ba2a64e8'
+    compile 'com.github.ssadedin:groovy-ngs-utils:aa43ec3ec88'
+    compile 'com.github.barrypitman:JUnitXmlFormatter:9893370f4112'
+    compile 'io.takari.junit:takari-cpsuite:1.2.7'
+}
+
+task copyDeps(type: Copy) {
+    from configurations.runtime
+    into 'tools/java_libs'
+}

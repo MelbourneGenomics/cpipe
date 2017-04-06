@@ -4,15 +4,14 @@ from doit.tools import create_folder
 import pymysql
 from tasks.nectar.nectar_util import *
 from doit.tools import run_once
+from os import path
 
-def download_ftp_list(ftp, files, target_dir):
-    ftp.login()
+def download_ftp_list(ftp, files, target_dir, file_prefix=''):
     for file in files:
         ftp.retrbinary(
-            'RETR {}'.format(file),
+            'RETR {}'.format(os.path.join(file_prefix, file)),
             open(os.path.join(target_dir, file), 'wb').write
         )
-
 
 
 def task_download_dbnsfp():
@@ -84,7 +83,7 @@ def task_download_ucsc():
         return {
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
+                    FTP("ftp://ftp.broadinstitute.org/bundle/hg19/",
                         user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
                     ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
                     UCSC_ROOT
@@ -95,8 +94,9 @@ def task_download_ucsc():
 
 
 MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
+mills_files = ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz", "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"]
 def task_download_mills_and_1000g():
-    targets = [MILLS_ROOT]
+    targets = [os.path.join(MILLS_ROOT, file) for file in mills_files]
     if swift_install():
         return nectar_install('mills_and_1000g', {'targets': targets})
     else:
@@ -104,19 +104,19 @@ def task_download_mills_and_1000g():
             'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                    ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz",
-                     "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"],
-                    MILLS_ROOT
+                    FTP("ftp.broadinstitute.org", user="gsapubftp-anonymous"), 
+                    mills_files,
+                    MILLS_ROOT,
+                    'bundle/hg19/'
                 )
             ],
-            'uptodate': [run_once],
+            'uptodate': [True],
         }
 
 DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
+dbsnp_files = ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"]
 def task_download_dbsnp():
-    targets = [DBSNP_ROOT]
+    targets = [os.path.join(DBSNP_ROOT, file) for file in dbsnp_files]
     if swift_install():
         return nectar_install('dbsnp', {'targets': targets})
     else:
@@ -124,9 +124,9 @@ def task_download_dbsnp():
             'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
+                    FTP("ftp://ftp.broadinstitute.org/bundle/hg19/",
                         user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                    ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"],
+                    dbsnp_files,
                     DBSNP_ROOT
                 )
             ],
@@ -191,7 +191,7 @@ def task_download_trio_refinement():
             mkdir -p {data_dir}/1000G_phase3\
             && curl \
                 --user gsapubftp-anonymous:cpipe.user@cpipeline.org \
-                 ftp://ftp.broadinstitute.org/bundle/2.8/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
+                 ftp://ftp.broadinstitute.org/bundle/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
                  | gunzip > {data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf
             '''.format(data_dir=DATA_ROOT)
         ],

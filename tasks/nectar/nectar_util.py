@@ -9,21 +9,24 @@ import tempfile
 from urllib.parse import urlparse, urljoin
 from urllib.request import urlretrieve
 
-from tasks.common import unzip_todir, has_swift_auth, ROOT
+from tasks.common import unzip_todir, has_swift_auth, ROOT, MANUAL_INSTALL
+
 
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
 target_manifest = path.join(current_dir, 'target.manifest.json')
 
 def add_to_manifest(key):
-    with open(target_manifest, 'r') as target, \
-            open(current_manifest, 'r+') as current:
-        target_json = json.load(target)
-        current_json = json.load(current)
-        current_json[key] = target_json[key]
-        current.seek(0)
-        current.truncate()
-        json.dump(current_json, current, indent=4)
+    """If we're in automatic install mode, copy the JSON objects from the target JSON file to current JSON file"""
+    if MANUAL_INSTALL == 'manual':
+        with open(target_manifest, 'r') as target, \
+                open(current_manifest, 'r+') as current:
+            target_json = json.load(target)
+            current_json = json.load(current)
+            current_json[key] = target_json[key]
+            current.seek(0)
+            current.truncate()
+            json.dump(current_json, current, indent=4)
 
 
 def create_current_manifest():

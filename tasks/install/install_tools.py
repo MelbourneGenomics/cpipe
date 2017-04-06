@@ -345,10 +345,10 @@ def task_install_junit_xml_formatter():
 
 
 def task_install_groovy_ngs_utils():
-    target = os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')
+    target = os.path.join(JAVA_LIBS_ROOT, 'groovy-hts-sample-info.jar')
 
     def action(groovy_ngs_dir):
-        jar = os.path.join(groovy_ngs_dir, 'groovy-ngs-utils.jar')
+        jar = os.path.join(groovy_ngs_dir, 'groovy-hts-sample-info.jar')
         delete_and_copy(jar, target)
         add_to_manifest('groovy_ngs_utils')
 
