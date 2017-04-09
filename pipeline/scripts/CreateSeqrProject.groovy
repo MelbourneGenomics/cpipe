@@ -207,6 +207,7 @@ class CreateSeqrProject {
             s.sex = Sex.FEMALE
             s.relationships << new Relationship(type:RelationshipType.MOTHER, to:proband.id)
             proband.relationships << new Relationship(type:probandRel, to:proband.id)
+            log.info "Mother of $proband.id = $s.id"
         }
         
         if(mum) {
