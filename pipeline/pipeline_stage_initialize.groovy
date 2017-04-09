@@ -278,10 +278,19 @@ set_target_info = {
         fi
     """
 
+    println "Adapter fasta = " + ADAPTERS_FASTA
+
     // if we do this, don't use "using", due to a bug in bpipe https://github.com/ssadedin/bpipe/issues/179
     // Load arbitrary settings related to the target
     println "Loading settings for target region $branch.name from ${file(target_config).absolutePath}"
     load file(target_config).absolutePath
+
+
+    println "Adapter fasta = " + branch.ADAPTERS_FASTA
+    if(branch.ADAPTERS_FASTA)
+        branch.ADAPTERS_FASTA_FILE=branch.ADAPTERS_FASTA
+    else
+        branch.ADAPTERS_FASTA_FILE=false
 
     if(branch.multi_annovar) {
         println "Enabling multiple Annovar annotation sources for $target_name"

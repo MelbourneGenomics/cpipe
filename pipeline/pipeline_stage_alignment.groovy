@@ -116,14 +116,17 @@ check_fastqc = {
 
 trim_fastq = {
    output.dir="align"
-   if(ADAPTERS_FASTA) {
+
+   println "Adapter fasta specified as : " + ADAPTERS_FASTA_FILE
+
+   if(branch.ADAPTERS_FASTA_FILE) {
        filter("trim","trim") {
             exec """
                 $JAVA -Xmx4g -jar $TRIMMOMATIC/trimmomatic-0.30.jar PE -phred33 
                     $input1.gz $input2.gz 
                     $output1.gz ${output1.prefix}.unpaired.gz 
                     $output2.gz ${output2.prefix}.unpaired.gz 
-                    ILLUMINACLIP:$ADAPTERS_FASTA:2:40:15 LEADING:3 TRAILING:6 SLIDINGWINDOW:4:15 MINLEN:36
+                    ILLUMINACLIP:$branch.ADAPTERS_FASTA_FILE:2:40:15 SLIDINGWINDOW:4:15 MINLEN:36 CROP:134 HEADCROP:8
             """
        }
    }
