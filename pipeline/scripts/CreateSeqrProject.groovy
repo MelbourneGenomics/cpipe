@@ -93,7 +93,7 @@ class CreateSeqrProject {
               - 'samples.ped'
             
             vcf_files:
-            ${vcfs.collect {"  - variants/" + new File(it).name}*.plus('\n').join('')}
+            ${vcfs.collect {"  - variants/" + new File(it).name}*.plus('.gz\n').join('')}
 
         """.stripIndent()
     }
