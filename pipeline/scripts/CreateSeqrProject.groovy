@@ -149,7 +149,7 @@ class CreateSeqrProject {
         
         // Parents are stored in the pedigree field
         Map<String,List<String>> parents = sampleInfo.collectEntries { e ->
-            [e, e.value.pedigree.replaceAll('familyID=','').tokenize(',')]
+            [e, e.value.pedigree.replaceAll('(.*)=','').tokenize(',')]
         }
         
         allParents = parents*.value.flatten() as Set
