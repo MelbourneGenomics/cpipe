@@ -129,6 +129,13 @@ insert_size_metrics = {
     var MIN_MEDIAN_INSERT_SIZE : 70,
         MAX_MEDIAN_INSERT_SIZE : 240
 
+    if(inputs.gz.size()==1) {
+        println """
+        Sample $sample has only single end reads: insert size distribution skipped
+        """
+        return
+    }
+    
     output.dir="qc"
     exec """
         $JAVA -Xmx4g -jar $PICARD_HOME/picard.jar CollectInsertSizeMetrics INPUT=$input.recal.bam O=$output.txt H=$output.pdf
