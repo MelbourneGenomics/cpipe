@@ -312,6 +312,19 @@ def task_install_vep_libs():
         'getargs': {'vep_libs_dir': ('download_vep_libs', 'dir')},
     }
 
+def task_install_java_libs():
+    def action(java_libs_dir):
+        delete_and_copy(java_libs_dir, JAVA_LIBS_ROOT)
+        add_to_manifest('java_libs')
+
+    return {
+        'actions': [action],
+        'uptodate': [not nectar_asset_needs_update('java_libs')],
+        'targets': [JAVA_LIBS_ROOT, os.path.join(JAVA_LIBS_ROOT, 'Bio', 'TreeIO.pm')],
+        'setup': ['download_java_libs'],
+        'getargs': {'java_libs_dir': ('download_java_libs', 'dir')},
+    }
+
 
 def task_install_vep_plugins():
     def action(vep_plugins_dir):
@@ -324,57 +337,6 @@ def task_install_vep_plugins():
         'setup': ['download_vep_plugins'],
         'targets': [VEP_PLUGIN_ROOT, os.path.join(VEP_PLUGIN_ROOT, 'GO.pm')],
         'getargs': {'vep_plugins_dir': ('download_vep_plugins', 'dir')},
-    }
-
-
-def task_install_junit_xml_formatter():
-    target = os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter.jar')
-
-    def action(junit_xml_dir):
-        jar = glob.glob(os.path.join(junit_xml_dir, 'JUnitXmlFormatter*'))[0]
-        delete_and_copy(jar, target)
-        add_to_manifest('junit_xml_formatter')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_junit_xml_formatter'],
-        'uptodate': [not nectar_asset_needs_update('junit_xml_formatter')],
-        'getargs': {'junit_xml_dir': ('download_junit_xml_formatter', 'dir')},
-    }
-
-
-def task_install_groovy_ngs_utils():
-    target = os.path.join(JAVA_LIBS_ROOT, 'groovy-hts-sample-info.jar')
-
-    def action(groovy_ngs_dir):
-        jar = os.path.join(groovy_ngs_dir, 'groovy-hts-sample-info.jar')
-        delete_and_copy(jar, target)
-        add_to_manifest('groovy_ngs_utils')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_groovy_ngs_utils'],
-        'uptodate': [not nectar_asset_needs_update('groovy_ngs_utils')],
-        'getargs': {'groovy_ngs_dir': ('download_groovy_ngs_utils', 'dir')},
-    }
-
-
-def task_install_takari_cpsuite():
-    target = os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite.jar')
-
-    def action(takari_cpsuite_dir):
-        jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite*.jar'))[0]
-        delete_and_copy(jar, target)
-        add_to_manifest('takari_cpsuite')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_takari_cpsuite'],
-        'uptodate': [not nectar_asset_needs_update('takari_cpsuite')],
-        'getargs': {'takari_cpsuite_dir': ('download_takari_cpsuite', 'dir')},
     }
 
 

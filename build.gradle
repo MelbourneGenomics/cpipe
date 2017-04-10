@@ -5,16 +5,25 @@ group = 'com.github.MelbourneGenomics'
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven { 
+        name "biojava"
+        url "http://www.biojava.org/download/maven/" 
+    }
+    maven {
+      name "gral" 
+      url "http://mvn.erichseifert.de/maven2"
+    }
 }
 
 dependencies {
     compile 'com.github.MelbourneGenomics:groovy-hts-sample-info:562ba2a64e8'
-    compile 'com.github.ssadedin:groovy-ngs-utils:aa43ec3ec88'
+    compile 'com.github.ssadedin:groovy-ngs-utils:d6fdc538d9b'
     compile 'com.github.barrypitman:JUnitXmlFormatter:9893370f4112'
     compile 'io.takari.junit:takari-cpsuite:1.2.7'
 }
 
 task copyDeps(type: Copy) {
+    // Use `gradle  copyDeps -Pdir=/some/dir to specify where to puts the jars`
     from configurations.runtime
-    into 'tools/java_libs'
+    into project.hasProperty('dir') ? project.property('dir') : 'tools/java_libs'
 }

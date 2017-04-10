@@ -55,10 +55,10 @@ def task_install_vep_cache():
                 lambda: create_folder(VEP_CACHE),
                 '''perl {tools_dir}/vep/INSTALL.pl\
                 --NO_HTSLIB\
-                --CACHEDIR $VEP_CACHE\
+                --CACHEDIR {cache}\
                 --AUTO cf\
                 --SPECIES homo_sapiens_refseq\
-                --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
+                --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT, cache=VEP_CACHE)
             ],
             'task_dep': [
                 'install_htslib',
@@ -83,10 +83,11 @@ def task_download_ucsc():
         return {
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    FTP("ftp.broadinstitute.org",
+                        user="gsapubftp-anonymous"),
                     ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
-                    UCSC_ROOT
+                    UCSC_ROOT,
+                    'bundle/hg19/'
                 )
             ],
             'uptodate': [run_once],
@@ -124,10 +125,11 @@ def task_download_dbsnp():
             'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    FTP("ftp.broadinstitute.org",
+                        user="gsapubftp-anonymous"),
                     dbsnp_files,
-                    DBSNP_ROOT
+                    DBSNP_ROOT,
+                    'bundle/hg19/'
                 )
             ],
             'uptodate': [run_once],
@@ -264,7 +266,7 @@ def task_bwa_index_ucsc_reference():
         ],
         'task_dep': [
             'install_bwa',
-            'obtain_ucsc',
+            'download_ucsc',
             'copy_config'
         ],
         'uptodate': [True]
@@ -280,7 +282,7 @@ def task_samtools_index_ucsc_reference():
         ],
         'task_dep': [
             'install_samtools',
-            'obtain_ucsc',
+            'download_ucsc',
             'copy_config'
         ],
         'uptodate': [True]
