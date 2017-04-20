@@ -152,8 +152,6 @@ align_bwa = {
         
     branch.lane = lanes[0]
 
-    println "Some string".sha1()
-    println Hash.sha1("Some string")
     def outputFile = sample + "_" + Hash.sha1(inputs.gz*.toString().join(",")) + "_" + lane + ".bam"
 
     // var BWA_THREADS: false;

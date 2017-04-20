@@ -1,4 +1,4 @@
-
+from pathlib import Path
 import os
 import glob
 import sys
@@ -140,7 +140,7 @@ def task_install_bedtools():
 def task_install_gatk():
     # If they're part of Melbourne Genomics they can use our licensed copy of GATK. Otherwise they have to install it
     # themselves
-    if has_swift_auth():
+    if manual_install() or has_swift_auth():
         return {
             'actions': [
                 cmd('''
@@ -257,7 +257,7 @@ def task_install_bpipe():
 
 
 def task_install_picard():
-    picard_target = os.path.join(JAVA_LIBS_ROOT, 'picard.jar')
+    picard_target = JAVA_LIBS_ROOT / 'picard.jar'
 
     def action(picard_dir):
         picard_jar = os.path.join(picard_dir, 'picard.jar')
@@ -314,13 +314,17 @@ def task_install_vep_libs():
 
 def task_install_java_libs():
     def action(java_libs_dir):
-        delete_and_copy(java_libs_dir, JAVA_LIBS_ROOT)
+        for file in Path(java_libs_dir).iterdir():
+            delete_and_copy(file, JAVA_LIBS_ROOT)
         add_to_manifest('java_libs')
 
     return {
         'actions': [action],
-        'uptodate': [not nectar_asset_needs_update('java_libs')],
-        'targets': [JAVA_LIBS_ROOT, os.path.join(JAVA_LIBS_ROOT, 'Bio', 'TreeIO.pm')],
+        'uptodate': [
+            not nectar_asset_needs_update('java_libs'), 
+            lambda: len(list(JAVA_LIBS_ROOT.glob('*.jar'))) > 10
+        ],
+        'targets': [JAVA_LIBS_ROOT],
         'setup': ['download_java_libs'],
         'getargs': {'java_libs_dir': ('download_java_libs', 'dir')},
     }

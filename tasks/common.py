@@ -5,7 +5,9 @@ import subprocess
 import tempfile
 import stat
 import sys
+import re
 from urllib.request import urlopen, urlretrieve
+from pathlib import Path
 from io import BytesIO
 from doit.action import CmdAction
 from doit.tools import create_folder
@@ -13,30 +15,28 @@ from doit import get_var
 from zipfile import ZipFile
 
 # General paths
-HERE = os.path.dirname(__file__)  # The cpipe root directory
-ROOT = os.path.dirname(HERE)
-TOOLS_ROOT = os.path.join(ROOT, 'tools')
-DATA_ROOT = os.path.join(ROOT, 'data')
-TMPDATA = os.path.join(ROOT, 'tmpdata')
+HERE = Path(__file__).parent  # The cpipe root directory
+ROOT = HERE.parent.resolve()
+TOOLS_ROOT = ROOT / 'tools'
+DATA_ROOT = ROOT / 'data'
+TMPDATA = ROOT / 'tmpdata'
 
 # Versions
-BWA_VERSION = "0.7.13"
-BPIPE_VERSION = "0.9.9.2"
-HTSLIB_VERSION = "1.3"  # Samtools and Bcftools also use this
-BEDTOOLS_VERSION = "2.25.0"
-GATK_VERSION = "3.6"
-VEP_VERSION = "85"
-PYTHON_VERSION = "2.7.12"
-PERL_VERSION = "5.24.0"
-R_VERSION = "3.3.1"
-GROOVY_VERSION = "2.4.7"
-CPSUITE_VERSION = "1.2.7"
-GROOVY_NGS_COMMIT = "562ba2a64e"
-JUNIT_XML_COMMIT = "9893370"
-FASTQC_VERSION = "0.11.5"
-PICARD_VERSION = "2.6.0"
-DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
-VEP_PLUGIN_COMMIT = "3be3889"
+# Note: The version of most other Java/Perl/Python libraries can be found in the relevant dependency file (cpanfile, build.gradle, etc)
+BWA_VERSION = '0.7.13'
+BPIPE_VERSION = '0.9.9.2'
+HTSLIB_VERSION = '1.3'  # Samtools and Bcftools also use this
+BEDTOOLS_VERSION = '2.25.0'
+GATK_VERSION = '3.6'
+PICARD_VERSION = '2.9.0'
+VEP_VERSION = '85'
+PYTHON_VERSION = '2.7.12'
+PERL_VERSION = '5.24.0'
+R_VERSION = '3.3.1'
+GROOVY_VERSION = '2.4.7'
+FASTQC_VERSION = '0.11.5'
+DBNSFP_VERSION = '2.9.1'  # Use the latest v2 version. v3 of dbNSFP uses HG38
+VEP_PLUGIN_COMMIT = '3be3889'
 MAVEN_VERSION = '3.3.9'
 BZIP_VERSION = '1.0.6'
 XZ_VERSION = '5.2.2'
@@ -44,24 +44,39 @@ PCRE_VERSION = '8.39'
 LIBCURL_VERSION = '7.50.3'
 ZLIB_VERSION = '1.2.8'
 
+def get_gradle_version(repo: str):
+    regex = re.compile("compile 'com.github.(?P<group>.+):(?P<artifact>.+):(?P<version>.+)'")
+
+    # A dictionary mapping the asset from name to version
+    versions = {}
+
+    for line in BUILD_GRADLE.open():
+        match = regex.search(line)
+        if match:
+            groupdict = match.groupdict()
+            versions[groupdict['artifact']] = groupdict['version']
+            
+    return versions[repo]
+  
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
-INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
-INSTALL_LIB = os.path.join(INSTALL_ROOT, 'lib')
-PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
-JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
-VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')
-VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
-VEP_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'vep_libs')
-VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
-PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
-CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
-BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
-MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
-FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
-GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
+INSTALL_BIN = INSTALL_ROOT / 'bin'
+INSTALL_LIB = INSTALL_ROOT / 'lib'
+PYTHON_ROOT = TOOLS_ROOT / 'python'
+JAVA_LIBS_ROOT = TOOLS_ROOT / 'java_libs'
+VEP_ROOT = TOOLS_ROOT / 'vep'
+VEP_CACHE = DATA_ROOT / 'vep_cache'
+VEP_LIBS_ROOT = TOOLS_ROOT / 'vep_libs'
+VEP_PLUGIN_ROOT = TOOLS_ROOT / 'vep_plugins'
+PERL_LIB_ROOT = TOOLS_ROOT / 'perl_lib'
+CPAN_ROOT = TOOLS_ROOT / 'cpan'
+BPIPE_ROOT = TOOLS_ROOT / 'bpipe'
+MAVEN_ROOT = TOOLS_ROOT / 'maven'
+FASTQC_ROOT = TOOLS_ROOT / 'fastqc'
+GROOVY_ROOT = TOOLS_ROOT / 'groovy'
 
-ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
+ENVIRONMENT_FILE = ROOT / 'environment.sh'
+BUILD_GRADLE = ROOT / 'build.gradle'
 
 # Utility variables
 bash_header = 'set -e\n'.format(ENVIRONMENT_FILE)

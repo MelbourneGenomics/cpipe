@@ -44,6 +44,14 @@ def test_pipeline(args):
     run('run_tests detect_mutations_test')
 
 
+def run_bpipe(args):
+    check_java(args)
+    run(
+        f'bpipe {" ".join(args.bpipe_args)}',
+        cwd=args.batch.analysis
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description='Runs core Cpipe functions')
     parser.set_defaults(func=lambda x: parser.print_usage())
@@ -70,6 +78,13 @@ def main():
     test_parser = subparsers.add_parser('designs', help='Create and modify designs and their genelists')
     manage_genelists.setup_parser(test_parser)
     test_parser.set_defaults(func=manage_genelists.execute)
+
+    # Bpipe command
+    bpipe_parser = subparsers.add_parser('bpipe', help='Pass a command to bpipe')
+    bpipe_parser.add_argument('batch', type=arg_validation.existing_batch)
+    bpipe_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
+    bpipe_parser.add_argument('bpipe_args', nargs=argparse.REMAINDER)
+    bpipe_parser.set_defaults(func=run_bpipe)
 
     # Parse then execute
     args = parser.parse_args()

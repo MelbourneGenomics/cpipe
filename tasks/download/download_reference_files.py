@@ -1,4 +1,5 @@
 from ftplib import FTP
+import sys
 from tasks.common import *
 from doit.tools import create_folder
 import pymysql
@@ -8,10 +9,13 @@ from os import path
 
 def download_ftp_list(ftp, files, target_dir, file_prefix=''):
     for file in files:
-        ftp.retrbinary(
-            'RETR {}'.format(os.path.join(file_prefix, file)),
-            open(os.path.join(target_dir, file), 'wb').write
-        )
+        output = os.path.join(target_dir, file)
+
+        if not path.isfile(output):
+            ftp.retrbinary(
+                'RETR {}'.format(os.path.join(file_prefix, file)),
+                open(output, 'wb').write
+            )
 
 
 def task_download_dbnsfp():
@@ -94,22 +98,29 @@ def task_download_ucsc():
         }
 
 
-MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
-mills_files = ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz", "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"]
 def task_download_mills_and_1000g():
-    targets = [os.path.join(MILLS_ROOT, file) for file in mills_files]
+    MILLS_ROOT = DATA_ROOT / 'mills_and_1000g'
+    mills_files = ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz", "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"]
+    targets = [(MILLS_ROOT / file).with_suffix('') for file in mills_files]
+
     if swift_install():
         return nectar_install('mills_and_1000g', {'targets': targets})
     else:
-        return {
-            'targets': targets,
-            'actions': [
-                lambda: download_ftp_list(
+        def action():
+            download_ftp_list(
                     FTP("ftp.broadinstitute.org", user="gsapubftp-anonymous"), 
                     mills_files,
                     MILLS_ROOT,
                     'bundle/hg19/'
-                )
+            )
+
+        return {
+            'targets': targets,
+            'actions': [
+                # Download all the files
+                action,
+                # Then unzip them
+                f'gunzip {MILLS_ROOT}/*.gz --force'
             ],
             'uptodate': [True],
         }
@@ -176,7 +187,6 @@ def task_convert_trio_refinement():
         'task_dep': [
             'download_trio_refinement',
             'download_refinement_liftover',
-            'download_htslib',
             'install_htslib',
             'copy_config'
         ],
