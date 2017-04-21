@@ -19,13 +19,17 @@ repositories {
     }
 }
 
+//configurations.all {
+//    transitive false
+//}
+
 dependencies {
-    compile 'com.github.MelbourneGenomics:groovy-hts-sample-info:562ba2a64e8'
-    compile 'com.github.ssadedin:groovy-ngs-utils:d6fdc538d9b'
-    compile 'com.github.barrypitman:JUnitXmlFormatter:9893370f4112'
-    compile 'io.takari.junit:takari-cpsuite:1.2.7'
+    compile 'com.github.MelbourneGenomics:groovy-hts-sample-info:562ba2a64e8@jar'
+    compile 'com.github.ssadedin:groovy-ngs-utils:d6fdc538d9b@jar'
+    compile 'com.github.barrypitman:JUnitXmlFormatter:9893370f4112@jar'
+    compile 'io.takari.junit:takari-cpsuite:1.2.7@jar'
     //compile 'com.github.broadinstitute:picard:2.9.0'
-    compile 'com.github.ssadedin:bpipe:0.9.9.2'
+    //compile 'com.github.ssadedin:bpipe:0.9.9.2@jar'
     //compile 'com.github.broadgsa:gatk-protected:3.6'
 }
 
