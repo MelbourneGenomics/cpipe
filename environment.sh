@@ -39,7 +39,7 @@ if [[ -f ${CONFIG_FILE} ]] ; then
 fi
 
 # Add all tool directories and bin folders to PATH
-export SYS_JAVA=`which java` # Export the old system java before we override it
+export SYS_JAVA=`which -a java | grep -v -m1 'cpipe'` # Export the old system java before we override it
 export PATH=${TOOLS}/bin:${TOOLS}/maven/bin:${TOOLS}/bpipe/bin:${PATH}
 export HTSLIB_DIR=$TOOLS/lib
 export PERL5LIB=$TOOLS/perl_lib/lib/perl5:$TOOLS/perl/lib:$TOOLS/vep_plugins:${TOOLS}/vep_libs
