@@ -3,7 +3,7 @@ from pathlib import Path
 import pkgutil
 
 py_scripts = Path('cpipe/scripts').resolve()
-sh_scripts = Path('scripts').resolve()
+sh_scripts = Path('../scripts').resolve()
 
 entry_points = [
             f'{module} = cpipe.scripts.{module}:main'
@@ -11,9 +11,6 @@ entry_points = [
             if module != 'cpipe_main'
             ] + ['cpipe = cpipe.scripts.cpipe_main:main']
 scripts = [str(p) for p in sh_scripts.iterdir() if p.is_file()]
-
-print('\n'.join(scripts))
-print('\n'.join(entry_points))
 
 setup(
     name="Cpipe",
