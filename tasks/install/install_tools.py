@@ -3,7 +3,7 @@ import os
 import glob
 import sys
 from tasks.nectar.nectar_util import *
-
+from tasks.common import install_binaries
 from tasks.install.install_c_libs import *
 
 def task_install_perl():
@@ -208,12 +208,14 @@ def task_install_cpanm():
 
 def task_install_vep():
     def action(vep_dir):
+        vep_dir = Path(vep_dir)
         delete_and_copy(vep_dir, VEP_ROOT)
+        install_binaries([vep_dir / 'vep', vep_dir / 'haplo', vep_dir / 'filter_vep'])
         add_to_manifest('vep')
 
     return {
         'actions': [action],
-        'targets': [VEP_ROOT, os.path.join(VEP_ROOT, 'variant_effect_predictor.pl')],
+        'targets': [VEP_ROOT, VEP_ROOT / 'vep'],
         'uptodate': [not nectar_asset_needs_update('vep')],
         'setup': ['download_vep'],
         'getargs': {'vep_dir': ('download_vep', 'dir')},

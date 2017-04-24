@@ -7,6 +7,7 @@ import stat
 import sys
 import re
 from urllib.request import urlopen, urlretrieve
+from typing import Iterable
 from pathlib import Path
 from io import BytesIO
 from doit.action import CmdAction
@@ -29,7 +30,7 @@ HTSLIB_VERSION = '1.3'  # Samtools and Bcftools also use this
 BEDTOOLS_VERSION = '2.25.0'
 GATK_VERSION = '3.6'
 PICARD_VERSION = '2.9.0'
-VEP_VERSION = '85'
+VEP_VERSION = '88.7'
 PYTHON_VERSION = '2.7.12'
 PERL_VERSION = '5.24.0'
 R_VERSION = '3.3.1'
@@ -148,7 +149,16 @@ def unzip_todir(input, directory, type):
 
     shutil.rmtree(tempdir)
 
-
+def install_binaries(files: Iterable[Path]):
+    """
+    For each input file, create a symlink to it in the tools/bin directory
+    """
+    for file in files:
+        target = (INSTALL_BIN / file.name).resolve()
+        if target.exists():
+            target.unlink()
+        target.symlink_to(file)
+        
 # Utility functions
 def download_zip(url_str, directory, type=None):
     """

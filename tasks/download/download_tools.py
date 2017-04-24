@@ -135,18 +135,7 @@ def task_download_vep():
     if swift_install():
         return nectar_download('vep')
     else:
-        def action():
-            # Make two temporary dirs, one for the whole enseml suite, one for just VEP
-            temp_dir = tempfile.mkdtemp()
-            temp_vep_dir = tempfile.mkdtemp()
-            download_zip("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION), temp_dir)
-            vep_subdir = os.path.join(temp_dir, 'scripts', 'variant_effect_predictor')
-            shutil.move(vep_subdir, temp_vep_dir)
-            return {'dir': temp_vep_dir}
-        return {
-            'actions': [action],
-            'uptodate': [False]
-        }
+        return download_task("https://github.com/Ensembl/ensembl-vep/archive/release/{0}.tar.gz".format(VEP_VERSION))
 
 def task_download_fastqc():
     if swift_install():
@@ -249,7 +238,7 @@ def task_download_vep_libs():
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
-            sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
+            sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --NO_TEST --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
                                                                                             vep_libs=temp_dir))
             return {'dir': temp_dir}
         return {
