@@ -35,7 +35,9 @@ def main():
     target_dir = args.directory # Directory that will be zipped
 
     # Main script
-    with open(manifest_path, 'r+') as manifest_file, SwiftService() as swift:
+
+    # Read in the current manifest
+    with open(manifest_path, 'r') as manifest_file, SwiftService() as swift:
 
         try:
             manifest = json.load(manifest_file)
@@ -73,7 +75,9 @@ def main():
             'hash': sha,
             'version': args.version
         }
-        manifest_file.seek(0)
+
+    # Write out the new manifest
+    with open(manifest_path, 'w') as manifest_file:
         json.dump(manifest, manifest_file, indent=4)
 
         # Delete the zip file
