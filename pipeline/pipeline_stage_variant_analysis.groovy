@@ -83,23 +83,21 @@ vcf_annotate = {
             grep '^#' $input.vcf > $output.vcf;
         else
             PATH="$PATH:$HTSLIB";
-            perl $VEP/variant_effect_predictor.pl
+            vep
                 --allele_number
                 --assembly GRCh37
                 --cache
                 --canonical
-                --check_alleles
                 --check_existing
                 --dir $VEP_CACHE
                 --dir_plugins $TOOLS/vep_plugins
-                --fasta $VEP_CACHE/homo_sapiens_refseq/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa
+                --fasta $VEP_CACHE/homo_sapiens_refseq/*/Homo_sapiens.*.dna.primary_assembly.fa.gz
                 --force_overwrite
-                --gmaf
                 --hgvs
                 -i $input.vcf
-                --maf_1kg
-                --maf_esp
-                --maf_exac
+                --af_1kg
+                --af_esp
+                --af
                 -o $output.vcf
                 --offline
                 --plugin Condel,$CONDEL/config,s ${DBNSFP_OPTS}
@@ -136,7 +134,7 @@ vcf_post_annotation_filter = {
         then
           cp $input.vcf $output.vcf;
         else
-          perl $VEP/filter_vep.pl
+          filter_vep
             --input_file $input.vcf
             --filter "Consequence not matches stream" 
             --filter "BIOTYPE match protein_coding"

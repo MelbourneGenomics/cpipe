@@ -7,6 +7,8 @@ from tasks.nectar.nectar_util import *
 from doit.tools import run_once
 from os import path
 
+VEP_CACHE = DATA_ROOT / 'vep_cache'
+
 def download_ftp_list(ftp, files, target_dir, file_prefix=''):
     for file in files:
         output = os.path.join(target_dir, file)
@@ -46,31 +48,55 @@ def task_download_dbnsfp():
             'uptodate': [run_once],
         }
 
-
-VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
 def task_install_vep_cache():
     targets = [VEP_CACHE]
+
+    # The nectar install replaces the whole set of tasks with one, since the nectar asset is pre-indexed
     if swift_install():
         return nectar_install('vep_cache', {'targets': targets})
     else:
         return {
-            'targets': targets,
-            'actions': [
-                lambda: create_folder(VEP_CACHE),
-                '''perl {tools_dir}/vep/INSTALL.pl\
-                --NO_HTSLIB\
-                --CACHEDIR {cache}\
-                --AUTO cf\
-                --SPECIES homo_sapiens_refseq\
-                --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT, cache=VEP_CACHE)
-            ],
+            'targets': [],
+            'actions': None,
             'task_dep': [
-                'install_htslib',
-                'install_perl_libs',
-                'copy_config'
+                'convert_vep_cache'
             ],
-            'uptodate': [run_once],
+            'uptodate': [True],
         }
+
+converted_cache = list(VEP_CACHE.glob('homo_sapiens_refseq/*/1/all_vars.gz.tbi'))[0]
+print(converted_cache, file=sys.stderr)
+def task_convert_vep_cache():
+    return {
+        'targets': [converted_cache],
+        'actions': [
+            f'perl {VEP_ROOT / "convert_cache.pl"} -dir {VEP_CACHE} -species homo_sapiens_refseq --remove'
+        ],
+        'task_dep': [
+            'download_vep_cache'
+        ],
+        'uptodate': [True],
+    }
+
+def task_download_vep_cache():
+    unconverted_cache = VEP_CACHE / 'homo_sapiens_refseq/85_GRCh37/1/100000001-101000000.gz'
+    return {
+        'actions': [
+            lambda: create_folder(VEP_CACHE),
+            '''perl {tools_dir}/vep/INSTALL.pl\
+            --NO_HTSLIB\
+            --CACHEDIR {cache}\
+            --AUTO cf\
+            --SPECIES homo_sapiens_refseq\
+            --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT, cache=VEP_CACHE)
+        ],
+        'task_dep': [
+            'install_htslib',
+            'install_perl_libs',
+            'copy_config'
+        ],
+        'uptodate': [lambda: converted_cache.exists() or unconverted_cache.exists()],
+    }
 
 UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
 def task_obtain_ucsc():
