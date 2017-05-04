@@ -20,6 +20,7 @@ def get_args():
     parser.add_argument('--version', '-v', required=True, help='The version of the asset that is being uploaded ("1.0", "b215eb", "v0.3" etc.)')
     parser.add_argument('--name', '-n', required=True, action='store', help='What to name the asset on nectar. ".tar.gz" will be automatically added')
     parser.add_argument('--manifest', '-m', required=True, action='store', help='Which file to write the new file information to')
+    parser.add_argument('--container', '-c', required=False, default='cpipe-2.4-public', action='store', help='The nectar container to upload to')
     return parser.parse_args()
 
 def main():
@@ -57,7 +58,7 @@ def main():
 
         # Upload it
         for result in swift.upload(
-                'cpipe-2.4-assets',
+                args.container,
                 [SwiftUploadObject(zip_file, object_name=object_name_ext)],
                 options={'segment_size': 5368709120}
         ):
