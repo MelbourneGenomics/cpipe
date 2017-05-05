@@ -64,22 +64,34 @@ def task_install_vep_cache():
             'uptodate': [True],
         }
 
-converted_cache = list(VEP_CACHE.glob('homo_sapiens_refseq/*/1/all_vars.gz.tbi'))[0]
-print(converted_cache, file=sys.stderr)
+def converted_cache_exists():
+    """Returns the path to a key target file in the converted cache, if it exists"""
+    vep_glob = VEP_CACHE.glob('homo_sapiens_refseq/*/1/all_vars.gz.tbi')
+    if vep_glob:
+        return Path(vep_glob[0]).exists()
+    else:
+        return False
+
+def unconverted_cache_exists():
+    """Returns the path to a key target file in the unconverted cache, if it exists"""
+    vep_glob = VEP_CACHE.glob('homo_sapiens_refseq/*/1/100000001-101000000.gz')
+    if vep_glob:
+        return Path(vep_glob[0]).exists()
+    else:
+        return False
+
 def task_convert_vep_cache():
     return {
-        'targets': [converted_cache],
         'actions': [
             f'perl {VEP_ROOT / "convert_cache.pl"} -dir {VEP_CACHE} -species homo_sapiens_refseq --remove'
         ],
         'task_dep': [
             'download_vep_cache'
         ],
-        'uptodate': [True],
+        'uptodate': [converted_cache_exists],
     }
 
 def task_download_vep_cache():
-    unconverted_cache = VEP_CACHE / 'homo_sapiens_refseq/85_GRCh37/1/100000001-101000000.gz'
     return {
         'actions': [
             lambda: create_folder(VEP_CACHE),
@@ -95,7 +107,7 @@ def task_download_vep_cache():
             'install_perl_libs',
             'copy_config'
         ],
-        'uptodate': [lambda: converted_cache.exists() or unconverted_cache.exists()],
+        'uptodate': [lambda: converted_cache_exists() or unconverted_cache_exists()],
     }
 
 UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')

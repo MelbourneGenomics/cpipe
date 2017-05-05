@@ -101,7 +101,7 @@ def task_copy_main_config():
     def action():
         with open(input, 'r') as input_file, open(output, 'w') as output_file:
             for line in input_file:
-                substituted = line.replace("<ROOT DIR>", ROOT)
+                substituted = line.replace("<ROOT DIR>", str(ROOT))
                 output_file.write(substituted)
 
     return {
