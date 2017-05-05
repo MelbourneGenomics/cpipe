@@ -152,20 +152,29 @@
     "java_libs": {
         "path": "tools/java_libs",
         "hash": "db08ef8ee5697627090dd108517776f4b03591a8",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "a4028e7"
     },
     "vep": {
         "path": "tools/vep",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "hash": "6eadc183ac69263a621ddf41be8ec6ff78102f83",
         "version": "88.8"
     },
     "vep_libs": {
         "path": "tools/vep_libs",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "hash": "19683ea267f81171adfa9c2af6fc82461cb0f283",
+        "version": "88.8"
+    },
+    "vep_plugins": {
+        "path": "tools/vep_plugins",
+        "hash": "57daa2d24750087e753482b600a614e1cdbe80f7",
         "version": "88.8"
     },
     "vep_cache": {
         "path": "data/vep_cache",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "hash": "5699669b6faae8a8e504a63030484cd58ec448de",
         "version": "GRCh37.88"
     }
