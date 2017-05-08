@@ -271,15 +271,18 @@ def task_download_vep_plugins():
 
 
 def task_download_java_libs():
-    def action():
-        temp_dir = tempfile.mkdtemp()
-        sh('gradle copyDeps -Pdir={}'.format(temp_dir))
-        return {'dir': temp_dir}
-        
-    return {
-        'actions': [action],
-        'uptodate': [False]
-    }
+    if swift_install():
+        return nectar_download('java_libs')
+    else:
+        def action():
+            temp_dir = tempfile.mkdtemp()
+            sh('gradle copyDeps -Pdir={}'.format(temp_dir))
+            return {'dir': temp_dir}
+            
+        return {
+            'actions': [action],
+            'uptodate': [False]
+        }
 
 
 def task_download_c_libs():

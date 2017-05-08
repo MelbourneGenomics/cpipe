@@ -155,12 +155,6 @@
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "a4028e7"
     },
-    "vep": {
-        "path": "tools/vep",
-        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
-        "hash": "6eadc183ac69263a621ddf41be8ec6ff78102f83",
-        "version": "88.8"
-    },
     "vep_libs": {
         "path": "tools/vep_libs",
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
@@ -178,5 +172,11 @@
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "hash": "5699669b6faae8a8e504a63030484cd58ec448de",
         "version": "GRCh37.88"
+    },
+    "vep": {
+        "path": "tools/vep",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "hash": "1c797c52fab6c1e2afcd92161f75e4f28bb67511",
+        "version": "88.8"
     }
 }

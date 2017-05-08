@@ -76,11 +76,14 @@ MAVEN_ROOT = TOOLS_ROOT / 'maven'
 FASTQC_ROOT = TOOLS_ROOT / 'fastqc'
 GROOVY_ROOT = TOOLS_ROOT / 'groovy'
 
-ENVIRONMENT_FILE = ROOT / 'environment.sh'
+ENVIRONMENT_FILE = ROOT / '_env'
 BUILD_GRADLE = ROOT / 'build.gradle'
 
 # Utility variables
-bash_header = 'set -e\n'.format(ENVIRONMENT_FILE)
+bash_header = '''
+    set -e
+    source {}
+'''.format(ENVIRONMENT_FILE)
 MANUAL_INSTALL = get_var('mode', 'auto')
 PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8').strip())
 
@@ -97,6 +100,10 @@ def make_executable(file):
 
 
 def delete_and_copy(src, dest):
+    # Make the directory we're copying into
+    Path(dest).parent.mkdir(parents=True, exist_ok=True)
+
+    # Do the copy
     if os.path.isdir(src):
         if os.path.isdir(dest):
             shutil.rmtree(dest)

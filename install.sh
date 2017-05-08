@@ -140,7 +140,8 @@ fi
 
     {
         # Load virtualenv
-        source ${PYTHON}/bin/activate
+        source ${ROOT}/_env
+        #source ${PYTHON}/bin/activate
 
         # Install pip dependencies
         if (( USE_PIP )); then

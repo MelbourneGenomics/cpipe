@@ -88,7 +88,7 @@ def task_install_samtools():
         'actions': [
             cmd('''
                 cd %(samtools_dir)s
-                ./configure --prefix={0} --with-htslib={1}
+                ./configure --prefix={0} --with-htslib={0}
                 make
                 make prefix={0} install
             '''.format(INSTALL_ROOT, INSTALL_LIB)),
@@ -316,6 +316,7 @@ def task_install_vep_libs():
 
 def task_install_java_libs():
     def action(java_libs_dir):
+        JAVA_LIBS_ROOT.mkdir(parents=True, exist_ok=True)
         for file in Path(java_libs_dir).iterdir():
             delete_and_copy(file, JAVA_LIBS_ROOT)
         add_to_manifest('java_libs')
@@ -324,7 +325,7 @@ def task_install_java_libs():
         'actions': [action],
         'uptodate': [
             not nectar_asset_needs_update('java_libs'), 
-            lambda: len(list(JAVA_LIBS_ROOT.glob('*.jar'))) > 10
+            lambda: len(list(JAVA_LIBS_ROOT.glob('*.jar'))) >= 4
         ],
         'targets': [JAVA_LIBS_ROOT],
         'setup': ['download_java_libs'],

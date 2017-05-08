@@ -163,10 +163,11 @@ def task_download_mills_and_1000g():
             'uptodate': [True],
         }
 
-DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
-dbsnp_files = ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"]
 def task_download_dbsnp():
+    DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
+    dbsnp_files = ["dbsnp_138.hg19.vcf", "dbsnp_138.hg19.vcf.idx"]
     targets = [os.path.join(DBSNP_ROOT, file) for file in dbsnp_files]
+
     if swift_install():
         return nectar_install('dbsnp', {'targets': targets})
     else:
