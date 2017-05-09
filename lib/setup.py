@@ -34,7 +34,8 @@ setup(
         'pymysql',
         'pandas',
         'pandas_schema',
-        'visidata>=0.37'
+        'visidata>=0.37',
+        'Jinja2'
     ],
     license="GPL"
 )
