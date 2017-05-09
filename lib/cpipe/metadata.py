@@ -91,4 +91,4 @@ class Metadata:
             'Sample_Type': 'Normal',
             'Fastq_Files': ','.join([str(f.resolve()) for f in samples])
         }, ignore_index=True)\
-            .to_csv(self.path, sep='\t', index=False)
+            .to_csv(str(self.path), sep='\t', index=False)
