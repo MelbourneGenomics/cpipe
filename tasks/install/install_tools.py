@@ -153,7 +153,7 @@ def task_install_gatk():
             ],
             'getargs': {'gatk_dir': ('download_gatk', 'dir')},
             'setup': ['download_gatk'],
-            'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
+            'targets': [JAVA_LIBS_ROOT / 'GenomeAnalysisTK.jar'],
             'uptodate': [not nectar_asset_needs_update('gatk')],
         }
     else:
@@ -167,7 +167,8 @@ def task_install_gatk():
 
         return {
             'actions': [action],
-            'uptodate': [False]
+            'targets': [JAVA_LIBS_ROOT / 'GenomeAnalysisTK.jar'],
+            'uptodate': [not nectar_asset_needs_update('gatk')]
         }
 
 

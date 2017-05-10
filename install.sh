@@ -141,7 +141,6 @@ fi
     {
         # Load virtualenv
         source ${ROOT}/_env
-        #source ${PYTHON}/bin/activate
 
         # Install pip dependencies
         if (( USE_PIP )); then
@@ -151,5 +150,8 @@ fi
 
     } > ${OUTPUT_STREAM}
 
-# Download assets and tools using doit
+# Run the interactive task first
+doit --verbosity $VERBOSITY copy_bpipe_config mode=${MODE}
+
+# Now run the full install, which is all automated
 doit -n $PROCESSES --verbosity $VERBOSITY $TASKS mode=${MODE}

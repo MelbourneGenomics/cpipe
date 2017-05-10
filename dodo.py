@@ -7,11 +7,13 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
 import sys
 
 from tasks.common import has_swift_auth
+from jinja2 import Template
 from tasks.download import *
 from tasks.install import *
 from os import path
 import re
 import subprocess
+from doit.tools import PythonInteractiveAction
 
 from cpipe import get_version
 
@@ -112,12 +114,28 @@ def task_copy_main_config():
 
 
 def task_copy_bpipe_config():
-    input = path.join(ROOT, 'pipeline', 'bpipe.config.template')
-    output = path.join(ROOT, 'pipeline', 'bpipe.config')
+    # Filepaths
+    in_template = ROOT / 'pipeline/bpipe.config.template'
+    out_template = ROOT / 'pipeline/bpipe.config'
+
+    def action():
+        # Prompt for user input
+        queue = input('What queueing system do you use? "slurm", "torque", "pbspro", or "none" (no queueing system) are accepted.\n')
+        options = {'slurm', "torque", "pbspro", "none"}
+        if queue not in options:
+            raise Exception(f'Queueing system must be one of: {", ".join(options)}')
+        account = input('What account name do you want to use when running jobs in this system?\n') if not queue == 'none' else ''
+
+        # Write out the new config file
+        template = Template(in_template.read_text())
+        out_template.write_text(template.render({
+            'queue': queue,
+            'account': account
+        }))
 
     return {
-        'actions': ['cp {input} {output}'.format(input=input, output=output)],
-        'targets': [output],
+        'actions': [PythonInteractiveAction(action)],
+        'targets': [out_template],
         'uptodate': [True]
     }
 
