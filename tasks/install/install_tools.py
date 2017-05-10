@@ -143,6 +143,7 @@ def task_install_gatk():
     if manual_install() or has_swift_auth():
         return {
             'actions': [
+                lambda: JAVA_LIBS_ROOT.mkdir(exist_ok=True, parents=True),
                 cmd('''
                     cd %(gatk_dir)s
                     GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\

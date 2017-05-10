@@ -101,8 +101,8 @@ def download_nectar_asset(asset_key, to_temp=True):
         with open(zip_file, 'rb') as zip_handle:
             current_hash = hashlib.sha1(zip_handle.read()).hexdigest()
             if current_hash != target_hash:
-                raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
-                    asset_key)
+                raise Exception("{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
+                    asset_key))
 
             # Rewind the zip handle
             zip_handle.seek(0)
