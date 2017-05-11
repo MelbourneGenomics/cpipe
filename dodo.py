@@ -16,6 +16,7 @@ import subprocess
 from doit.tools import PythonInteractiveAction
 
 from cpipe import get_version
+from cpipe.scripts import create_bpipe_config
 
 DOIT_CONFIG = {
     'default_tasks': ['install'],
@@ -114,28 +115,9 @@ def task_copy_main_config():
 
 
 def task_copy_bpipe_config():
-    # Filepaths
-    in_template = ROOT / 'pipeline/bpipe.config.template'
-    out_template = ROOT / 'pipeline/bpipe.config'
-
-    def action():
-        # Prompt for user input
-        queue = input('What queueing system do you use? "slurm", "torque", "pbspro", or "none" (no queueing system) are accepted.\n')
-        options = {'slurm', "torque", "pbspro", "none"}
-        if queue not in options:
-            raise Exception(f'Queueing system must be one of: {", ".join(options)}')
-        account = input('What account name do you want to use when running jobs in this system?\n') if not queue == 'none' else ''
-
-        # Write out the new config file
-        template = Template(in_template.read_text())
-        out_template.write_text(template.render({
-            'queue': queue,
-            'account': account
-        }))
-
     return {
-        'actions': [PythonInteractiveAction(action)],
-        'targets': [out_template],
+        'actions': [PythonInteractiveAction(create_bpipe_config.main)],
+        'targets': [create_bpipe_config.out_template],
         'uptodate': [True]
     }
 
