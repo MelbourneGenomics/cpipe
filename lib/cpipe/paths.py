@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 
 BASE = Path(os.environ.get('CPIPE_ROOT'))
+DODO = BASE / 'dodo.py'
 BATCHES = BASE / 'batches'
 PIPELINE = BASE / 'pipeline'
 DESIGNS = BASE / 'designs'

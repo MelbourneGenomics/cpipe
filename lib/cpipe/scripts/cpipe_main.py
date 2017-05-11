@@ -24,7 +24,7 @@ def run(cmd, **kwargs):
 def check_java(args):
     """Run the java check if necessary"""
     if args.no_java_check is not None:
-        DoitMain().run(['check_java'])
+        DoitMain().run(['-f', str(paths.DODO), 'check_java'])
 
 
 def run_pipeline(args):
@@ -60,7 +60,7 @@ def main():
     # Run command
     run_parser = subparsers.add_parser('run', help='Runs the analysis pipeline')
     run_parser.add_argument('batch', type=arg_validation.existing_batch)
-    run_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
+    run_parser.add_argument('--no-java-check', '-j', action='store_true')
     run_parser.add_argument('bpipe_opts', type=arg_validation.existing_batch, nargs=argparse.REMAINDER)
     run_parser.set_defaults(func=run_pipeline)
 
@@ -71,7 +71,7 @@ def main():
 
     # Test command
     test_parser = subparsers.add_parser('test', help='Run the cpipe test suite')
-    test_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
+    test_parser.add_argument('--no-java-check', '-j', action='store_true')
     test_parser.set_defaults(func=test_pipeline)
 
     # Design command
