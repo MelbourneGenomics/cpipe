@@ -20,16 +20,23 @@ new File(System.getenv('CPIPE_ROOT').toString() + '/tools/java_libs').eachFileRe
 }
 libs=lib_list.join(':')
 
-{% if queue != 'none' %}
+{% if executor != 'none' %}
 // --- global queue manager settings ---
 // this section defines the type of queue, account details, and default job size
 
-executor="{{ queue }}" // type of queue. "torque" and "pbspro" are also supported
+executor="{{ executor }}" // type of queue. "torque" and "pbspro" are also supported
 account="{{ account }}"
 walltime="08:00:00"
+
 memory="8"
 jobtype="single"
-queue="main"
+queue="{{ queue }}"
+
+{# Executor-specific code #}
+{% if executor == 'torque' %}
+mem_param="mem"
+custom="#PBS -V"
+{% endif %}
 
 // --- Command specific configuration ---
 // If a specific command requires different settings to the defaults above,
@@ -111,7 +118,6 @@ commands {
 	local_realign {
 		memory="16"
 		walltime="14:00:00"
-                queue="main"
 	}
 
 	recalibrate_bam {
@@ -162,7 +168,6 @@ commands {
         calc_coverage_stats {
             walltime="04:00:00"
             memory="4"
-            queue="main"
         }
 
         check_ontarget_perc {

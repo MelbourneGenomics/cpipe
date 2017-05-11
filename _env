@@ -38,8 +38,6 @@ if [[ -f ${CONFIG_FILE} ]] ; then
     load_config
 fi
 
-echo $TOOLS
-
 # Add all tool directories and bin folders to PATH
 export SYS_JAVA=`which -a java | grep -v -m1 'cpipe'` # Export the old system java before we override it
 export PATH=${TOOLS}/bin:${TOOLS}/maven/bin:${TOOLS}/bpipe/bin:${PATH}
