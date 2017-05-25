@@ -130,8 +130,7 @@ commands {
 		memory="8"
 	}
 
-        // --- germline ---
-
+	// --- germline ---
 	gatk_genotype {
 		walltime="10:00:00"
 		memory="24"
@@ -240,6 +239,114 @@ commands {
 	vcfanno {
 		walltime="00:30:00"
 		memory="8"
+	}
+
+// --- variant calling ---
+	// --- initialize ---
+	update_gene_lists {
+		walltime="00:30:00"
+	}
+	create_combined_target {
+		walltime="00:30:00"
+	}
+	create_synonymous_target {
+		walltime="00:30:00"
+	}
+	build_capture_stats {
+		walltime="04:00:00"
+	}
+	set_target_info {
+		walltime="00:30:00"
+	}
+	sample_similarity_report {
+		walltime="04:00:00"
+	}
+	validate_batch {
+		walltime="00:30:00"
+	}
+	update_sample_database {
+		walltime="00:30:00"
+	}
+
+	// --- reports ---
+	calc_coverage_stats {
+		walltime="04:00:00"
+		memory="4"
+	}
+	check_coverage {
+		walltime="04:00:00"
+		memory="12"
+	}
+	check_ontarget_perc {
+		walltime="04:00:00"
+	}
+	calculate_qc_statistics {
+		walltime="04:00:00"
+	}
+	gatk_depth_of_coverage {
+		walltime="06:00:00"
+	}
+	insert_size_metrics {
+		walltime="04:00:00"
+	}
+	gap_report {
+		walltime="04:00:00"
+	}
+	summary_report {
+		walltime="04:00:00"
+	}
+	exon_qc_report {
+		walltime="04:00:00"
+	}
+	qc_excel_report {
+		memory="48"
+		walltime="14:00:00"
+		jobtype="smp" // to get exclusive node
+	}
+	filtered_on_exons {
+		walltime="01:00:00"
+	}
+	variant_bams {
+		walltime="04:00:00"
+	}
+
+	// --- trio ---
+	genotype_refinement {
+		walltime="04:00:00"
+	}
+
+	// --- variant analysis ---
+	filter_tsv {
+		walltime="01:00:00"
+	}
+	vcf_normalize {
+		walltime="02:00:00"
+	}
+	vcf_filter_child {
+		walltime="01:00:00"
+	}
+	vep {
+		walltime="12:00:00"
+		memory="48"
+	}
+	vcfanno {
+		walltime="00:30:00"
+		memory="8"
+	}
+	vcf_post_annotation_filter {
+		walltime="01:00:00"
+	}
+	vcf_to_table {
+		walltime="01:30:00"
+	}
+	annotate_custom_regions {
+		walltime="00:30:00"
+	}
+	table_to_lovd {
+		walltime="00:30:00"
+	}
+	transcript_filter {
+		walltime="00:30:00"
 	}
 
 	// --- variant calling ---
