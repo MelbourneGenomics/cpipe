@@ -55,6 +55,7 @@ def task_data_assets():
             'download_dbsnp',
             'obtain_trio_refinement',
             'download_chromosome_sizes',
+            'download_vcfanno_data',
         ]
     }
 
@@ -84,7 +85,8 @@ def task_tool_assets():
             'install_xz',
             'install_pcre',
             'install_libcurl',
-            'install_zlib'
+            'install_zlib',
+            'install_vcfanno'
         ]
     }
 

@@ -245,6 +245,19 @@ def task_install_fastqc():
         'getargs': {'fastqc_dir': ('download_fastqc', 'dir')},
     }
 
+def task_install_vcfanno():
+    script_bin = os.path.join(INSTALL_BIN, 'vcfanno')
+
+    def action(vcfanno_dir):
+        delete_and_copy(os.path.join(vcfanno_dir, 'vcfanno'), INSTALL_BIN)
+
+    return {
+        'actions': [action],
+        'targets': [os.path.join(INSTALL_BIN, 'vcfanno')],
+        'setup': ['download_vcfanno'],
+        'uptodate': [not nectar_asset_needs_update('vcfanno')],
+        'getargs': {'vcfanno_dir': ('download_vcfanno', 'dir')},
+    }
 
 def task_install_bpipe():
     def action(bpipe_dir):

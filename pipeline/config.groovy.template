@@ -87,6 +87,11 @@ PICARD_HOME="$BASE/tools/java_libs"
 
 HTSLIB="$BASE/tools"
 
+// Configuration file for additional annotation with vcfanno
+// leave empty to disable additional annotation
+VCFANNO_BIN="$TOOLS/bin/vcfanno"
+VCFANNO_CONFIG="$BASE/pipeline/vcfanno.config"
+
 // Due to GATK license restrictions, you must download
 // GATK yourself and place it in this location
 // (or point this to your installation)

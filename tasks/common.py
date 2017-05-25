@@ -44,6 +44,7 @@ XZ_VERSION = '5.2.2'
 PCRE_VERSION = '8.39'
 LIBCURL_VERSION = '7.50.3'
 ZLIB_VERSION = '1.2.8'
+VCFANNO_VERSION = '0.1.0'
 
 
 def get_gradle_version(repo: str):
