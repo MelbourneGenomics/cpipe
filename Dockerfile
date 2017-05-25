@@ -13,7 +13,7 @@ ADD . /opt/cpipe
 WORKDIR /opt/cpipe
 
 # Run the install script
-RUN ./install.sh
+RUN ./install.sh --noninteractive
 
 # Run the main script
 ENTRYPOINT ["./cpipe"]

@@ -45,6 +45,7 @@ PCRE_VERSION = '8.39'
 LIBCURL_VERSION = '7.50.3'
 ZLIB_VERSION = '1.2.8'
 
+
 def get_gradle_version(repo: str):
     regex = re.compile("compile 'com.github.(?P<group>.+):(?P<artifact>.+):(?P<version>.+)'")
 
@@ -56,9 +57,10 @@ def get_gradle_version(repo: str):
         if match:
             groupdict = match.groupdict()
             versions[groupdict['artifact']] = groupdict['version']
-            
+
     return versions[repo]
-  
+
+
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
 INSTALL_BIN = INSTALL_ROOT / 'bin'
@@ -156,6 +158,7 @@ def unzip_todir(input, directory, type):
 
     shutil.rmtree(tempdir)
 
+
 def install_binaries(files: Iterable[Path]):
     """
     For each input file, create a symlink to it in the tools/bin directory
@@ -165,7 +168,8 @@ def install_binaries(files: Iterable[Path]):
         if target.exists():
             target.unlink()
         target.symlink_to(file)
-        
+
+
 # Utility functions
 def download_zip(url_str, directory, type=None):
     """

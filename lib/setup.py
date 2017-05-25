@@ -35,7 +35,8 @@ setup(
         'pandas',
         'pandas_schema',
         'visidata>=0.37',
-        'Jinja2'
+        'Jinja2',
+        'argparse_prompt'
     ],
     license="GPL"
 )

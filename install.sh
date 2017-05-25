@@ -32,6 +32,8 @@ function usage {
   echo "    ${normal}Print this help page to stdout"
   echo "  ${bold}-n, --processes <process number>"
   echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
+  echo "  ${bold}-i, --noninteractive <process number>"
+  echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
   echo "  ${bold}-c, --credentials </path/to/swift_credentials.sh>"
   echo "    ${normal}Use the specified swift credentials file to download assets from NECTAR. Defaults to looking in the cpipe root directory"
   echo "  ${bold}-v, --verbose"
@@ -55,6 +57,7 @@ TASKS='install'
 CUSTOM_TASKS=''
 CREDENTIALS="${ROOT}/swift_credentials.sh"
 USE_SWIFT=1
+BPIPE_CONF_ARGS=''
 MODE='auto'
 
 while true ; do
@@ -64,6 +67,10 @@ while true ; do
           shift 2;;
         -v|--verbose)
           VERBOSITY=2
+          shift 1 ;;
+        -i|--noninteractive)
+          export ARGPARSE_PROMPT_AUTO=True
+          BPIPE_CONF_ARGS='--executor none'
           shift 1 ;;
         -p|--no-pip)
           USE_PIP=0
@@ -150,8 +157,8 @@ fi
 
     } > ${OUTPUT_STREAM}
 
-# Run the interactive task first
-doit --verbosity $VERBOSITY copy_bpipe_config mode=${MODE}
+# Run the interactive scripts first
+create_bpipe_config ${BPIPE_CONF_ARGS}
 
 # Now run the full install, which is all automated
 doit -n $PROCESSES --verbosity $VERBOSITY $TASKS mode=${MODE}
