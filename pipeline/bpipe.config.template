@@ -10,26 +10,33 @@
 // that is run during the installation process.
 //
 ////////////////////////////////////////////////////////////////////////
+import groovy.io.FileType
+
 
 // Include ngs utils to make them available to pipeline
-libs="../tools/java_libs/groovy-ngs-utils.jar"
+def lib_list = new ArrayList<String>();
+new File(System.getenv('CPIPE_ROOT').toString() + '/tools/java_libs').eachFileRecurse (FileType.FILES) { file ->
+  lib_list.add(file.path.toString())
+}
+libs=lib_list.join(':')
 
-// following is a sample configuration for submitting jobs 
-// to the slurm queue manager.
-// uncomment and configure appropriately.
-
-/*
-// uncomment this section to use a queue manager
-
+{% if executor != 'none' %}
 // --- global queue manager settings ---
 // this section defines the type of queue, account details, and default job size
 
-executor="slurm" // type of queue. "torque" and "pbspro" are also supported
-account="<< account name >>"
+executor="{{ executor }}" // type of queue. "torque" and "pbspro" are also supported
+account="{{ account }}"
 walltime="08:00:00"
+
 memory="8"
 jobtype="single"
-queue="main"
+queue="{{ queue }}"
+
+{# Executor-specific code #}
+{% if executor == 'torque' %}
+mem_param="mem"
+custom="#PBS -V"
+{% endif %}
 
 // --- Command specific configuration ---
 // If a specific command requires different settings to the defaults above,
@@ -111,7 +118,6 @@ commands {
 	local_realign {
 		memory="16"
 		walltime="14:00:00"
-                queue="main"
 	}
 
 	recalibrate_bam {
@@ -162,7 +168,6 @@ commands {
         calc_coverage_stats {
             walltime="04:00:00"
             memory="4"
-            queue="main"
         }
         check_coverage {
             walltime="04:00:00"
@@ -247,4 +252,4 @@ commands {
                 procs=4
 	}
 }
-*/
+{% endif %}

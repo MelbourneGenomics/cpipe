@@ -52,7 +52,7 @@ set_sample_info = {
     def sample_bed_file = "$target_bed_file.${sample}.bed"
     produce(sample_bed_file) {
         exec """
-            python $SCRIPTS/combine_target_regions.py --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
+            combine_target_regions --genefiles $target_gene_file --genefiles_required ../design/${target_name}.addonce.${sample}.genes.txt --exons $BASE/designs/genelists/exons.bed --bedfiles $BASE/designs/${target_name}/${target_name}.bed > $output.bed
         """, "set_sample_info"
     }
  
@@ -65,7 +65,7 @@ fastqc = {
     doc "Run FASTQC to generate QC metrics for raw reads"
     output.dir = "fastqc"
     transform('*.fastq.gz')  to('_fastqc.zip') {
-        exec "$FASTQC/fastqc --extract -o ${output.dir} $inputs.gz", "fastqc"
+        exec "fastqc --extract -o ${output.dir} $inputs.gz", "fastqc"
     }
 }
 
@@ -173,7 +173,7 @@ align_bwa = {
     
                     mkdir "$safe_tmp_dir"
     
-                    $BWA mem -M -t $threads -k $seed_length 
+                    bwa mem -M -t $threads -k $seed_length
                              -R "@RG\\tID:${sample}_${lane}\\tPL:$PLATFORM\\tPU:1\\tLB:${sample_info[sample].library}\\tSM:${sample}"  
                              $REF $input1.gz $input2.gz | 
                              $SAMTOOLS/samtools view -F 0x100 -bSu - | $SAMTOOLS/samtools sort -o ${output.prefix}.bam -T "$safe_tmp_dir/bamsort"
@@ -195,7 +195,7 @@ index_bam = {
     // nb: fixed in new version of Bpipe
     output.dir=file(input.bam).absoluteFile.parentFile.absolutePath
     transform("bam") to ("bam.bai") {
-        exec "$SAMTOOLS/samtools index $input.bam", "index_bam"
+        exec "samtools index $input.bam", "index_bam"
     }
     stage_status("index_bam", "forwarding", sample);
     forward input

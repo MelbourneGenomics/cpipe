@@ -1,18 +1,23 @@
 from ftplib import FTP
+import sys
 from tasks.common import *
 from doit.tools import create_folder
 import pymysql
 from tasks.nectar.nectar_util import *
 from doit.tools import run_once
+from os import path
 
-def download_ftp_list(ftp, files, target_dir):
-    ftp.login()
+VEP_CACHE = DATA_ROOT / 'vep_cache'
+
+def download_ftp_list(ftp, files, target_dir, file_prefix=''):
     for file in files:
-        ftp.retrbinary(
-            'RETR {}'.format(file),
-            open(os.path.join(target_dir, file), 'wb').write
-        )
+        output = os.path.join(target_dir, file)
 
+        if not path.isfile(output):
+            ftp.retrbinary(
+                'RETR {}'.format(os.path.join(file_prefix, file)),
+                open(output, 'wb').write
+            )
 
 
 def task_download_dbnsfp():
@@ -43,31 +48,67 @@ def task_download_dbnsfp():
             'uptodate': [run_once],
         }
 
-
-VEP_CACHE = os.path.join(DATA_ROOT, 'vep_cache')
 def task_install_vep_cache():
     targets = [VEP_CACHE]
+
+    # The nectar install replaces the whole set of tasks with one, since the nectar asset is pre-indexed
     if swift_install():
         return nectar_install('vep_cache', {'targets': targets})
     else:
         return {
-            'targets': targets,
-            'actions': [
-                lambda: create_folder(VEP_CACHE),
-                '''perl {tools_dir}/vep/INSTALL.pl\
-                --NO_HTSLIB\
-                --CACHEDIR $VEP_CACHE\
-                --AUTO cf\
-                --SPECIES homo_sapiens_refseq\
-                --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT)
-            ],
+            'targets': [],
+            'actions': None,
             'task_dep': [
-                'install_htslib',
-                'install_perl_libs',
-                'copy_config'
+                'convert_vep_cache'
             ],
-            'uptodate': [run_once],
+            'uptodate': [True],
         }
+
+def converted_cache_exists():
+    """Returns the path to a key target file in the converted cache, if it exists"""
+    vep_glob = VEP_CACHE.glob('homo_sapiens_refseq/*/1/all_vars.gz.tbi')
+    if vep_glob:
+        return Path(vep_glob[0]).exists()
+    else:
+        return False
+
+def unconverted_cache_exists():
+    """Returns the path to a key target file in the unconverted cache, if it exists"""
+    vep_glob = VEP_CACHE.glob('homo_sapiens_refseq/*/1/100000001-101000000.gz')
+    if vep_glob:
+        return Path(vep_glob[0]).exists()
+    else:
+        return False
+
+def task_convert_vep_cache():
+    return {
+        'actions': [
+            f'perl {VEP_ROOT / "convert_cache.pl"} -dir {VEP_CACHE} -species homo_sapiens_refseq --remove'
+        ],
+        'task_dep': [
+            'download_vep_cache'
+        ],
+        'uptodate': [converted_cache_exists],
+    }
+
+def task_download_vep_cache():
+    return {
+        'actions': [
+            lambda: create_folder(VEP_CACHE),
+            '''perl {tools_dir}/vep/INSTALL.pl\
+            --NO_HTSLIB\
+            --CACHEDIR {cache}\
+            --AUTO cf\
+            --SPECIES homo_sapiens_refseq\
+            --ASSEMBLY GRCh37'''.format(tools_dir=TOOLS_ROOT, cache=VEP_CACHE)
+        ],
+        'task_dep': [
+            'install_htslib',
+            'install_perl_libs',
+            'copy_config'
+        ],
+        'uptodate': [lambda: converted_cache_exists() or unconverted_cache_exists()],
+    }
 
 UCSC_ROOT = os.path.join(DATA_ROOT, 'ucsc')
 def task_obtain_ucsc():
@@ -84,39 +125,49 @@ def task_download_ucsc():
         return {
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
+                    FTP("ftp.broadinstitute.org",
+                        user="gsapubftp-anonymous"),
                     ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
-                    UCSC_ROOT
+                    UCSC_ROOT,
+                    'bundle/hg19/'
                 )
             ],
             'uptodate': [run_once],
         }
 
 
-MILLS_ROOT = os.path.join(DATA_ROOT, 'mills_and_1000g')
 def task_download_mills_and_1000g():
-    targets = [MILLS_ROOT]
+    MILLS_ROOT = DATA_ROOT / 'mills_and_1000g'
+    mills_files = ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz", "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"]
+    targets = [(MILLS_ROOT / file).with_suffix('') for file in mills_files]
+
     if swift_install():
         return nectar_install('mills_and_1000g', {'targets': targets})
     else:
+        def action():
+            download_ftp_list(
+                    FTP("ftp.broadinstitute.org", user="gsapubftp-anonymous"), 
+                    mills_files,
+                    MILLS_ROOT,
+                    'bundle/hg19/'
+            )
+
         return {
             'targets': targets,
             'actions': [
-                lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                    ["Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz",
-                     "Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.idx.gz"],
-                    MILLS_ROOT
-                )
+                # Download all the files
+                action,
+                # Then unzip them
+                f'gunzip {MILLS_ROOT}/*.gz --force'
             ],
-            'uptodate': [run_once],
+            'uptodate': [True],
         }
 
-DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
 def task_download_dbsnp():
-    targets = [DBSNP_ROOT]
+    DBSNP_ROOT = os.path.join(DATA_ROOT, 'dbsnp')
+    dbsnp_files = ["dbsnp_138.hg19.vcf", "dbsnp_138.hg19.vcf.idx"]
+    targets = [os.path.join(DBSNP_ROOT, file) for file in dbsnp_files]
+
     if swift_install():
         return nectar_install('dbsnp', {'targets': targets})
     else:
@@ -124,10 +175,11 @@ def task_download_dbsnp():
             'targets': targets,
             'actions': [
                 lambda: download_ftp_list(
-                    FTP("ftp://ftp.broadinstitute.org/bundle/2.8/hg19/",
-                        user="gsapubftp-anonymous:cpipe.user@cpipeline.org"),
-                    ["dbsnp_138.hg19.vcf.gz", "dbsnp_138.hg19.vcf.idx.gz"],
-                    DBSNP_ROOT
+                    FTP("ftp.broadinstitute.org",
+                        user="gsapubftp-anonymous"),
+                    dbsnp_files,
+                    DBSNP_ROOT,
+                    'bundle/hg19/'
                 )
             ],
             'uptodate': [run_once],
@@ -174,7 +226,6 @@ def task_convert_trio_refinement():
         'task_dep': [
             'download_trio_refinement',
             'download_refinement_liftover',
-            'download_htslib',
             'install_htslib',
             'copy_config'
         ],
@@ -191,7 +242,7 @@ def task_download_trio_refinement():
             mkdir -p {data_dir}/1000G_phase3\
             && curl \
                 --user gsapubftp-anonymous:cpipe.user@cpipeline.org \
-                 ftp://ftp.broadinstitute.org/bundle/2.8/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
+                 ftp://ftp.broadinstitute.org/bundle/b37/1000G_phase3_v4_20130502.sites.vcf.gz \
                  | gunzip > {data_dir}/1000G_phase3/1000G_phase3_v4_20130502.sites.vcf
             '''.format(data_dir=DATA_ROOT)
         ],
@@ -264,7 +315,7 @@ def task_bwa_index_ucsc_reference():
         ],
         'task_dep': [
             'install_bwa',
-            'obtain_ucsc',
+            'download_ucsc',
             'copy_config'
         ],
         'uptodate': [True]
@@ -280,7 +331,7 @@ def task_samtools_index_ucsc_reference():
         ],
         'task_dep': [
             'install_samtools',
-            'obtain_ucsc',
+            'download_ucsc',
             'copy_config'
         ],
         'uptodate': [True]

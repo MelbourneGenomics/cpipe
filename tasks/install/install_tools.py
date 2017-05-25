@@ -1,9 +1,9 @@
-
+from pathlib import Path
 import os
 import glob
 import sys
 from tasks.nectar.nectar_util import *
-
+from tasks.common import install_binaries
 from tasks.install.install_c_libs import *
 
 def task_install_perl():
@@ -88,7 +88,7 @@ def task_install_samtools():
         'actions': [
             cmd('''
                 cd %(samtools_dir)s
-                ./configure --prefix={0} --with-htslib={1}
+                ./configure --prefix={0} --with-htslib={0}
                 make
                 make prefix={0} install
             '''.format(INSTALL_ROOT, INSTALL_LIB)),
@@ -140,9 +140,10 @@ def task_install_bedtools():
 def task_install_gatk():
     # If they're part of Melbourne Genomics they can use our licensed copy of GATK. Otherwise they have to install it
     # themselves
-    if has_swift_auth():
+    if manual_install() or has_swift_auth():
         return {
             'actions': [
+                lambda: JAVA_LIBS_ROOT.mkdir(exist_ok=True, parents=True),
                 cmd('''
                     cd %(gatk_dir)s
                     GATK_JAR=`readlink -f target/GenomeAnalysisTK.jar`\
@@ -152,7 +153,7 @@ def task_install_gatk():
             ],
             'getargs': {'gatk_dir': ('download_gatk', 'dir')},
             'setup': ['download_gatk'],
-            'targets': [os.path.join(JAVA_LIBS_ROOT, 'GenomeAnalysisTK.jar')],
+            'targets': [JAVA_LIBS_ROOT / 'GenomeAnalysisTK.jar'],
             'uptodate': [not nectar_asset_needs_update('gatk')],
         }
     else:
@@ -166,7 +167,8 @@ def task_install_gatk():
 
         return {
             'actions': [action],
-            'uptodate': [False]
+            'targets': [JAVA_LIBS_ROOT / 'GenomeAnalysisTK.jar'],
+            'uptodate': [not nectar_asset_needs_update('gatk')]
         }
 
 
@@ -208,12 +210,14 @@ def task_install_cpanm():
 
 def task_install_vep():
     def action(vep_dir):
+        vep_dir = Path(vep_dir)
         delete_and_copy(vep_dir, VEP_ROOT)
+        install_binaries([vep_dir / 'vep', vep_dir / 'haplo', vep_dir / 'filter_vep'])
         add_to_manifest('vep')
 
     return {
         'actions': [action],
-        'targets': [VEP_ROOT, os.path.join(VEP_ROOT, 'variant_effect_predictor.pl')],
+        'targets': [VEP_ROOT, VEP_ROOT / 'vep'],
         'uptodate': [not nectar_asset_needs_update('vep')],
         'setup': ['download_vep'],
         'getargs': {'vep_dir': ('download_vep', 'dir')},
@@ -257,7 +261,7 @@ def task_install_bpipe():
 
 
 def task_install_picard():
-    picard_target = os.path.join(JAVA_LIBS_ROOT, 'picard.jar')
+    picard_target = JAVA_LIBS_ROOT / 'picard.jar'
 
     def action(picard_dir):
         picard_jar = os.path.join(picard_dir, 'picard.jar')
@@ -312,6 +316,24 @@ def task_install_vep_libs():
         'getargs': {'vep_libs_dir': ('download_vep_libs', 'dir')},
     }
 
+def task_install_java_libs():
+    def action(java_libs_dir):
+        JAVA_LIBS_ROOT.mkdir(parents=True, exist_ok=True)
+        for file in Path(java_libs_dir).iterdir():
+            delete_and_copy(file, JAVA_LIBS_ROOT)
+        add_to_manifest('java_libs')
+
+    return {
+        'actions': [action],
+        'uptodate': [
+            not nectar_asset_needs_update('java_libs'), 
+            lambda: len(list(JAVA_LIBS_ROOT.glob('*.jar'))) >= 4
+        ],
+        'targets': [JAVA_LIBS_ROOT],
+        'setup': ['download_java_libs'],
+        'getargs': {'java_libs_dir': ('download_java_libs', 'dir')},
+    }
+
 
 def task_install_vep_plugins():
     def action(vep_plugins_dir):
@@ -324,57 +346,6 @@ def task_install_vep_plugins():
         'setup': ['download_vep_plugins'],
         'targets': [VEP_PLUGIN_ROOT, os.path.join(VEP_PLUGIN_ROOT, 'GO.pm')],
         'getargs': {'vep_plugins_dir': ('download_vep_plugins', 'dir')},
-    }
-
-
-def task_install_junit_xml_formatter():
-    target = os.path.join(JAVA_LIBS_ROOT, 'JUnitXmlFormatter.jar')
-
-    def action(junit_xml_dir):
-        jar = glob.glob(os.path.join(junit_xml_dir, 'JUnitXmlFormatter*'))[0]
-        delete_and_copy(jar, target)
-        add_to_manifest('junit_xml_formatter')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_junit_xml_formatter'],
-        'uptodate': [not nectar_asset_needs_update('junit_xml_formatter')],
-        'getargs': {'junit_xml_dir': ('download_junit_xml_formatter', 'dir')},
-    }
-
-
-def task_install_groovy_ngs_utils():
-    target = os.path.join(JAVA_LIBS_ROOT, 'groovy-ngs-utils.jar')
-
-    def action(groovy_ngs_dir):
-        jar = os.path.join(groovy_ngs_dir, 'groovy-ngs-utils.jar')
-        delete_and_copy(jar, target)
-        add_to_manifest('groovy_ngs_utils')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_groovy_ngs_utils'],
-        'uptodate': [not nectar_asset_needs_update('groovy_ngs_utils')],
-        'getargs': {'groovy_ngs_dir': ('download_groovy_ngs_utils', 'dir')},
-    }
-
-
-def task_install_takari_cpsuite():
-    target = os.path.join(JAVA_LIBS_ROOT, 'takari-cpsuite.jar')
-
-    def action(takari_cpsuite_dir):
-        jar = glob.glob(os.path.join(takari_cpsuite_dir, 'takari-cpsuite*.jar'))[0]
-        delete_and_copy(jar, target)
-        add_to_manifest('takari_cpsuite')
-
-    return {
-        'actions': [action],
-        'targets': [target],
-        'setup': ['download_takari_cpsuite'],
-        'uptodate': [not nectar_asset_needs_update('takari_cpsuite')],
-        'getargs': {'takari_cpsuite_dir': ('download_takari_cpsuite', 'dir')},
     }
 
 

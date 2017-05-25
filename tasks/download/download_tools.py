@@ -3,13 +3,11 @@ The download_* tasks are different from the install tasks because they
  - Do something that is platform independent (no compiling C code)
  - Remain all in one directory so we can zip it up
 '''
-from doit.tools import run_once
-
 from tasks.common import *
 from tasks.nectar.nectar_util import *
 
 
-def download_task(url, type='tgz'):
+def download_task(url, type=None):
     def action():
         temp_dir = tempfile.mkdtemp()
         download_zip(url, temp_dir, type=type)
@@ -108,7 +106,7 @@ def task_download_htslib():
         return nectar_download('htslib')
     else:
         return download_task("https://github.com/samtools/htslib/releases/download/{0}/htslib-{0}.tar.bz2".format(
-            HTSLIB_VERSION), 'htslib_dir')
+            HTSLIB_VERSION))
 
 
 def task_download_samtools():
@@ -137,18 +135,7 @@ def task_download_vep():
     if swift_install():
         return nectar_download('vep')
     else:
-        def action():
-            # Make two temporary dirs, one for the whole enseml suite, one for just VEP
-            temp_dir = tempfile.mkdtemp()
-            temp_vep_dir = tempfile.mkdtemp()
-            download_zip("https://github.com/Ensembl/ensembl-tools/archive/release/{0}.zip".format(VEP_VERSION), temp_dir)
-            vep_subdir = os.path.join(temp_dir, 'scripts', 'variant_effect_predictor')
-            shutil.move(vep_subdir, temp_vep_dir)
-            return {'dir': temp_vep_dir}
-        return {
-            'actions': [action],
-            'uptodate': [False]
-        }
+        return download_task("https://github.com/Ensembl/ensembl-vep/archive/release/{0}.tar.gz".format(VEP_VERSION))
 
 def task_download_fastqc():
     if swift_install():
@@ -209,7 +196,8 @@ def task_download_picard():
             temp_dir = tempfile.mkdtemp()
             urlretrieve(
                 'https://github.com/broadinstitute/picard/releases/download/{0}/picard.jar'.format(PICARD_VERSION),
-                temp_dir)
+                os.path.join(temp_dir, 'picard.jar')
+            )
             return {'dir': temp_dir}
 
         return {
@@ -250,7 +238,7 @@ def task_download_vep_libs():
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
-            sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
+            sh('perl {vep_dir}/INSTALL.pl --NO_HTSLIB --NO_TEST --AUTO a --DESTDIR {vep_libs}'.format(vep_dir=VEP_ROOT,
                                                                                             vep_libs=temp_dir))
             return {'dir': temp_dir}
         return {
@@ -283,94 +271,17 @@ def task_download_vep_plugins():
 
 
 def task_download_java_libs():
-    return {
-        'actions': None,
-        'task_dep': [
-            'download_junit_xml_formatter',
-            'download_groovy_ngs_utils',
-            'download_takari_cpsuite'
-        ]
-    }
-
-
-def task_make_java_libs_dir():
-    return {
-        'actions': [
-            create_folder(JAVA_LIBS_ROOT),
-        ],
-        'targets': [JAVA_LIBS_ROOT],
-        'uptodate': [True]
-    }
-
-
-def task_download_junit_xml_formatter():
     if swift_install():
-        return nectar_download('junit_xml_formatter')
+        return nectar_download('java_libs')
     else:
         def action():
             temp_dir = tempfile.mkdtemp()
-            sh('''
-                    git clone https://github.com/barrypitman/JUnitXmlFormatter
-                    pushd JUnitXmlFormatter
-                        mvn install
-                    popd
-                    mv JUnitXmlFormatter/target/JUnitXmlFormatter* .
-                    bash -O extglob -O dotglob -c 'rm -rf !(JUnitXmlFormatter*.jar)'
-                ''', cwd=temp_dir)
+            sh('gradle copyDeps -Pdir={}'.format(temp_dir))
             return {'dir': temp_dir}
-
+            
         return {
             'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
             'uptodate': [False]
-        }
-
-
-def task_download_groovy_ngs_utils():
-    if swift_install():
-        return nectar_download('groovy_ngs_utils')
-    else:
-        def action():
-            temp_dir = tempfile.mkdtemp()
-            sh('''
-                git init
-                git remote add origin https://github.com/ssadedin/groovy-ngs-utils
-                git fetch
-                git checkout -t origin/master
-                git reset --hard {ngs_commit}
-                ./gradlew jar
-                mv build/libs/groovy-ngs-utils.jar . 
-                bash -O extglob -O dotglob -c 'rm -rf !(*.jar)'
-            '''.format(ngs_commit=GROOVY_NGS_COMMIT), cwd=temp_dir)
-            return {'dir': temp_dir}
-
-        return {
-            'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
-            'uptodate': [False],
-        }
-
-
-def task_download_takari_cpsuite():
-    if swift_install():
-        return nectar_download('takari_cpsuite')
-    else:
-        def action():
-            temp_dir = tempfile.mkdtemp()
-            sh('''
-             mvn dependency:copy\
-                    -Dartifact=io.takari.junit:takari-cpsuite:{cpsuite_version}\
-                    -DoutputDirectory={java_libs_dir}\
-                    -DstripVersion=true
-             bash -O extglob -O dotglob -c 'rm -rf !(takari-cpsuite*.jar)'
-
-            '''.format(cpsuite_version=CPSUITE_VERSION, java_libs_dir=temp_dir), cwd=temp_dir)
-            return {'dir': temp_dir}
-
-        return {
-            'actions': [action],
-            'task_dep': ['copy_config', 'make_java_libs_dir', 'install_maven'],
-            'uptodate': [False],
         }
 
 

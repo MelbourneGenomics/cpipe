@@ -1,0 +1,24 @@
+#!/usr/bin/env groovy
+if(!args) {
+        System.err.println "Usage: agilent_bed_to_genes <agilent bed file>"
+        System.exit(1)
+}
+
+lines = new File(args[0]).readLines().grep { !it.startsWith("track") }.collect { it.split('\t') as List }
+
+genes = lines.collect { it[3] }.grep { it != null }.unique()
+
+// println "The unique list of ${genes.size()} genes is: $genes"
+
+for(gene in genes) {
+  probes = lines.grep { it[3] == gene }
+
+  // println "Gene $gene has ${probes.size()} probes"
+
+  int minPos = probes.collect { it[1] as Integer }.min()
+  int maxPos = probes.collect { it[2] as Integer }.max()
+
+  // println "Gene $gene has ${probes.size()} probes ranging from $minPos - $maxPos"
+
+  println([ probes[0][0], minPos, maxPos, gene ].join('\t'))
+}

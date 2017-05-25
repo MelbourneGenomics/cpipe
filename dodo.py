@@ -7,11 +7,16 @@ The root file for the doit build tool: http://pydoit.org/. This specifies tasks 
 import sys
 
 from tasks.common import has_swift_auth
+from jinja2 import Template
 from tasks.download import *
 from tasks.install import *
 from os import path
 import re
 import subprocess
+from doit.tools import PythonInteractiveAction
+
+from cpipe import get_version
+from cpipe.scripts import create_bpipe_config
 
 DOIT_CONFIG = {
     'default_tasks': ['install'],
@@ -27,7 +32,7 @@ def task_install():
 
     return {
         'actions': None,
-        'task_dep': ['copy_config', 'assets'],
+        'task_dep': ['copy_config', 'assets', 'generate_pipeline_id'],
         'clean': ['rm -rf {data} {tools} {tmp}/*'.format(data=DATA_ROOT, tools=TOOLS_ROOT, tmp=TMPDATA)]
     }
 
@@ -74,9 +79,7 @@ def task_tool_assets():
             'install_picard',
             'install_vep_libs',
             'install_vep_plugins',
-            'install_junit_xml_formatter',
-            'install_groovy_ngs_utils',
-            'install_takari_cpsuite',
+            'install_java_libs',
             'install_bzip2',
             'install_xz',
             'install_pcre',
@@ -101,7 +104,7 @@ def task_copy_main_config():
     def action():
         with open(input, 'r') as input_file, open(output, 'w') as output_file:
             for line in input_file:
-                substituted = line.replace("<ROOT DIR>", ROOT)
+                substituted = line.replace("<ROOT DIR>", str(ROOT))
                 output_file.write(substituted)
 
     return {
@@ -112,13 +115,29 @@ def task_copy_main_config():
 
 
 def task_copy_bpipe_config():
-    input = path.join(ROOT, 'pipeline', 'bpipe.config.template')
-    output = path.join(ROOT, 'pipeline', 'bpipe.config')
+    return {
+        'actions': [PythonInteractiveAction(create_bpipe_config.main)],
+        'targets': [create_bpipe_config.out_template],
+        'uptodate': [True]
+    }
+
+
+def task_generate_pipeline_id():
+    """
+    Creates a pipeline_id file, with an ID in the format HOSTNAME_2.X.X(version)_1
+    :return:
+    """
+    def action(targets):
+        version = get_version()
+
+        for file in targets:
+            with open(file, 'w') as id_file:
+                id_file.write(f'{PIPELINE_ID}_{version}_1')
 
     return {
-        'actions': ['cp {input} {output}'.format(input=input, output=output)],
-        'targets': [output],
-        'uptodate': [True]
+        'targets': ['pipeline_id'],
+        'uptodate': [True],
+        'actions': [action]
     }
 
 

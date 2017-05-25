@@ -5,38 +5,39 @@ import subprocess
 import tempfile
 import stat
 import sys
+import re
 from urllib.request import urlopen, urlretrieve
-from io import StringIO
+from typing import Iterable
+from pathlib import Path
+from io import BytesIO
 from doit.action import CmdAction
 from doit.tools import create_folder
 from doit import get_var
 from zipfile import ZipFile
 
 # General paths
-HERE = os.path.dirname(__file__)  # The cpipe root directory
-ROOT = os.path.dirname(HERE)
-TOOLS_ROOT = os.path.join(ROOT, 'tools')
-DATA_ROOT = os.path.join(ROOT, 'data')
-TMPDATA = os.path.join(ROOT, 'tmpdata')
+HERE = Path(__file__).parent  # The cpipe root directory
+ROOT = HERE.parent.resolve()
+TOOLS_ROOT = ROOT / 'tools'
+DATA_ROOT = ROOT / 'data'
+TMPDATA = ROOT / 'tmpdata'
 
 # Versions
-BWA_VERSION = "0.7.13"
-BPIPE_VERSION = "0.9.9.2"
-HTSLIB_VERSION = "1.3"  # Samtools and Bcftools also use this
-BEDTOOLS_VERSION = "2.25.0"
-GATK_VERSION = "3.6"
-VEP_VERSION = "85"
-PYTHON_VERSION = "2.7.12"
-PERL_VERSION = "5.24.0"
-R_VERSION = "3.3.1"
-GROOVY_VERSION = "2.4.7"
-CPSUITE_VERSION = "1.2.7"
-GROOVY_NGS_COMMIT = "b982218"
-JUNIT_XML_COMMIT = "9893370"
-FASTQC_VERSION = "0.11.5"
-PICARD_VERSION = "2.6.0"
-DBNSFP_VERSION = "2.9.1"  # Use the latest v2 version. v3 of dbNSFP uses HG38
-VEP_PLUGIN_COMMIT = "3be3889"
+# Note: The version of most other Java/Perl/Python libraries can be found in the relevant dependency file (cpanfile, build.gradle, etc)
+BWA_VERSION = '0.7.13'
+BPIPE_VERSION = '0.9.9.2'
+HTSLIB_VERSION = '1.3'  # Samtools and Bcftools also use this
+BEDTOOLS_VERSION = '2.25.0'
+GATK_VERSION = '3.6'
+PICARD_VERSION = '2.9.0'
+VEP_VERSION = '88.8'
+PYTHON_VERSION = '2.7.12'
+PERL_VERSION = '5.24.0'
+R_VERSION = '3.3.1'
+GROOVY_VERSION = '2.4.7'
+FASTQC_VERSION = '0.11.5'
+DBNSFP_VERSION = '2.9.1'  # Use the latest v2 version. v3 of dbNSFP uses HG38
+VEP_PLUGIN_COMMIT = '3be3889'
 MAVEN_VERSION = '3.3.9'
 BZIP_VERSION = '1.0.6'
 XZ_VERSION = '5.2.2'
@@ -44,23 +45,41 @@ PCRE_VERSION = '8.39'
 LIBCURL_VERSION = '7.50.3'
 ZLIB_VERSION = '1.2.8'
 
+
+def get_gradle_version(repo: str):
+    regex = re.compile("compile 'com.github.(?P<group>.+):(?P<artifact>.+):(?P<version>.+)'")
+
+    # A dictionary mapping the asset from name to version
+    versions = {}
+
+    for line in BUILD_GRADLE.open():
+        match = regex.search(line)
+        if match:
+            groupdict = match.groupdict()
+            versions[groupdict['artifact']] = groupdict['version']
+
+    return versions[repo]
+
+
 # Tool paths
 INSTALL_ROOT = TOOLS_ROOT
-INSTALL_BIN = os.path.join(INSTALL_ROOT, 'bin')
-INSTALL_LIB = os.path.join(INSTALL_ROOT, 'lib')
-PYTHON_ROOT = os.path.join(TOOLS_ROOT, 'python')
-JAVA_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'java_libs')
-VEP_ROOT = os.path.join(TOOLS_ROOT, 'vep')
-VEP_LIBS_ROOT = os.path.join(TOOLS_ROOT, 'vep_libs')
-VEP_PLUGIN_ROOT = os.path.join(TOOLS_ROOT, 'vep_plugins')
-PERL_LIB_ROOT = os.path.join(TOOLS_ROOT, 'perl_lib')
-CPAN_ROOT = os.path.join(TOOLS_ROOT, 'cpan')
-BPIPE_ROOT = os.path.join(TOOLS_ROOT, 'bpipe')
-MAVEN_ROOT = os.path.join(TOOLS_ROOT, 'maven')
-FASTQC_ROOT = os.path.join(TOOLS_ROOT, 'fastqc')
-GROOVY_ROOT = os.path.join(TOOLS_ROOT, 'groovy')
+INSTALL_BIN = INSTALL_ROOT / 'bin'
+INSTALL_LIB = INSTALL_ROOT / 'lib'
+PYTHON_ROOT = TOOLS_ROOT / 'python'
+JAVA_LIBS_ROOT = TOOLS_ROOT / 'java_libs'
+VEP_ROOT = TOOLS_ROOT / 'vep'
+VEP_CACHE = DATA_ROOT / 'vep_cache'
+VEP_LIBS_ROOT = TOOLS_ROOT / 'vep_libs'
+VEP_PLUGIN_ROOT = TOOLS_ROOT / 'vep_plugins'
+PERL_LIB_ROOT = TOOLS_ROOT / 'perl_lib'
+CPAN_ROOT = TOOLS_ROOT / 'cpan'
+BPIPE_ROOT = TOOLS_ROOT / 'bpipe'
+MAVEN_ROOT = TOOLS_ROOT / 'maven'
+FASTQC_ROOT = TOOLS_ROOT / 'fastqc'
+GROOVY_ROOT = TOOLS_ROOT / 'groovy'
 
-ENVIRONMENT_FILE = os.path.join(ROOT, 'environment.sh')
+ENVIRONMENT_FILE = ROOT / '_env'
+BUILD_GRADLE = ROOT / 'build.gradle'
 
 # Utility variables
 bash_header = '''
@@ -68,6 +87,8 @@ bash_header = '''
     source {}
 '''.format(ENVIRONMENT_FILE)
 MANUAL_INSTALL = get_var('mode', 'auto')
+PIPELINE_ID = get_var('id', subprocess.check_output(['hostname'], encoding='utf-8').strip())
+
 
 def replace_symlink(target, link):
     if os.path.islink(link) or os.path.isfile(link):
@@ -81,6 +102,10 @@ def make_executable(file):
 
 
 def delete_and_copy(src, dest):
+    # Make the directory we're copying into
+    Path(dest).parent.mkdir(parents=True, exist_ok=True)
+
+    # Do the copy
     if os.path.isdir(src):
         if os.path.isdir(dest):
             shutil.rmtree(dest)
@@ -134,6 +159,17 @@ def unzip_todir(input, directory, type):
     shutil.rmtree(tempdir)
 
 
+def install_binaries(files: Iterable[Path]):
+    """
+    For each input file, create a symlink to it in the tools/bin directory
+    """
+    for file in files:
+        target = (INSTALL_BIN / file.name).resolve()
+        if target.exists():
+            target.unlink()
+        target.symlink_to(file)
+
+
 # Utility functions
 def download_zip(url_str, directory, type=None):
     """
@@ -146,7 +182,7 @@ def download_zip(url_str, directory, type=None):
     """
 
     url = urlopen(url_str)
-    input = StringIO(url.read())
+    input = BytesIO(url.read())
 
     # Try to deduce the type from the URL
     if not type:
@@ -189,16 +225,15 @@ def cmd(command, **kwargs):
 
 
 def sh(command, **kwargs):
-
     # Set default options and override then with the user specified options
     defaults = {
         'executable': 'bash',
         'shell': True,
-        'cwd': ROOT,
-        'stdout': sys.stdout
+        'cwd': ROOT
     }
     defaults.update(kwargs)
     subprocess.check_call(bash_header + command, **defaults)
+
 
 def has_swift_auth():
     swift_credentials = {
@@ -214,11 +249,14 @@ def has_swift_auth():
     # from the object store
     return swift_credentials.issubset(list(os.environ.keys()))
 
+
 def manual_install():
     return MANUAL_INSTALL == 'manual'
 
+
 def swift_install():
     return MANUAL_INSTALL == 'auto'
+
 
 def in_docker():
     return os.path.exists('/.dockerenv')

@@ -9,13 +9,15 @@ import tempfile
 from urllib.parse import urlparse, urljoin
 from urllib.request import urlretrieve
 
-from tasks.common import unzip_todir, has_swift_auth, ROOT
+from tasks.common import unzip_todir, has_swift_auth, ROOT, MANUAL_INSTALL
+
 
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
 target_manifest = path.join(current_dir, 'target.manifest.json')
 
 def add_to_manifest(key):
+    """Copy the JSON objects from the target JSON file to current JSON file"""
     with open(target_manifest, 'r') as target, \
             open(current_manifest, 'r+') as current:
         target_json = json.load(target)
@@ -96,11 +98,11 @@ def download_nectar_asset(asset_key, to_temp=True):
 
         # sha1hash the zip file to ensure its integrity
         target_hash = target_json[asset_key]['hash']
-        with open(zip_file, 'r') as zip_handle:
+        with open(zip_file, 'rb') as zip_handle:
             current_hash = hashlib.sha1(zip_handle.read()).hexdigest()
             if current_hash != target_hash:
-                raise "{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
-                    asset_key)
+                raise Exception("{0} failed hashsum check! Check its integrity or update and commit your target.manifest.json".format(
+                    asset_key))
 
             # Rewind the zip handle
             zip_handle.seek(0)

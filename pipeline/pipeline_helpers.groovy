@@ -26,7 +26,7 @@
 // note that this isn't run through bpipe
 
 correct_sample_meta_data_command = { input, output ->
-   "python $SCRIPTS/correct_sample_metadata_file.py < $input > $output"  
+   "correct_sample_metadata_file < $input > $output"
 }
 
 correct_sample_metadata_file = { 

@@ -4,12 +4,15 @@
 set -e
 
 # Set variables
-PYTHON_VERSION="3.6.0"
+PYTHON_VERSION='3.6.0'
+PYTHON_INTERPRETER='python3.6'
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
+export CPIPE_ROOT=$ROOT
 TEMP_SUBDIR=`mktemp -d`
 SYS_PYTHON=${ROOT}/tools
 SYS_PYBIN=${SYS_PYTHON}/bin
+SYS_INTERPRETER=${SYS_PYBIN}/${PYTHON_INTERPRETER}
 PYTHON=${ROOT}/tools/python
 VENV=${PYTHON}/bin/activate
 
@@ -28,6 +31,8 @@ function usage {
   echo "  ${bold}--help, --usage"
   echo "    ${normal}Print this help page to stdout"
   echo "  ${bold}-n, --processes <process number>"
+  echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
+  echo "  ${bold}-i, --noninteractive <process number>"
   echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
   echo "  ${bold}-c, --credentials </path/to/swift_credentials.sh>"
   echo "    ${normal}Use the specified swift credentials file to download assets from NECTAR. Defaults to looking in the cpipe root directory"
@@ -52,6 +57,7 @@ TASKS='install'
 CUSTOM_TASKS=''
 CREDENTIALS="${ROOT}/swift_credentials.sh"
 USE_SWIFT=1
+BPIPE_CONF_ARGS=''
 MODE='auto'
 
 while true ; do
@@ -61,6 +67,10 @@ while true ; do
           shift 2;;
         -v|--verbose)
           VERBOSITY=2
+          shift 1 ;;
+        -i|--noninteractive)
+          export ARGPARSE_PROMPT_AUTO=True
+          BPIPE_CONF_ARGS='--executor none'
           shift 1 ;;
         -p|--no-pip)
           USE_PIP=0
@@ -126,7 +136,7 @@ fi
                 popd
 
                 # Make a virtual environment
-                pyvenv ${PYTHON}
+                ${SYS_INTERPRETER} -m venv ${PYTHON}
 
                 # Delete the temporary files
                 rm -rf ${TEMP_SUBDIR}
@@ -137,14 +147,18 @@ fi
 
     {
         # Load virtualenv
-        source ${PYTHON}/bin/activate
+        source ${ROOT}/_env
 
         # Install pip dependencies
         if (( USE_PIP )); then
-            pip install -q -r requirements.txt
+            pip install --upgrade setuptools pip
+            pip install -e ${ROOT}/lib -q
         fi ;
 
     } > ${OUTPUT_STREAM}
 
-# Download assets and tools using doit
+# Run the interactive scripts first
+create_bpipe_config ${BPIPE_CONF_ARGS}
+
+# Now run the full install, which is all automated
 doit -n $PROCESSES --verbosity $VERBOSITY $TASKS mode=${MODE}

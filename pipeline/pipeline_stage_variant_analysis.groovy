@@ -26,7 +26,7 @@ filter_table = {
     stage_status("table_filter", "enter", "${sample} ${branch.analysis}");
     output.dir="results"
     exec """
-        python $SCRIPTS/filter_tsv.py --ad ${HARD_FILTER_AD} --af ${HARD_FILTER_AF} --dp ${HARD_FILTER_DP} --qual ${HARD_FILTER_QUAL} --proband ${sample} < $input > $output
+        filter_tsv --ad ${HARD_FILTER_AD} --af ${HARD_FILTER_AF} --dp ${HARD_FILTER_DP} --qual ${HARD_FILTER_QUAL} --proband ${sample} < $input > $output
     """, "filter_tsv"
     stage_status("table_filter", "exit", "${sample} ${branch.analysis}");
 }
@@ -39,7 +39,7 @@ vcf_normalize = {
     produce ("${sample}.${analysis}.genotype.norm.vcf") {
         from("variants/${sample}.${analysis}.refined.vcf") {
             exec """
-                $BCFTOOLS/bcftools norm -m -both $input.refined.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
+                bcftools norm -m -both $input.refined.vcf | $BCFTOOLS/bcftools norm -f $REF - -o $output
             """, "vcf_normalize"
         }
     }
@@ -72,7 +72,7 @@ vcf_annotate = {
     output.dir="variants"
     
     // NB we write an empty output file for the case where vep doesn't write anything
-    //    /usr/bin/env bash $SCRIPTS/vcf_annotate.sh "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
+    //    vcf_annotate "$input.vcf" "$output.vcf" "$HTSLIB" "$VEP" "$TOOLS" "$CONDEL" "$DBNSFP"
     exec """
         export PERL5LIB="$PERL5LIB:$TOOLS/perl5:$TOOLS/perl5/lib/perl5";
 
@@ -83,23 +83,21 @@ vcf_annotate = {
             grep '^#' $input.vcf > $output.vcf;
         else
             PATH="$PATH:$HTSLIB";
-            perl $VEP/variant_effect_predictor.pl
+            vep
                 --allele_number
                 --assembly GRCh37
                 --cache
                 --canonical
-                --check_alleles
                 --check_existing
                 --dir $VEP_CACHE
                 --dir_plugins $TOOLS/vep_plugins
-                --fasta $VEP_CACHE/homo_sapiens_refseq/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa
+                --fasta $VEP_CACHE/homo_sapiens_refseq/*/Homo_sapiens.*.dna.primary_assembly.fa.gz
                 --force_overwrite
-                --gmaf
                 --hgvs
                 -i $input.vcf
-                --maf_1kg
-                --maf_esp
-                --maf_exac
+                --af_1kg
+                --af_esp
+                --af
                 -o $output.vcf
                 --offline
                 --plugin Condel,$CONDEL/config,s ${DBNSFP_OPTS}
@@ -126,7 +124,7 @@ vcf_post_annotation_filter = {
     output.dir="variants"
     // PERL5LIB="/vlsci/VR0320/shared/production/2.2.0/tools/vep/83" perl /vlsci/VR0320/shared/production/2.2.0/tools/vep/83/filter_vep.pl --input_file txxxx.genotype.raw.split.norm.ChildOnly.vep.83.vcf --format vcf --filter "Consequence not matches stream" --only_matched --filter "BIOTYPE match protein_coding" --filter "Feature" -o txxxx.genotype.raw.split.norm.ChildOnly.vep.83.FILTER.vcf
     // first copy input to output, otherwise filter_vep creates an empty file
-    // /usr/bin/env bash $SCRIPTS/vcf_post_annotation_filter.sh "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
+    // /usr/bin/env bash vcf_post_annotation_filter "$input.vcf" "$output.vcf" "$VEP" "$TOOLS"
     exec """
         VARIANTS=`grep -c -v '^#' < $input.vcf`
 
@@ -136,7 +134,7 @@ vcf_post_annotation_filter = {
         then
           cp $input.vcf $output.vcf;
         else
-          perl $VEP/filter_vep.pl
+          filter_vep
             --input_file $input.vcf
             --filter "Consequence not matches stream" 
             --filter "BIOTYPE match protein_coding"
@@ -156,7 +154,7 @@ vcf_to_table = {
     output.dir="variants"
     // java -jar /usr/local/gatk/3.5/GenomeAnalysisTK.jar -T VariantsToTable -F CHROM -F POS -F ID -F REF -F ALT -F QUAL -F FILTER -F ABHet -F ABHom -F AC -F AF -F AN -F BaseQRankSum -F DB -F DP -F DS -F Dels -F END -F ExcessHet -F FS -F GC -F GQ_MEAN -F GQ_STDDEV -F HRun -F HW -F HaplotypeScore -F InbreedingCoeff -F LikelihoodRankSum -F LowMQ -F MLEAC -F MLEAF -F MQ -F MQ0 -F MQRankSum -F NCC -F OND -F QD -F RAW_MQ -F RPA -F RU -F ReadPosRankSum -F SOR -F STR -F Samples -F TDT -F VariantType -F ANN -GF AB -GF AD -GF DP -GF GQ -GF GT -GF MIN_DP -GF PGT -GF PID -GF PL -GF RGQ -GF SB -R /vlsci/VR0320/shared/production/1.0.4/hg19/ucsc.hg19.fasta --allowMissingData --showFiltered -V txxxx.genotype.raw.split.norm.ChildOnly.vep.83.FILTER.vcf -o txxxx.genotype.raw.split.norm.ChildOnly.vep.83.FILTER.table
     exec """
-        /usr/bin/env bash $SCRIPTS/vcf_to_table.sh "$input.vcf" "$output.table" "$SCRIPTS" "$JAVA" "$GATK" "$REF"
+        vcf_to_table "$input.vcf" "$output.table" "$SCRIPTS" "$JAVA" "$GATK" "$REF"
     """, "vcf_to_table"
     stage_status("vcf_to_table", "exit", "${sample} ${branch.analysis}");
 }
@@ -168,7 +166,7 @@ annotate_custom_regions = {
     output.dir="results"
     if (ANNOTATE_CUSTOM_REGIONS != "") {
         exec """
-            python $SCRIPTS/annotate_custom_regions.py --bed $ANNOTATE_CUSTOM_REGIONS < $input > $output
+            annotate_custom_regions --bed $ANNOTATE_CUSTOM_REGIONS < $input > $output
         """, "annotate_custom_regions"
     }
     else { // nothing to do
@@ -185,7 +183,7 @@ table_to_lovd = {
     output.dir="results"
     produce("${run_id}_${sample}.${analysis}.flattened.tsv") {
         exec """
-            python $SCRIPTS/convert_to_lovd.py --vcf $input.vcf < $input.table > $output.tsv
+            convert_to_lovd --vcf $input.vcf < $input.table > $output.tsv
         """, "table_to_lovd"
     }
     stage_status("table_to_lovd", "exit", "${sample} ${branch.analysis}");
@@ -196,7 +194,7 @@ transcript_filter = {
     output.dir="results"
     produce("${run_id}_${sample}.${analysis}.lovd.tsv") {
         exec """
-            python $SCRIPTS/filter_transcripts.py < $input.tsv > $output.tsv
+            filter_transcripts < $input.tsv > $output.tsv
         """, "transcript_filter"
     }
  }

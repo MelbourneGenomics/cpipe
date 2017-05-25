@@ -9,10 +9,6 @@ from tasks.nectar.nectar_util import *
 
 
 def task_install_bzip2():
-    def update():
-        if has_swift_auth():
-            add_to_manifest('bzip2')
-
     return {
         'actions': [
             cmd('''
@@ -21,7 +17,7 @@ def task_install_bzip2():
                 make
                 make install PREFIX={}
             '''.format(INSTALL_ROOT)),
-            update
+            (add_to_manifest, ['bzip2'])
         ],
         'setup': ['download_bzip2'],
         'targets': [os.path.join(INSTALL_BIN, 'bzip2')],
@@ -31,10 +27,6 @@ def task_install_bzip2():
 
 
 def task_install_xz():
-    def update():
-        if has_swift_auth():
-            add_to_manifest('xz')
-
     return {
         'actions': [
             cmd('''
@@ -43,7 +35,7 @@ def task_install_xz():
                 make
                 make install
             '''.format(INSTALL_ROOT)),
-            update
+            (add_to_manifest, ['xz'])
         ],
         'targets': [os.path.join(INSTALL_BIN, 'xz')],
         'setup': ['download_xz'],
@@ -53,10 +45,6 @@ def task_install_xz():
 
 
 def task_install_pcre():
-    def update():
-        if has_swift_auth():
-            add_to_manifest('pcre')
-
     return {
         'actions': [
             cmd('''
@@ -65,7 +53,7 @@ def task_install_pcre():
                 make --quiet
                 make install --quiet
            '''.format(INSTALL_ROOT)),
-            update
+            (add_to_manifest, ['pcre'])
         ],
         'setup': ['download_pcre'],
         'targets': [os.path.join(INSTALL_BIN, 'pcregrep')],
@@ -75,10 +63,6 @@ def task_install_pcre():
 
 
 def task_install_libcurl():
-    def update():
-        if has_swift_auth():
-            add_to_manifest('libcurl')
-
     return {
         'actions': [
             cmd('''
@@ -87,7 +71,7 @@ def task_install_libcurl():
                 make
                 make install
             '''.format(INSTALL_ROOT)),
-            update
+            (add_to_manifest, ['libcurl'])
         ],
         'setup': ['download_libcurl'],
         'targets': [os.path.join(INSTALL_BIN, 'curl')],
@@ -97,10 +81,6 @@ def task_install_libcurl():
 
 
 def task_install_zlib():
-    def update():
-        if has_swift_auth():
-            add_to_manifest('zlib')
-
     return {
         'actions': [
             cmd('''
@@ -109,7 +89,7 @@ def task_install_zlib():
                 make
                 make install
             '''.format(INSTALL_ROOT)),
-            update
+            (add_to_manifest, ['zlib'])
         ],
         'targets': [os.path.join(INSTALL_ROOT, 'lib', 'libz.so')],
         'setup': ['download_zlib'],

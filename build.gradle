@@ -1,0 +1,42 @@
+apply plugin:'java'
+apply plugin: 'maven'
+group = 'com.github.MelbourneGenomics'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven { 
+        name "biojava"
+        url "http://www.biojava.org/download/maven/" 
+    }
+    maven {
+      name "gral" 
+      url "http://mvn.erichseifert.de/maven2"
+    }
+    mavenLocal()
+    maven {
+        url "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/" //for htsjdk snapshots
+    }
+}
+
+//configurations.all {
+//    transitive false
+//}
+
+dependencies {
+    compile 'com.github.MelbourneGenomics:groovy-hts-sample-info:562ba2a64e8@jar'
+    compile 'com.github.ssadedin:groovy-ngs-utils:d6fdc538d9b@jar'
+    compile 'com.github.barrypitman:JUnitXmlFormatter:9893370f4112@jar'
+    compile 'io.takari.junit:takari-cpsuite:1.2.7@jar'
+    //compile 'com.github.broadinstitute:picard:2.9.0'
+    //compile 'com.github.ssadedin:bpipe:0.9.9.2@jar'
+    //compile 'com.github.broadgsa:gatk-protected:3.6'
+}
+
+task copyDeps(type: Copy) {
+    // Use `gradle  copyDeps -Pdir=/some/dir to specify where to puts the jars`
+    from configurations.runtime
+    exclude '**/*picard.jar', '**/*groovy-*-2.*.*.jar', '**/*groovy-2.*.*.jar'
+    into project.hasProperty('dir') ? project.property('dir') : 'tools/java_libs'
+    //rename '(.*)-[a-z0-9\\.]+.jar', '$1.jar'
+}
