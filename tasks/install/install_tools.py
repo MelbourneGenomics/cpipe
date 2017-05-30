@@ -246,14 +246,14 @@ def task_install_fastqc():
     }
 
 def task_install_vcfanno():
-    script_bin = os.path.join(INSTALL_BIN, 'vcfanno')
 
     def action(vcfanno_dir):
-        delete_and_copy(os.path.join(vcfanno_dir, 'vcfanno'), INSTALL_BIN)
+        delete_and_copy(Path(vcfanno_dir) / 'vcfanno', INSTALL_BIN)
+        add_to_manifest('vcfanno')
 
     return {
         'actions': [action],
-        'targets': [os.path.join(INSTALL_BIN, 'vcfanno')],
+        'targets': [INSTALL_BIN / 'vcfanno'],
         'setup': ['download_vcfanno'],
         'uptodate': [not nectar_asset_needs_update('vcfanno')],
         'getargs': {'vcfanno_dir': ('download_vcfanno', 'dir')},
@@ -266,7 +266,7 @@ def task_install_bpipe():
 
     return {
         'actions': [action],
-        'targets': [BPIPE_ROOT, os.path.join(BPIPE_ROOT, 'bin', 'bpipe')],
+        'targets': [BPIPE_ROOT, BPIPE_ROOT / 'bin' / 'bpipe'],
         'setup': ['download_bpipe'],
         'uptodate': [not nectar_asset_needs_update('bpipe')],
         'getargs': {'bpipe_dir': ('download_bpipe', 'dir')},
@@ -277,7 +277,7 @@ def task_install_picard():
     picard_target = JAVA_LIBS_ROOT / 'picard.jar'
 
     def action(picard_dir):
-        picard_jar = os.path.join(picard_dir, 'picard.jar')
+        picard_jar = picard_dir / 'picard.jar'
         delete_and_copy(picard_jar, picard_target)
         add_to_manifest('picard')
 
@@ -291,17 +291,17 @@ def task_install_picard():
 
 
 def task_install_groovy():
-    groovy_target = os.path.join(INSTALL_BIN, 'groovy')
+    groovy_target = INSTALL_BIN / 'groovy'
 
     def action(groovy_dir):
         # Make the groovy directory
         delete_and_copy(groovy_dir, GROOVY_ROOT)
 
         # Symlink all binaries to this directory
-        groovy_bin = os.path.join(GROOVY_ROOT, 'bin')
+        groovy_bin = GROOVY_ROOT / 'bin'
         for bin_file in os.listdir(groovy_bin):
-            bin_target = os.path.join(groovy_bin, bin_file)
-            symlink = os.path.join(INSTALL_BIN, bin_file)
+            bin_target = groovy_bin / bin_file
+            symlink = INSTALL_BIN / bin_file
             replace_symlink(bin_target, symlink)
             make_executable(bin_target)
 
@@ -324,7 +324,7 @@ def task_install_vep_libs():
     return {
         'actions': [action],
         'uptodate': [not nectar_asset_needs_update('vep_libs')],
-        'targets': [VEP_LIBS_ROOT, os.path.join(VEP_LIBS_ROOT, 'Bio', 'TreeIO.pm')],
+        'targets': [VEP_LIBS_ROOT, VEP_LIBS_ROOT / 'Bio' / 'TreeIO.pm'],
         'setup': ['download_vep_libs'],
         'getargs': {'vep_libs_dir': ('download_vep_libs', 'dir')},
     }
@@ -357,13 +357,13 @@ def task_install_vep_plugins():
         'actions': [action],
         'uptodate': [not nectar_asset_needs_update('vep_plugins')],
         'setup': ['download_vep_plugins'],
-        'targets': [VEP_PLUGIN_ROOT, os.path.join(VEP_PLUGIN_ROOT, 'GO.pm')],
+        'targets': [VEP_PLUGIN_ROOT, VEP_PLUGIN_ROOT / 'GO.pm'],
         'getargs': {'vep_plugins_dir': ('download_vep_plugins', 'dir')},
     }
 
 
 def task_install_maven():
-    target = os.path.join(MAVEN_ROOT, 'bin', 'mvn')
+    target = MAVEN_ROOT / 'bin' / 'mvn'
 
     def action(maven_dir):
         delete_and_copy(maven_dir, MAVEN_ROOT)

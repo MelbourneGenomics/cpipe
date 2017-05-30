@@ -68,7 +68,7 @@ def converted_cache_exists():
     """Returns the path to a key target file in the converted cache, if it exists"""
     vep_glob = VEP_CACHE.glob('homo_sapiens_refseq/*/1/all_vars.gz.tbi')
     if vep_glob:
-        return Path(vep_glob[0]).exists()
+        return Path(next(vep_glob)).exists()
     else:
         return False
 
@@ -337,12 +337,9 @@ def task_samtools_index_ucsc_reference():
         'uptodate': [True]
     }
 
-VCFANNO_DIR = os.path.join(DATA_ROOT, 'annotation')
 def task_download_vcfanno_data():
-    if has_swift_auth():
-        targets = [VCFANNO_DIR]
-        return nectar_install('annotation', {'targets': targets})
+    VCFANNO_DIR = os.path.join(DATA_ROOT, 'annotation')
+    if manual_install() or not has_swift_auth():
+        return {'actions': [lambda: print("This asset can only be installed using the nectar object store")]}
     else:
-        print "this asset can only be installed using the nectar object store"
-        return {}
-
+        return nectar_install('annotation', {'targets': [VCFANNO_DIR]})

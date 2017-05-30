@@ -109,6 +109,7 @@
     },
     "vcfanno": {
         "path": "tools/vcfanno",
+	"container": "cpipe-2.4-assets",
         "version": "0.1.0",
         "hash": "5f69c278374d1afc7636c2e8902808b71810674b"
     },
@@ -127,6 +128,7 @@
     "annotation": {
         "path": "data/annotation", 
         "version": "1.0", 
+	"container": "cpipe-2.4-assets",
         "hash": "19e40233dd880e3a90111e698ba4dd12d0fc328d"
     }, 
     "dbsnp": {

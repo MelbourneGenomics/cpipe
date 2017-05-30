@@ -158,7 +158,9 @@ fi
     } > ${OUTPUT_STREAM}
 
 # Run the interactive scripts first
-create_bpipe_config ${BPIPE_CONF_ARGS}
+if [[ ! -f ${ROOT}/pipeline/bpipe.config ]] ; then
+    create_bpipe_config ${BPIPE_CONF_ARGS}
+fi
 
 # Now run the full install, which is all automated
 doit -n $PROCESSES --verbosity $VERBOSITY $TASKS mode=${MODE}
