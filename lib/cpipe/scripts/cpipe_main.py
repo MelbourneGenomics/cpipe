@@ -8,8 +8,7 @@ import subprocess
 from cpipe import arg_validation
 from collections.abc import Sequence
 from doit.doit_cmd import DoitMain
-from cpipe.scripts import manage_batch
-from cpipe.scripts import manage_genelists
+from cpipe.scripts import manage_batch, manage_genelists, check_java as cj
 from cpipe import paths
 
 
@@ -23,8 +22,8 @@ def run(cmd, **kwargs):
 
 def check_java(args):
     """Run the java check if necessary"""
-    if args.no_java_check is not None:
-        DoitMain().run(['-f', str(paths.DODO), 'check_java'])
+    if not args.no_java_check:
+        cj.check_java()
 
 
 def run_pipeline(args):
