@@ -64,7 +64,7 @@ def get_schema(is_mgha):
         Column('Batch', [InverseValidation(MatchesPatternValidation('_'), message='underscores are not allowed in batch IDs!')]),
         Column('Sample_ID', [InverseValidation(MatchesPatternValidation('_'), message='underscores are not allowed in sample IDs!')]),
         Column('DNA_Tube_ID', allow_empty=True),
-        Column('Sex', [InListValidation(['male', 'female', 'other'], case_sensitive=False)]),
+        Column('Sex', [InListValidation(['Male', 'Female', 'Unknown', 'other'], case_sensitive=False)]),
         Column('DNA_Concentration', [CanConvertValidation(float)], allow_empty=True),
         Column('DNA_Volume', [CanConvertValidation(float)], allow_empty=True),
         Column('DNA_Quantity', [CanConvertValidation(float)], allow_empty=True),

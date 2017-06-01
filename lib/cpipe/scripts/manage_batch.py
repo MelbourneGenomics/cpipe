@@ -37,7 +37,7 @@ def setup_parser(parser: argparse.ArgumentParser):
     create_batch_parser.add_argument('--force', '-f', required=False, default=False, nargs='?', const=True,
                                      help='Replace an existing batch with'
                                           ' that name, if it already exists')
-    create_batch_parser.add_argument('--mode', '-m', required=False, default='copy',
+    create_batch_parser.add_argument('--mode', '-m', required=False, default='link',
                                      help='Either "copy", "link" or "move":'
                                           " the method used to put the data files into the batch directory")
 
