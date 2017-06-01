@@ -11,120 +11,209 @@
 * [Metadata](#metadata)
   * [Update](#update)
   * [Validate](#validate)
+  
+## Cpipe Environment
+The Cpipe commands are only available inside a cpipe-specific Bash shell. To open this shell, simply run:
+```bash
+./environment.sh
+```
+Just press `Ctrl+D` or type `exit` to close this shell at any time.
 
 ## Basic Functionality
 
-The basic Cpipe entrypoint is the cpipe script, which exposes all the public interface for running and reviewing the 
-pipeline
+Once you've activated the Cpipe shell, the most common command you will be using is `cpipe`, which exposes the 
+public interface for running and reviewing the pipeline
 
-Usage: `./cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>`
+Usage: `cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>`
 
 Commands (type --help after any command for more details):
 * [run](#run): Runs the analysis pipeline
 * [test](#test): Runs the pipeline tests
 * [batch](#batch): Creates and modifies analysis batches
-* [genelist](#genelist): Creates and modifies genelists
+* [design](#design): Creates and modifies designs/genelists
 * [metadata](#metadata): Creates and modifies sample metadata files
 
 Keyword Arguments:
-* `-b, --batch <batch name>`: Specify a batch (a subdirectory inside batches) to use for the run and bpipe commands. Defaults to a batch named 'batch'
-* `--help, --usage`: Prints this help page
-* `-j, --no-java-check`: Disables the java version check. Only do this if you know what you're doing
+* `-h`, `--help`: Prints this help page
 
 ## Run
-The cpipe run command is the most common use case for cpipe. Just ensure you have a sample batch in the batches directory 
-and run `./cpipe --batch <batch-name> run` and your samples should be analysed. 
+```
+usage: cpipe run [-h] [-j] batch ...
 
-You can also specify bpipe options (like limiting the system resources) with the `--bpipe-options <OPTS>` flag
+positional arguments:
+  batch                The name of the batch that you want to run, relative to
+                       the batches directory
+  bpipe_opts           Arguments to pass to the underlying bpipe command
+
+optional arguments:
+  -h, --help           show this help message and exit
+  -j, --no-java-check  Don't check that the system Java is a compatible
+                       version
+```
+The cpipe run command is the most common use case for cpipe. Just ensure you have a sample batch in the batches
+directory, run the command above, and your samples should be analysed. 
+
+Any arguments that you specify other than the ones above are assumed to be bpipe options. For example, if you wanted to
+limit the maximum number of parallel jobs in the pipeline to 2, you could use:
+```bash
+cpipe run MyBatch -n 2
+```
 
 ## Test
-The test command is also very useful. It runs all cpipe's unit tests and integration tests in order to ensure the pipeline
-is working correctly. Test takes no additional options.
+```
+usage: cpipe test [-h] [-j]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  -j, --no-java-check  Don't check that the system Java is a compatible
+                       version
+```
+
+The test command runs all cpipe's unit tests and integration tests in order to ensure the pipeline
+is working correctly.
 
 ## Batch
-The batch command provides utilities for manipulating batches of samples. The batch subcommands are:
-* add_batch
-* show_batches
-* show_batch
-* add_sample
+```
+usage: cpipe batch [-h] [-m] {list,create,edit,view,check,add_sample} ...
 
-### Add Batch
-`./cpipe batch add_batch <options>`
+positional arguments:
+  {list,create,edit,view,check,add_sample}
+    list                Lists the batches in the current Cpipe installation
+    create              Creates a new batch, including data, metadata file and
+                        configuration file
+    edit                Edit the metadata file for the chosen batch
+    view                View the metadatafile for the chosen batch in a human-
+                        readable format
+    check               Validate the metadata file for the chosen batch
+    add_sample          Add a sample to an existing metadata file
 
-Creates a new sample metadata file for a new batch
+optional arguments:
+  -h, --help            show this help message and exit
+  -m, --mgha            Use MGHA-specific validation rules
+```
+The batch command provides utilities for manipulating batches of samples. The 6 subcommands are listed below:
 
-Options:
-  * `--batch BATCH` (required) Specifies the batch directory in which to create a metadata file
-  * `--profile PROFILE` (optional) Specifies the analysis profile to use. Defaults to ALL, the recommended profile
-  * `--exome EXOME` (required) Specifies a bed file to use as the capture region
-  * `--data [DATA [DATA ...]]` (optional) specifies the fastq files in the batch. Defaults to all files in the data 
-  subdirectory, which is the recommended structure for a batch.
-  * `--force` (optional) Overrides an existing samples.txt
+### List
+```
+usage: cpipe batch list [-h]
 
-### Show Batch
+optional arguments:
+  -h, --help  show this help message and exit
+```
+This command outputs a plaintext list of batch names. All of these batches are valid inputs for the other batch commands,
+such as `edit`, `view`, and general commands like `run`.
+
+### Create
+```
+usage: cpipe batch create [-h] -d DATA [DATA ...] -e EXOME [-p PROFILE]
+                          [-f [FORCE]] [-m MODE]
+                          name
+
+positional arguments:
+  name                  The name for the new batch
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATA [DATA ...], --data DATA [DATA ...]
+                        The fastq files to add to the batch
+  -e EXOME, --exome EXOME
+                        A bed file indicating which regions are covered by the
+                        sequencing procedure
+  -p PROFILE, --profile PROFILE
+                        The analysis profile (gene list) to use for the
+                        analysis of this batch
+  -f [FORCE], --force [FORCE]
+                        Replace an existing batch with that name, if it
+                        already exists
+  -m MODE, --mode MODE  Either "copy", "link" or "move": the method used to
+                        put the data files into the batch directory
+```
+Creates a new batch, including adding fastqs, creating the metadata file, and creating the batch configuration file.
+
+### Edit
+```
+usage: cpipe batch edit [-h] [-e EDITOR] batch
+
+positional arguments:
+  batch                 The name of the batch whose metadata file you want to
+                        edit
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -e EDITOR, --editor EDITOR
+                        The name of the executable you want to use to edit the
+                        metadata file using. Defaults to visidata, included
+                        with cpipe (https://github.com/saulpw/visidata)
+```
 `./cpipe batch show_batch <options>` 
 
-Prints information about a single batch
+Edits the sample metadata file as an interactive spreadsheet. You can choose a custom editor, for example `vim`, by
+specifying that with the `--editor` flag.
 
-Options:
-  * `--batch BATCH` (required) Specifies the batch to print information about
+For more information on the default visidata editor, see the [visidata](#visidata) section below.
   
-### Show Batches
-`./cpipe batch show_batches <options>`
+### View
+```
+usage: cpipe batch view [-h] batch
 
-Lists all the existing batches in this cpipe installation
+positional arguments:
+  batch       The name of the batch whose metadata file you want to view
 
-Options:
-  * `--batch BATCH` (required) Specifies the batch to print information about
+optional arguments:
+  -h, --help  show this help message and exit
+```
+
+Shows the metadata file as a spreadsheet, much like the edit command, but without any possibility of modifying the file.
+
+### Check
+```
+usage: cpipe batch check [-h] batch
+
+positional arguments:
+  batch       The name of the batch whose metadata file you want to validate
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
+Validates the given batch metadata file, using either MGHA or default validation rules (specify `--mgha` before the 
+`check` command to use MGHA validation)
 
 ### Add Sample
-`./cpipe batch add_sample <options>`
+```
+usage: cpipe batch add_sample [-h] [-d DATA [DATA ...]] batch
+
+positional arguments:
+  batch                 The name of the batch to which you want to add a sample
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATA [DATA ...], --data DATA [DATA ...]
+                        The list of fastqs you want to add as samples to the
+                        batch
+```
 
 Adds one or more samples to an existing batch
 
-  * `--batch BATCH` (required) Specifies the batch to add a sample to
-  * `--profile PROFILE` (optional) Specifies the analysis profile to use. Defaults to ALL, the recommended profile
-  * `--data [DATA [DATA ...]]` (optional) specifies the fastq files to add to the in the batch. Defaults to all files in the data 
-  subdirectory, which is the recommended structure for a batch.
+## Design
+```
+usage: cpipe design [-h] --profile PROFILE [--force]
+                    {add_profile,show_profiles,show_genes,add_genes,remove_genes,validate,add_bed,remove_bed,show_bed}
 
-## Genelist
+positional arguments:
+  {add_profile,show_profiles,show_genes,add_genes,remove_genes,validate,add_bed,remove_bed,show_bed}
+                        command to execute
 
-The genelist command provides utilities for manipulating designs (see the terminology section for an explanation 
-of this term).
+optional arguments:
+  -h, --help            show this help message and exit
+  --profile PROFILE     profile to update
+  --force               force addition of genes
+```
 
-The genelist command has the following subcommands:
+The `design` subcommand command provides utilities for manipulating designs. Refer to the [design](design.md)
+section for an explanation of the concept of a design.
 
-* `add_profile` 
-* `show_profiles` 
-* `show_genes` 
-* `add_genes < genes.txt [--force]` 
-* `remove_genes < genes.txt [--force]` 
-* `validate` 
-* `add_bed < genes.bed [--force]` 
-* `remove_bed < genes.bed` 
-* `show_bed` 
-
-All commands have the following arguments:
- * `--profile PROFILE` (mandatory): Select a profile/design to update 
- * `-h, --help`: show the help message and exit
-
-## Metadata
-
-The metadata command provides utilities for manipulating metadata files, which define the options for the analysis of a 
-given batch. The metadata command has two subcommands: `check` for checking the validity of an existing metadata file,
-and `update`, for modifying an existing metadata file. Refer to the add_batch subcommand of the [`batch`](#batch) command 
-for a way of creating a new metadata file.
-
-### Update
-Usage: `./cpipe metadata check < samples.txt --fields [field] [field...]`
-Prints out the values of the metadata file. Only prints the fields specified if `--fields` is present
-
-### Validate
-Usage: `./cpipe metadata validate`
-Updates a given field of the sample metadata file.
-
-Arguments:
-* `--sample_id <sample>`: Specifies the sample ID of the sample to update
-* `--name <name>`: specifies the name of the field to update
-* `--value <value>`: specifies the new value to assign the field
-* `--target <file>`: specifies the sample metadata file to update
+Each command takes a design name using `--profile`, and any other input from stdin (where relevant). For example, to
+add a list of genes to a design, you can run:
+```
+cpipe design --batch my_design < genes.txt
+```

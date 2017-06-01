@@ -20,6 +20,7 @@ def run(cmd, **kwargs):
 
     subprocess.run(cmd, **kwargs)
 
+
 def check_java(args):
     """Run the java check if necessary"""
     if not args.no_java_check:
@@ -58,9 +59,12 @@ def main():
 
     # Run command
     run_parser = subparsers.add_parser('run', help='Runs the analysis pipeline')
-    run_parser.add_argument('batch', type=arg_validation.existing_batch)
-    run_parser.add_argument('--no-java-check', '-j', action='store_true')
-    run_parser.add_argument('bpipe_opts', type=arg_validation.existing_batch, nargs=argparse.REMAINDER)
+    run_parser.add_argument('batch', type=arg_validation.existing_batch,
+                            help='The name of the batch that you want to run, relative to the batches directory')
+    run_parser.add_argument('-j', '--no-java-check', action='store_true',
+                            help="Don't check that the system Java is a compatible version")
+    run_parser.add_argument('bpipe_opts', nargs=argparse.REMAINDER,
+                            help="Arguments to pass to the underlying bpipe command")
     run_parser.set_defaults(func=run_pipeline)
 
     # Batch command
@@ -70,19 +74,23 @@ def main():
 
     # Test command
     test_parser = subparsers.add_parser('test', help='Run the cpipe test suite')
-    test_parser.add_argument('--no-java-check', '-j', action='store_true')
+    test_parser.add_argument('-j', '--no-java-check', action='store_true',
+                             help="Don't check that the system Java is a compatible version")
     test_parser.set_defaults(func=test_pipeline)
 
     # Design command
-    test_parser = subparsers.add_parser('designs', help='Create and modify designs and their genelists')
+    test_parser = subparsers.add_parser('design', help='Create and modify designs and their genelists')
     manage_genelists.setup_parser(test_parser)
     test_parser.set_defaults(func=manage_genelists.execute)
 
     # Bpipe command
     bpipe_parser = subparsers.add_parser('bpipe', help='Pass a command to bpipe')
-    bpipe_parser.add_argument('batch', type=arg_validation.existing_batch)
-    bpipe_parser.add_argument('--no-java-check', '-j', nargs='?', const=True)
-    bpipe_parser.add_argument('bpipe_args', nargs=argparse.REMAINDER)
+    bpipe_parser.add_argument('batch', type=arg_validation.existing_batch,
+                              help='The name of the batch, relative to the batches directory, that you want to run bpipe on')
+    bpipe_parser.add_argument('-j', '--no-java-check', nargs='?', const=True,
+                              help="Don't check that the system Java is a compatible version")
+    bpipe_parser.add_argument('bpipe_args', nargs=argparse.REMAINDER,
+                              help="Arguments to pass to the underlying bpipe command")
     bpipe_parser.set_defaults(func=run_bpipe)
 
     # Parse then execute

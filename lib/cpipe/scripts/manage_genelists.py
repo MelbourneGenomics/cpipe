@@ -277,7 +277,7 @@ def setup_parser(parser: argparse.ArgumentParser):
     parser.add_argument('command', help='command to execute',
                         choices=['add_profile', 'show_profiles', 'show_genes', 'add_genes', 'remove_genes', 'validate',
                                  'add_bed', 'remove_bed', 'show_bed'])
-    parser.add_argument('--profile', required=False, help='profile to update')
+    parser.add_argument('--profile', required=True, help='profile to update')
     parser.add_argument('--force', action='store_true', help='force addition of genes')
 
 def execute(args, parser):

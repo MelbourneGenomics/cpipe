@@ -20,62 +20,14 @@ In Cpipe, a batch is a group of samples to be analysed at the same time. In the 
  
 ## Manipulating Batches
 In Cpipe, most things you want to do involving a batch can be done using the `cpipe batch` subcommand. If you need to
-know more about this command, just run `cpipe batch --help` while you're in the Cpipe environment.
+know more about this command, just run `cpipe batch --help` while you're in the Cpipe environment. Full documentation
+on this command can be found [here](commands.md#batch).
 
-### Creating a Batch
-#### Creating a New Batch
-Once you have your fastq files, follow these steps to create a new analysis batch:
-* First, rename your fastqs to ensure they fit the following pattern:
-`sampleID_<anything>_L[0-9]*_R[0-9].fastq.gz`
-* Tell Cpipe to create a new batch using your fastq files
-   ```bash
-   cpipe batch create MyBatch --data path/to/samples/*.fastq.gz --exome path/to/exons.bed
-   ```
-  * `MyBatch` is the batch identifier 
-  * `path/to/exons.bed` is the full filepath to a capture regions bed file specified by your sequencer
-  * `path/to/samples/*.fastq.gz` is the full filepath to the sample fastqs you want to put in your batch
-
-For more information on the `add_batch` command, refer to its [documentation](commands.md#add-batch)
-  
-#### Creating a Batch for Re-analysis
+## Creating a Batch for Re-analysis
 If you intend to re-analyse an existing batch from an old version of Cpipe, you should be able to copy the entire batch
 directory into the batches directory of the new Cpipe. If you do this, make sure to rename `target_regions.txt` to 
 `config.batch.groovy`
   
-### Adding More Samples
-
-To add more samples to an existing batch, use the `cpipe batch add_sample` command, e.g.:
-```bash
-cpipe batch add_sample mutation_detection --data path/to/sample.fastq.gz 
-```
-Refer to [this command's documentation](./commands.md#add-sample) for more information.
-
-### Viewing Batch Information
-
-Cpipe provides two utility commands for viewing batch information:
-* `cpipe batch list` lists all the batches in the current installation. Refer to 
-[its documentation](commands.md#show-batches) for more information
-* `cpipe batch view <batch name>` will display the sample metadata file in spreadsheet form. Refer to
-[its documentation](commands.md#show-batch) for more information. This opens in the [Visidata editor](#visidata).
-
-### Editing Batch Metadata
-To edit the sample metadata (patient information), use the following command:
-```bash
-cpipe batch edit <batch name>
-```
-
-This opens in the [Visidata editor](#visidata). Also refer to the [`batch edit`](commands.md#edit) documentation for 
-more information.
-
-## Visidata
-The editor we use for editing the batch metadata is called `visidata`.	You can read the official documentation on the
-editor [here](https://github.com/saulpw/visidata/blob/stable/README.md). However for the sake of editing metadata, the 
-only things you need to know are:
-* You can move your selection around using the arrow keys
-* `e` Edits the current cell. Press `Enter`/`Return` once you're done to save that cell
-* `Ctrl+S` saves the current document.
-* `q` quits the editor without saving
-
 ## Files
 Inside the batch directory (`batches/<batch name>`) are three fundamental elements. All of these must be present and 
 are not optional. Here they are covered in more detail.
