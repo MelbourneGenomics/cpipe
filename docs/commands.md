@@ -1,16 +1,16 @@
 # Running Cpipe
-* [Basic Functionality](#basic-functionality)
-* [Run](#run)
-* [Test](#test)
-* [Batch](#batch)
-  * [Add Batch](#add-batch)
-  * [Show Batch](#show-batch)
-  * [Show Batches](#show-batches)
-  * [Add Sample](#add-sample)
-* [Genelist](#genelist)
-* [Metadata](#metadata)
-  * [Update](#update)
-  * [Validate](#validate)
+  * [Cpipe Environment](#cpipe-environment)
+  * [Basic Functionality](#basic-functionality)
+  * [Run](#run)
+  * [Test](#test)
+  * [Batch](#batch)
+	 * [List](#list)
+	 * [Create](#create)
+	 * [Edit](#edit)
+	 * [View](#view)
+	 * [Check](#check)
+	 * [Add Sample](#add-sample)
+  * [Design](#design)
   
 ## Cpipe Environment
 The Cpipe commands are only available inside a cpipe-specific Bash shell. To open this shell, simply run:
