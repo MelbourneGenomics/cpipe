@@ -9,8 +9,8 @@ from .design import Design
 from .metadata import Metadata
 from . import pathlib_patches
 
-class Batch:
 
+class Batch:
     def __init__(self, directory=None, name=None):
         if directory and name:
             raise ValueError("You can't specify a directory and a name for the batch. Use one or either")
@@ -22,7 +22,8 @@ class Batch:
             raise ValueError("You must specify a directory or a name for the batch. Use one or either")
 
     @staticmethod
-    def create(batch_name: str, data: typing.Iterable[Path], exome: str, profile: Design, force: bool = False,
+    def create(batch_name: str, data: typing.Iterable[Path], exome: str, profile: Design = Design('ALL'),
+               force: bool = False,
                mode: str = 'link'):
         """
         Creates a new batch and associated config files
@@ -82,8 +83,7 @@ class Batch:
         elif mode == 'move':
             fastq.rename(target_fastq)
 
-
-    def add_samples(self, samples: List[Path], design: Design, mode: str = None):
+    def add_samples(self, samples: List[Path], design: Design = Design('ALL'), mode: str = None):
         """
         Adds the samples to the batch directory and updates the metadata file
         :param samples:
@@ -95,7 +95,7 @@ class Batch:
         for sample in samples:
             self.add_fastq(sample, mode)
 
-        self.add_samples(samples, design)
+        self.metadata.add_samples(samples, design)
 
     def delete(self):
         """
@@ -164,5 +164,6 @@ class Batch:
 
     def __fspath__(self):
         return self.path
+
 
 __all__ = ["Batch"]

@@ -69,7 +69,7 @@ def setup_parser(parser: argparse.ArgumentParser):
                                               help='Add a sample to an existing metadata file')
     add_sample_parser.add_argument('batch', type=existing_batch, help='The name of the batch to which you'
                                                                       'want to add a sample')
-    add_sample_parser.add_argument('data', nargs='+', help='The list of fastqs you want to add as samples to the batch')
+    add_sample_parser.add_argument('--data', nargs='+', help='The list of fastqs you want to add as samples to the batch', type=path_with_ext(['.fastq', '.gz']))
 
     return parser
 
@@ -93,7 +93,7 @@ def execute(args: argparse.Namespace):
         else:
             print(f'The metadata file for batch "{args.batch.name}" successfully passed the metadata check!')
     elif args.command == 'add_sample':
-        args.batch.add_sample(args.data)
+        args.batch.add_samples(args.data)
     else:
         raise ValueError('Unknown command')
 

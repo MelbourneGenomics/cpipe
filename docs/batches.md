@@ -1,16 +1,18 @@
 # Batches
-
   * [Introduction](#introduction)
   * [Manipulating Batches](#manipulating-batches)
-    + [Creating a Batch](#creating-a-batch)
-    + [Creating a Batch for Re-analysis](#creating-a-batch-for-re-analysis)
-    + [Adding More Samples](#adding-more-samples)
-    + [Viewing Batch Information](#viewing-batch-information)
+	 * [Creating a Batch](#creating-a-batch)
+		* [Creating a New Batch](#creating-a-new-batch)
+		* [Creating a Batch for Re-analysis](#creating-a-batch-for-re-analysis)
+	 * [Adding More Samples](#adding-more-samples)
+	 * [Viewing Batch Information](#viewing-batch-information)
+	 * [Editing Batch Metadata](#editing-batch-metadata)
+  * [Visidata](#visidata)
   * [Files](#files)
-    + [Data Directory](#data-directory)
-    + [Sample Metadata](#sample-metadata)
-      - [Abbreviations](#abbreviations)
-    + [config.batch.groovy](#configbatchgroovy)
+	 * [Data Directory](#data-directory)
+	 * [Sample Metadata](#sample-metadata)
+		* [Abbreviations](#abbreviations)
+	 * [config.batch.groovy](#configbatchgroovy)
     
 ## Introduction
 In Cpipe, a batch is a group of samples to be analysed at the same time. In the filesystem, a batch is a directory inside
@@ -20,7 +22,7 @@ In Cpipe, a batch is a group of samples to be analysed at the same time. In the 
 In Cpipe, most things you want to do involving a batch can be done using the `cpipe batch` subcommand. If you need to
 know more about this command, just run `cpipe batch --help` while you're in the Cpipe environment.
 
-### Creating Batch
+### Creating a Batch
 #### Creating a New Batch
 Once you have your fastq files, follow these steps to create a new analysis batch:
 * First, rename your fastqs to ensure they fit the following pattern:
@@ -33,7 +35,7 @@ Once you have your fastq files, follow these steps to create a new analysis batc
   * `path/to/exons.bed` is the full filepath to a capture regions bed file specified by your sequencer
   * `path/to/samples/*.fastq.gz` is the full filepath to the sample fastqs you want to put in your batch
 
-  For more information on the `add_batch` command, refer to its [documentation](commands.md#add-batch)
+For more information on the `add_batch` command, refer to its [documentation](commands.md#add-batch)
   
 #### Creating a Batch for Re-analysis
 If you intend to re-analyse an existing batch from an old version of Cpipe, you should be able to copy the entire batch
@@ -42,8 +44,11 @@ directory into the batches directory of the new Cpipe. If you do this, make sure
   
 ### Adding More Samples
 
-To add more samples to an existing batch, use the `cpipe batch add_sample` command. Refer to 
-[its documentation](./commands.md#add-sample)
+To add more samples to an existing batch, use the `cpipe batch add_sample` command, e.g.:
+```bash
+cpipe batch add_sample mutation_detection --data path/to/sample.fastq.gz 
+```
+Refer to [this command's documentation](./commands.md#add-sample) for more information.
 
 ### Viewing Batch Information
 
@@ -51,7 +56,7 @@ Cpipe provides two utility commands for viewing batch information:
 * `cpipe batch list` lists all the batches in the current installation. Refer to 
 [its documentation](commands.md#show-batches) for more information
 * `cpipe batch view <batch name>` will display the sample metadata file in spreadsheet form. Refer to
-[its documentation](commands.md#show-batch) for more information.
+[its documentation](commands.md#show-batch) for more information. This opens in the [Visidata editor](#visidata).
 
 ### Editing Batch Metadata
 To edit the sample metadata (patient information), use the following command:
@@ -59,7 +64,10 @@ To edit the sample metadata (patient information), use the following command:
 cpipe batch edit <batch name>
 ```
 
-# Visidata
+This opens in the [Visidata editor](#visidata). Also refer to the [`batch edit`](commands.md#edit) documentation for 
+more information.
+
+## Visidata
 The editor we use for editing the batch metadata is called `visidata`.	You can read the official documentation on the
 editor [here](https://github.com/saulpw/visidata/blob/stable/README.md). However for the sake of editing metadata, the 
 only things you need to know are:
@@ -87,9 +95,11 @@ example, `00NA12877_Coriell_000_TGx140395_TL140776_L001_R1.fastq.gz`. The compon
 ### Sample Metadata
 The sample metadata is the `samples.txt` located in the batch directory (batches/<batch name>) of the batch you're 
 running. The file is a TSV (tab-separated text file), where each line corresponds to an input sample. Here you can set
-various options about each sample
+various options about each sample. 
 
-|Position | Name | Description | Allowed Values | Used for Analysis | Availability | Required |
+The metadata file has two formats. The first has only 37 columns, which are listed below:
+
+|Position | Name | Description | Allowed Values | Used for Analysis | Availability | Value Required |
 |---|---|---|---|---|---|---|
 |1 | Batch | Identifier for this batch | No underscores | Yes |  2.2+| Yes
 |2 | Sample ID | Identifier for this sample | No underscores  | Yes | 2.2+| Yes 
@@ -128,6 +138,13 @@ various options about each sample
 |35 | Sequencing contact | Email address to which sequencing alerts should be sent | Valid email | No | 2.2+ | No
 |36 | Pipeline contact | Email address where pipeline result alerts should be sent | Unrestricted | No | 2.2+ | No
 |37 | Notes | Additional notes or relevant information about the sequencing | Unrestricted | No | 2.2+ | No
+
+The other format has 39 columns, which includes the columns above, and the following columns:
+
+|Position | Name | Description | Allowed Values | Used for Analysis | Availability | Required |
+|---|---|---|---|---|---|---|
+|38 | Pipeline_Notes | Additional notes relating to pipeline settings for this analysis | Unrestricted | No | 2.5+ | No
+|39 | Analysis_Type | Type of analysis. Allows non-germline analyses to be included in the set of samples | Either `germline` or `somatic` | No | 2.5+ | No
 
 #### Abbreviations
 The abbreviations listed above in the metadata file correspond to the following laboratories, hospitals and institutes:

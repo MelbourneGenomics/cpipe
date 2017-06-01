@@ -62,7 +62,7 @@ class Metadata:
         """
         self.add_samples([sample], design)
 
-    def add_samples(self, samples: typing.Iterable[Path], design: 'design.Design' = None):
+    def add_samples(self, samples: typing.Iterable[Path], design: 'design.Design' = cpipe.design.Design('ALL')):
         """
         Adds a number of samples to the metadata file
         :param samples: A list of samples to add
