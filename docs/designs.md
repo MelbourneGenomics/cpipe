@@ -7,14 +7,18 @@
 ## Introduction
 
 In Cpipe, a design specifies the analysed regions of the genome for a given set of samples. For instance, a given disease might
- associated with a group of genes, which we then group into a design and re-use for analysis of patients being tested
- for this disease.
+associated with a group of genes, which we then group into a design and re-use for analysis of patients being tested
+for this disease.
+ 
+However, our current recommendation is that you use the existing ALL design, which contains all genes in the UCSC database
+as this will save you having to re-analyse the data in case your gene list changes.
  
 The design used to analyse a given sample is specified in the cohort column of the sample metadata file. See the [sample 
 metadata documentation](batches.md#sample-metadata) for more information.
+
+Cpipe also contains a number of useful command line tools for editing designs. Refer to the documentation 
+[here](commands.md#design)
  
-However, our current recommendation is that you use the existing ALL design, which contains all genes in the UCSC database
- as this will save you having to re-analyse the data in case your gene list changes.
  
 A design consists of the following files
 * [A gene list (mandatory)](#gene-list)

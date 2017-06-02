@@ -209,7 +209,7 @@ optional arguments:
   --force               force addition of genes
 ```
 
-The `design` subcommand command provides utilities for manipulating designs. Refer to the [design](design.md)
+The `design` subcommand command provides utilities for manipulating designs. Refer to the [design](designs.md)
 section for an explanation of the concept of a design.
 
 Each command takes a design name using `--profile`, and any other input from stdin (where relevant). For example, to
