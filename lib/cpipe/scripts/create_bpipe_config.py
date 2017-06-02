@@ -17,7 +17,7 @@ def input_with_default(prompt: str, default: str):
 def main():
     parser = PromptParser()
     executors = ['slurm', 'torque', 'pbspro', 'none']
-    parser.add_argument('--executor', '-e', choices=executors, help=f'Which queueing system do you use? {{{executors.join(", ")}}}', default='torque')
+    parser.add_argument('--executor', '-e', choices=executors, help=f'Which queueing system do you use? {{{", ".join(executors)}}}', default='torque')
     parser.add_argument('--account', '-a', help='What account name do you want to use when running jobs in this system?', default=getpass.getuser())
     parser.add_argument('--queue', '-q', help='Which queue do you want to use when running jobs in this system?', default='main')
     args = parser.parse_args()

@@ -47,7 +47,7 @@ function usage {
 }
 
 # Parse arguments
-ARGS=$(getopt -o n:pvt:c:s --long "processes:,verbose,task:,no-pip,credentials:,help,usage,no-swift" -n $(basename $0) -- "$@")
+ARGS=$(getopt -o visc:n:t:p: --long "verbose,noninteractive,no-swift,credentials:,processes:,task:,no-pip:" -n $(basename $0) -- "$@")
 eval set -- "$ARGS"
 
 PROCESSES=`nproc --all`

@@ -94,7 +94,7 @@ def task_tool_assets():
 def task_copy_config():
     return {
         'actions': None,
-        'task_dep': ['copy_main_config', 'copy_bpipe_config'],
+        'task_dep': ['copy_main_config'],
         'uptodate': [True]
     }
 
@@ -112,14 +112,6 @@ def task_copy_main_config():
     return {
         'actions': [action],
         'targets': [output],
-        'uptodate': [True]
-    }
-
-
-def task_copy_bpipe_config():
-    return {
-        'actions': [PythonInteractiveAction(create_bpipe_config.main)],
-        'targets': [create_bpipe_config.out_template],
         'uptodate': [True]
     }
 
