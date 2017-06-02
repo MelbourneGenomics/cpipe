@@ -74,9 +74,9 @@ do this, follow all the instructions in the [Public Install section of the Insta
 
 ## Running the Image
 
-* **Gathering the Input Files**: The first step in running the Cpipe image is to gather all the files you'll be using as inputs into one directory. In 
-	that directory you should put all of your fastq files, and the target region BED file (refer to the EXOME_TARGET variable
-	in [the documentation](configuration.md#options). It may be tempting to symlink (`ln -s`) these files into the directory
+1. **Gathering the Input Files**: The first step in running the Cpipe image is to gather all the files you'll be using as inputs into one directory. In 
+	that directory you should put all of your fastq files, and the target region BED file (refer to the `EXOME_TARGET` variable
+	in [the documentation](configuration.md#options)). It may be tempting to symlink (`ln -s`) these files into the directory
 	but symlinks won't work in a Docker container, so copy them instead. Your input directory should look something like
 	this:
 	```
@@ -84,10 +84,10 @@ do this, follow all the instructions in the [Public Install section of the Insta
 	NA12878_CARDIACM_MUTATED_L001_R1.fastq.gz
 	NA12878_CARDIACM_MUTATED_L001_R2.fastq.gz
 	```
-*  **Choosing an Output Directory**: Next, you'll need to choose a directory that you have write access in and that has enough space to store the results of 
+2.  **Choosing an Output Directory**: Next, you'll need to choose a directory that you have write access in and that has enough space to store the results of 
 	the analysis. We'll refer to this as the output directory
 	
-*  **Starting the Container**: Now that you have all your files, you can start the container. Before you do this, however,
+3.  **Starting the Container**: Now that you have all your files, you can start the container. Before you do this, however,
  make sure you're in a `screen` or `tmux` session so that the container won't be killed when you disconnect from the server
   hosting Docker. Run the following command to start the container:
 	```bash
@@ -96,16 +96,16 @@ do this, follow all the instructions in the [Public Install section of the Insta
 	This should put you in an interactive bash shell, inside the container, similar to if you'd run the 
 	[environment shell](batches.md#cpipe_environment).
 
-* **Creating a Batch**:Now that you're in the container, you can create a batch with the ordinary `cpipe batch` command. For example:
+4. **Creating a Batch**:Now that you're in the container, you can create a batch with the ordinary `cpipe batch` command. For example:
 	```bash
 	cpipe batch create --data /input/*.fastq.gz --exome /input/*.bed
 	```
 	
-* **Starting the Analysis**: Now that the batch has been created, all you need to do is start the analysis:
+5. **Starting the Analysis**: Now that the batch has been created, all you need to do is start the analysis:
 	```bash
 	cpipe run 001
 	```
-* **Getting the Results**: Once the analysis has finished successfully, you will find the results inside the output
+6. *Getting the Results**: Once the analysis has finished successfully, you will find the results inside the output
 	directory that you mounted into the container. If you are happy with these results, you can kill the container by
 	typing `exit` in the docker shell.
 
