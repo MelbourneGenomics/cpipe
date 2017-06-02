@@ -52,25 +52,22 @@ after the colon in the `docker pull` command above:
 
 In order to build the Cpipe container, follow these steps:
 
-* 1) Clone Cpipe with:
+1. Clone Cpipe with:
 
     ```bash
     git clone https://github.com/MelbourneGenomics/cpipe --branch 2.4 --depth 1
     ```
-* 2a) If you are part of MGHA, copy the swift_credentials.sh file
-into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
-* 2b) If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To
-do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
-* 3) `cd` into the cpipe directory and build the container with the following commands,
+2.
+    1. If you are part of MGHA, copy the swift_credentials.sh file into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
+    2. If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
+3. `cd` into the cpipe directory and build the container with the following commands,
  where `<version>` is some identifier you want to tag the image with.
-
-  ```bash
-  cd cpipe
-  docker build . -t cpipe:<version>
-  ```
-  
-  The `<version>` tag can be the release version of Cpipe (e.g. `2.4`), or it could be the git commit hash if you think
-  you will have many images from the same release (e.g. `3b592c3`)
+    ```bash
+    cd cpipe
+    docker build . -t cpipe:<version>
+    ```
+    The `<version>` tag can be the release version of Cpipe (e.g. `2.4`), or it could be the git commit hash if you think
+    you will have many images from the same release (e.g. `3b592c3`)
 
 ## Running the Image
 
