@@ -1,13 +1,9 @@
 # Docker
 * [Introduction](#introduction)
-* [Installation](#installation)
-    * [From MGHA Docker Registry](#from-mgha-docker-registry)
-    * [Building the Container Yourself](#building-the-container-yourself)
+* [Obtaining the Container](#obtaining-the-container)
+	* [From MGHA Docker Registry](#from-mgha-docker-registry)
+	* [Building the Container Yourself](#building-the-container-yourself)
 * [Running the Image](#running-the-image)
-    * [Creating a Batch](#creating-a-batch)
-    * [SSHing into the Container](#sshing-into-the-container)
-    * [Using Docker Run](#using-docker-run)
-* [Finding the Analysis](#finding-the-analysis)
 
 ## Introduction
 Docker is a containerization system that will allow you to install and run Cpipe without any dependencies or installation.
@@ -102,7 +98,7 @@ In order to build the Cpipe container, follow these steps:
 	```bash
 	cpipe run 001
 	```
-6. *Getting the Results**: Once the analysis has finished successfully, you will find the results inside the output
+6. **Getting the Results**: Once the analysis has finished successfully, you will find the results inside the output
 	directory that you mounted into the container. If you are happy with these results, you can kill the container by
 	typing `exit` in the docker shell.
 
