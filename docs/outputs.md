@@ -35,24 +35,27 @@ reference genome.
     * [Tab Separated Variant File](#tab-separated-variant-file)
     * [Provenance Report](#provenance-report)
     * [Gap Report](#gap-report)
-* `variants`: Contains the raw variant (VCF) files. The latest of these end in `genotype.soi.vep.post_filter.vcf`, and
-these are likely to be the most interesting files to view in this directory.
+* `variants`: Contains the raw variant (VCF) files. The VCF files that are likely to be the most interesting are:
+    * `<sample ID>.individual.genotype.soi.vep.post_filter.vcfanno.vcf`: The last and most completely annotated and
+    normalised VCF. Use this VCF for importing into curation tools etc.
+    * `<sample ID>.individual.refined.vcf`: The raw VCF that has been run through GATK but has not been normalised or 
+    annotated.
 
 Note that the following types of outputs have variable file names, all of which include the pipeline run ID. If you wish
 to understand the meaning of this, refer to the [terminology](./terminology.md) section.
 
 ## Batch Validation Files
 The batch validation report summarizes common sanity checks performed on a batch to quickly verify that sample results
- appear valid.
+appear valid.
 
 These files are named `<pipeline run ID>_batch_validation.html/md`. The .md markdown files are designed to be read as 
 plain text (e.g. in a terminal), while the .html files are designed to be viewed graphically (e.g. from a web browser),
- although they present the same content.
+although they present the same content.
 
 The report consists of the following sections:
 
 ### Gender Validation
-This result is taken from the sample’s summary.karyotype.tsv file.
+This result is taken from the sample’s `summary.karyotype.tsv` file.
 
 ### Gene Coverage By Sample
 * This result is a summary of the sample’s summary.pdf file, which calculates if a gene has acceptable coverage.
