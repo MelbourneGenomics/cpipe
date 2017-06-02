@@ -277,7 +277,7 @@ def task_install_picard():
     picard_target = JAVA_LIBS_ROOT / 'picard.jar'
 
     def action(picard_dir):
-        picard_jar = picard_dir / 'picard.jar'
+        picard_jar = Path(picard_dir) / 'picard.jar'
         delete_and_copy(picard_jar, picard_target)
         add_to_manifest('picard')
 
