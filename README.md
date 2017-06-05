@@ -32,7 +32,7 @@ shell at any time.
 `sampleID_<anything>_L[0-9]*_R[0-9].fastq.gz`
 * Tell Cpipe to create a new batch using your fastq files
    ```bash
-   manage_batch create MyBatch --data path/to/samples/*.fastq.gz --exome path/to/exons.bed
+   cpipe batch create MyBatch --data path/to/samples/*.fastq.gz --exome path/to/exons.bed
    ```
   * `MyBatch` is the identifier 
   * `path/to/exons.bed` is the full filepath to a capture regions bed file specified by your sequencer
@@ -42,6 +42,6 @@ For more information about this stage, refer to the [batches documentation](docs
 
 ## Running the Pipeline
 
-Now, all you need to do is run `cpipe --batch MyBatch run`
+Now, all you need to do is run `cpipe run MyBatch`
 
 The run command is documented in the [command documentation](docs/commands.md#run).
