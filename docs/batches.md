@@ -13,7 +13,8 @@ In Cpipe, a batch is a group of samples to be analysed at the same time. In the 
  `cpipe/batches`. For example, a batch named `batch_001` corresponds to the `cpipe/batches/batch_001` directory.
  
 ## Manipulating Batches
-In Cpipe, most things you want to do involving a batch can be done using the `cpipe batch` subcommand. If you need to
+In Cpipe, most things you want to do involving a batch, including creating and editing a batch can be done 
+using the `cpipe batch` subcommand. If you need to
 know more about this command, just run `cpipe batch --help` while you're in the Cpipe environment. Full documentation
 on this command can be found [here](commands.md#batch).
 
@@ -62,7 +63,7 @@ The metadata file has two formats. The first has only 37 columns, which are list
 |13 | Prioritised genes | The categories are used to prioritise variants from these genes in the gene priority column of the pipeline output | Groups of priorities, each separated by a space. Each group consists of a priority (1-5, where 5 is highest priority), a colon, and then a comma separated list of HGNC symbols. e.g. `3:GABRD,KCNAB2,ALG6 4:CASQ2,HAX1,CHRNB2,KCNJ10` | Yes | 2.2+ | No
 |14 | Consanguinity | Extent of consanguinity in the family of the patient | `No`, `Yes`, `Suspected`, or `Unknown` | No | 2.2+ | No
 |15 | Variants file | Known variants for the disease | Valid file path | No | 2.2+ | No
-|16 | Pedigree file | PED specification for trios (see Trio Analysis below) | Either `import` if you want to use an existing PED file, `exclude` if you want to exclude this from trio analysis, a string of the form `familyId=motherId,fatherId`, where motherId and fatherID are sampleIDs in this metadata file | Yes | 2.2+| No
+|16 | Pedigree file | PED specification for trios (see Trio Analysis below) | Either `import` if you want to use an existing PED file, `exclude` if you want to exclude this from trio analysis, or a string of the form `familyId=motherId,fatherId`, where motherId and fatherID are sampleIDs in this metadata file | Yes | 2.2+| No
 |17 | Ethnicity | Ethnicity of the patient | `Unknown`, `European`, `African`, or `Asian` | No | 2.2+ | No
 |18 | Variant call group | Samples to call as a group e.g. joint calling for related individuals | Comma separated list of sample IDs | No | 2.2+ | No
 |19 | Capture date | Date of exome library capture (only relevant for exome sequencing or panels) | Comma separated list of dates of the format  `yyyymmdd` | No | 2.2+ | No

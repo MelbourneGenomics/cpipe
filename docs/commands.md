@@ -53,11 +53,15 @@ optional arguments:
 The cpipe run command is the most common use case for cpipe. Just ensure you have a sample batch in the batches
 directory, run the command above, and your samples should be analysed. 
 
+`cpipe run` can also be used to resume failed or terminated batches. Run the same command again and Cpipe should continue
+where it left off.
+
 Any arguments that you specify other than the ones above are assumed to be bpipe options. For example, if you wanted to
 limit the maximum number of parallel jobs in the pipeline to 2, you could use:
 ```bash
 cpipe run MyBatch -n 2
 ```
+Refer to the `bpipe run` documentation [here](http://bpipe-test-documentation.readthedocs.io/en/latest/Commands/run/)
 
 ## Test
 ```
