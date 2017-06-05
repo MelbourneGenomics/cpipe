@@ -110,7 +110,7 @@ such as `edit`, `view`, and general commands like `run`.
 ### Create
 ```
 usage: cpipe batch create [-h] -d DATA [DATA ...] -e EXOME [-p PROFILE]
-                          [-f [FORCE]] [-m MODE]
+                          [-t METADATA] [-f] [-m MODE] [-5]
                           name
 
 positional arguments:
@@ -126,11 +126,14 @@ optional arguments:
   -p PROFILE, --profile PROFILE
                         The analysis profile (gene list) to use for the
                         analysis of this batch
-  -f [FORCE], --force [FORCE]
-                        Replace an existing batch with that name, if it
+  -t METADATA, --metadata METADATA
+                        The path to an existing metadata file to use for this
+                        batch. Otherwise, generate a new metadata file.
+  -f, --force           Replace an existing batch with that name, if it
                         already exists
   -m MODE, --mode MODE  Either "copy", "link" or "move": the method used to
                         put the data files into the batch directory
+  -5, --no-md5          Don't check the md5 sums of fastq files
 ```
 Creates a new batch, including adding fastqs, creating the metadata file, and creating the batch configuration file.
 

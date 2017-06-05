@@ -34,13 +34,16 @@ def setup_parser(parser: argparse.ArgumentParser):
     create_batch_parser.add_argument('-p', '--profile', required=False,
                                      help='The analysis profile (gene list) to use for '
                                           'the analysis of this batch', type=profile, default='ALL')
-    create_batch_parser.add_argument('-f', '--force', required=False, default=False, nargs='?', const=True,
-                                     help='Replace an existing batch with'
-                                          ' that name, if it already exists')
+    create_batch_parser.add_argument('-t', '--metadata', required=False,
+                                     help='The path to an existing metadata file to use for this batch. '
+                                          'Otherwise, generate a new metadata file.', type=path_with_ext())
+    create_batch_parser.add_argument('-f', '--force', required=False, default=False, action='store_true',
+                                     help='Replace an existing batch with that name, if it already exists')
     create_batch_parser.add_argument('-m', '--mode', required=False, default='link',
                                      help='Either "copy", "link" or "move":'
                                           " the method used to put the data files into the batch directory")
-
+    create_batch_parser.add_argument('-5', '--no-md5', required=False, default=False,
+                                     help="Don't check the md5 sums of fastq files", action='store_true')
     # edit command
     edit_parser = subparsers.add_parser('edit', help='Edit the metadata file for the chosen batch')
     edit_parser.add_argument('batch', type=existing_batch, help='The name of the batch whose metadata file you '
@@ -81,7 +84,8 @@ def execute(args: argparse.Namespace):
         for batch in Batch.list_all():
             print(batch.name)
     elif args.command == 'create':
-        Batch.create(args.name, args.data, args.exome, args.profile, force=args.force, mode=args.mode)
+        Batch.create(args.name, args.data, args.exome, args.profile, force=args.force, mode=args.mode, check_md5=(not args.no_md5),
+                metadata=args.metadata)
     elif args.command == 'edit':
         args.batch.metadata.edit(editor=args.editor, is_mgha=args.mgha)
     elif args.command == 'view':

@@ -34,7 +34,7 @@ setup(
         'pymysql',
         'pandas',
         'pandas_schema',
-        'visidata>=0.37',
+        'visidata>=0.59',
         'Jinja2',
         'argparse_prompt'
     ],

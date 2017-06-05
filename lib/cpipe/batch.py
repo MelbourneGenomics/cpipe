@@ -1,7 +1,9 @@
 import os
 import typing
 from typing import List
+import stat
 from itertools import groupby
+import subprocess
 from pathlib import Path
 
 from .paths import BATCHES
@@ -21,10 +23,16 @@ class Batch:
         else:
             raise ValueError("You must specify a directory or a name for the batch. Use one or either")
 
-    @staticmethod
-    def create(batch_name: str, data: typing.Iterable[Path], exome: str, profile: Design = Design('ALL'),
+    @classmethod
+    def create(cls,
+               batch_name: str,
+               data: typing.Iterable[Path], 
+               exome: str, 
+               profile: Design = Design('ALL'),
                force: bool = False,
-               mode: str = 'link'):
+               mode: str = 'link',
+               check_md5 = True,
+               metadata: Path = None):
         """
         Creates a new batch and associated config files
         :param batch_name: The name for the new batch
@@ -32,7 +40,7 @@ class Batch:
         :param exome: The exome target bed file
         :param profile: The design that specifies the regions to use in analysing this batch
         :param force: If a batch with this name already exists, delete it
-        :param mode: 'link', 'copy', or ''
+        :param mode: 'link', 'copy', or 'move'
         :return:
         """
         batch = Batch(BATCHES / batch_name)
@@ -48,6 +56,10 @@ class Batch:
         # Create the batch directory
         batch.create_empty()
 
+        # Add the metadata file if present
+        if metadata is not None:
+            cls.add_file(metadata, batch.metadata.path, mode='copy', check_md5=check_md5, force=True)
+
         # Write the config file
         with batch.config_file.open('w') as config_file:
             config_file.write(f'EXOME_TARGET="{exome}"')
@@ -59,12 +71,13 @@ class Batch:
 
             # Move the data into the batch
             for fastq in fastqs:
-                batch.add_fastq(fastq, mode=mode)
+                batch.add_fastq(fastq, mode=mode, force=force, check_md5=check_md5)
 
-            # Update the metadata file
-            batch.metadata.add_samples(fastqs, profile)
+            # Update the metadata file if we don't already have one
+            if metadata is None:
+                batch.metadata.add_samples(fastqs, profile)
 
-    def add_fastq(self, fastq: Path, mode: str = 'link'):
+    def add_fastq(self, fastq: Path, mode: str = 'link', check_md5=True, force=False):
         """
         Physically adds a fastq file to the given batch using the method specified by mode
         :param fastq: The path to the fastq to add
@@ -75,13 +88,50 @@ class Batch:
         self.data.mkdir(exist_ok=True)
 
         # Move the data into the batch
-        target_fastq = self.data / fastq.name
+        self.add_file(fastq, self.data, mode, force=force, check_md5=check_md5)
+
+    @classmethod
+    def add_file(cls, file: Path, dest: Path, mode: str = 'link', check_md5=True, force=False):
+        """Add a file to a given directory using the given mode. Either 'link', 'move', or 'copy'"""
+
+        # dest can be a filepath or a directory
+        if dest.is_dir():
+            target = dest / file.name
+        else:
+            target = dest
+
+        # Make sure the destination file doesn't exist
+        if target.exists():
+            if force:
+                target.unlink()
+            else:
+                raise Exception('The file "{target}" already exists. Check the --help for the command you ran to find a force option.')
+
+        # Check any md5 sums that exist
+        if check_md5:
+            cls.check_md5(file)
+
         if mode == 'copy':
-            fastq.copy(target_fastq)
+            file.copy(target)
         elif mode == 'link':
-            fastq.symlink_from(target_fastq)
+            file.symlink_from(target)
         elif mode == 'move':
-            fastq.rename(target_fastq)
+            file.rename(target)
+
+        # Fix permissions
+        # target.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
+
+    @staticmethod
+    def check_md5(file: Path):
+        suffix = file.suffix
+        md5 = file.with_suffix(suffix + '.md5')
+        if md5.exists():
+            code = subprocess.run(['md5sum', '-c', md5])
+            try:
+                code.check_returncode()
+            except:
+                raise Exception(f'md5sum of file {file} was unsuccessful. Check the integrity of the file. If you wish to turn this warning'
+                        'off, check the --help for the command you just ran.')
 
     def add_samples(self, samples: List[Path], design: Design = Design('ALL'), mode: str = None):
         """

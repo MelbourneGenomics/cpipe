@@ -24,13 +24,17 @@ def batch_name(val):
     return batch
 
 
-def path_with_ext(exts):
+def path_with_ext(exts:list=[]):
+    """
+    Argparse type validator for filepaths.
+    :param: exts A list of file extensions the file must have in order to be valid (optional)
+    """
     exts = set(exts)
 
     def func(path):
         path = Path(path)
         if set(path.suffixes).issuperset(exts) and path.exists():
-            return path
+            return path.resolve()
         else:
             raise argparse.ArgumentTypeError('The file must exist, and have a {} file extension'.format(exts))
 
