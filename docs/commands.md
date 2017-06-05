@@ -61,7 +61,7 @@ limit the maximum number of parallel jobs in the pipeline to 2, you could use:
 ```bash
 cpipe run MyBatch -n 2
 ```
-Refer to the `bpipe run` documentation [here](http://bpipe-test-documentation.readthedocs.io/en/latest/Commands/run/)
+For more bpipe options, refer to the `bpipe run` documentation [here](http://bpipe-test-documentation.readthedocs.io/en/latest/Commands/run/)
 
 ## Test
 ```
