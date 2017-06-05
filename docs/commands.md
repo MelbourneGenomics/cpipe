@@ -1,16 +1,17 @@
-# Running Cpipe
-  * [Cpipe Environment](#cpipe-environment)
-  * [Basic Functionality](#basic-functionality)
-  * [Run](#run)
-  * [Test](#test)
-  * [Batch](#batch)
-	 * [List](#list)
-	 * [Create](#create)
-	 * [Edit](#edit)
-	 * [View](#view)
-	 * [Check](#check)
-	 * [Add Sample](#add-sample)
-  * [Design](#design)
+# Commands
+    * [Cpipe Environment](#cpipe-environment)
+    * [Basic Functionality](#basic-functionality)
+    * [Run](#run)
+    * [Test](#test)
+    * [Batch](#batch)
+      * [List](#list)
+      * [Create](#create)
+      * [Edit](#edit)
+      * [View](#view)
+      * [Check](#check)
+      * [Add Sample](#add-sample)
+    * [Visidata](#visidata)
+    * [Design](#design)
   
 ## Cpipe Environment
 The Cpipe commands are only available inside a cpipe-specific Bash shell. To open this shell, simply run:
@@ -200,6 +201,15 @@ optional arguments:
 ```
 
 Adds one or more samples to an existing batch
+
+## Visidata
+The default editor we use for editing and viewing the batch metadata is called `visidata`. You can read the official documentation on the
+editor [here](https://github.com/saulpw/visidata/blob/stable/README.md). However for the sake of editing metadata, the 
+only things you need to know are:
+* You can move your selection around using the arrow keys
+* `e` Edits the current cell. Press `Enter`/`Return` once you're done to save that cell
+* `Ctrl+S` saves the current document.
+* `q` quits the editor without saving
 
 ## Design
 ```
