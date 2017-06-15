@@ -55,6 +55,12 @@ Exception Details:
 This isn't a significant error, so you can make Java stop reporting it by editing your `config.groovy` and
 setting `JAVA_OPTS="-noverify"`.
 
+You also need to make sure that Cpipe is using the built-in version of Java that will use this flag. To do so,
+run `which java` while inside the Cpipe. If it returns something like `/usr/bin/java`, then your system Java
+is incorrectly taking precedence. In this case, quit out of the cpipe environment (type `exit` or `Ctrl+D`),
+load Java using whichever system you use (the `module` command, `update-alternatives`, etc.), and then
+re-enter the Cpipe environment, and resume the pipeline.
+
 ## Out of Memory
 If you notice `OutOfMemory` errors in the cpipe output log, especially when you are running a large number of samples, you
 might need to increase the amount of memory allocated to Java. You can do this by setting the `MAX_JAVA_MEM` variable
@@ -82,3 +88,4 @@ chmod g+rx -R cpipe
 chmod g+w -R cpipe/designs cpipe/batches
 ```
 
+# 
