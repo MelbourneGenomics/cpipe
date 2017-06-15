@@ -109,7 +109,7 @@
     },
     "vcfanno": {
         "path": "tools/vcfanno",
-	"container": "cpipe-2.4-assets",
+        "container": "cpipe-2.4-assets",
         "version": "0.1.0",
         "hash": "5f69c278374d1afc7636c2e8902808b71810674b"
     },
@@ -126,11 +126,11 @@
         "hash": "3fcf2fdc1efe4c6808cb16bdec7e94953cead97f"
     },
     "annotation": {
-        "path": "data/annotation", 
-        "version": "1.0", 
-	"container": "cpipe-2.4-assets",
+        "path": "data/annotation",
+        "version": "1.0",
+        "container": "cpipe-2.4-assets",
         "hash": "19e40233dd880e3a90111e698ba4dd12d0fc328d"
-    }, 
+    },
     "dbsnp": {
         "path": "data/dbsnp",
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
@@ -167,12 +167,6 @@
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "version": "a4028e7"
     },
-    "vep_plugins": {
-        "path": "tools/vep_plugins",
-        "hash": "57daa2d24750087e753482b600a614e1cdbe80f7",
-        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
-        "version": "88.8"
-    },
     "vep_cache": {
         "path": "data/vep_cache",
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
@@ -190,5 +184,11 @@
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
         "hash": "7e5cdb84a614d37c6e9647cb6603da3bf6ce57a2",
         "version": "88.8"
+    },
+    "vep_plugins": {
+        "path": "tools/vep_plugins",
+        "hash": "0efa6158511eec7940096db011d3e3c79440b9bb",
+        "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
+        "version": "4b5d3b1"
     }
 }

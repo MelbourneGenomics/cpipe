@@ -350,7 +350,9 @@ def task_install_java_libs():
 
 def task_install_vep_plugins():
     def action(vep_plugins_dir):
-        delete_and_copy(vep_plugins_dir, VEP_PLUGIN_ROOT)
+        # Copy the contents of the plugins directory to the vep_plugins dir because
+        # we want to preserve the Grantham plugin that's there.
+        copy_contents(vep_plugins_dir, VEP_PLUGIN_ROOT)
         add_to_manifest('vep_plugins')
 
     return {

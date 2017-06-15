@@ -102,6 +102,27 @@ def make_executable(file):
     os.chmod(file, st.st_mode | stat.S_IEXEC)
 
 
+def copy_contents(src, dest):
+    """Copies the contents of one directory into another, creating the destination if necessary"""
+
+    src = Path(src)
+    dest = Path(dest)
+
+    # Both must be dirs
+    if not src.is_dir():
+        raise Exception('src must point to an existing directory')
+
+    # Make the directory we're copying into
+    dest.mkdir(parents=True, exist_ok=True)
+
+    # Do the copy
+    for child in src.iterdir():
+        if child.is_dir():
+            shutil.copytree(child, dest / child.stem)
+        else:
+            shutil.copy(child, dest)
+
+
 def delete_and_copy(src, dest):
     # Make the directory we're copying into
     Path(dest).parent.mkdir(parents=True, exist_ok=True)
@@ -265,3 +286,5 @@ def in_docker():
 
 def is_root():
     return os.geteuid() == 0
+
+
