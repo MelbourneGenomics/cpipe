@@ -44,6 +44,14 @@ def test_pipeline(args):
     run('run_tests detect_mutations_test')
 
 
+def stop_pipeline(args):
+    check_java(args)
+    run(
+        'bpipe stop',
+        cwd=args.batch.analysis
+    )
+
+
 def run_bpipe(args):
     check_java(args)
     run(
@@ -71,6 +79,10 @@ def main():
     batch_parser = subparsers.add_parser('batch', help='Manage Cpipe batches and metadata files')
     manage_batch.setup_parser(batch_parser)
     batch_parser.set_defaults(func=manage_batch.execute)
+
+    # Stop command
+    stop_parser = subparsers.add_parser('stop', help='Stops a currently running Cpipe batch')
+    stop_parser.set_defaults(func=stop_pipeline)
 
     # Test command
     test_parser = subparsers.add_parser('test', help='Run the cpipe test suite')
