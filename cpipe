@@ -1,0 +1,14 @@
+#!/bin/bash
+
+REMAINDER="${@:1}"
+ROOT=`dirname $0`
+ENV_SCRIPT="$ROOT/_env"
+
+if [[ -n $REMAINDER ]]; then
+    # If the user provided arguments, run the cpipe command using those arguments
+    source $ENV_SCRIPT
+    cpipe $REMAINDER
+else
+    # If the user provided no arguments, start a new subshell, set variables in that, and then give control back to the user. They can then quit using Ctrl+D
+    bash --init-file "${ROOT}/_env"
+fi
