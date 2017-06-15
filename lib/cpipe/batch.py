@@ -126,7 +126,7 @@ class Batch:
         suffix = file.suffix
         md5 = file.with_suffix(suffix + '.md5')
         if md5.exists():
-            code = subprocess.run(['md5sum', '-c', md5])
+            code = subprocess.run(['md5sum', '-c', md5], cwd=file.parent)
             try:
                 code.check_returncode()
             except:
