@@ -151,9 +151,9 @@
     },
     "bpipe": {
         "path": "tools/bpipe",
+        "hash": "3f32a9d256276719ed430b6f712abbca560dd68e",
         "container": "https://swift.rc.nectar.org.au:8888/v1/AUTH_7ea859948c3a451c9baced6fee813ed1/cpipe-2.4-public/",
-        "version": "0.9.9.2",
-        "hash": "486bbe2a319c079898697c1dfedec6923170e53e"
+        "version": "0.9.9.4"
     },
     "bcftools": {
         "path": "tools/bcftools",

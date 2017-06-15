@@ -152,8 +152,9 @@ def task_download_bpipe():
         def action():
             temp_dir = tempfile.mkdtemp()
             sh('''
-            git clone -c advice.detachedHead=false -b {bpipe_ver} --depth 1 https://github.com/ssadedin/bpipe {bpipe_dir}
+            git clone https://github.com/ssadedin/bpipe {bpipe_dir}
             cd {bpipe_dir}
+            git checkout tags/{bpipe_ver}
             ./gradlew dist
             '''.format(bpipe_ver=BPIPE_VERSION, bpipe_dir=temp_dir))
             return {'dir': temp_dir}

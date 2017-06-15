@@ -25,7 +25,7 @@ TMPDATA = ROOT / 'tmpdata'
 # Versions
 # Note: The version of most other Java/Perl/Python libraries can be found in the relevant dependency file (cpanfile, build.gradle, etc)
 BWA_VERSION = '0.7.13'
-BPIPE_VERSION = '0.9.9.2'
+BPIPE_VERSION = '0.9.9.4'
 HTSLIB_VERSION = '1.3'  # Samtools and Bcftools also use this
 BEDTOOLS_VERSION = '2.25.0'
 GATK_VERSION = '3.6'
