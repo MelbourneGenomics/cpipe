@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REMAINDER="${@:2}"
+REMAINDER="${@:1}"
 ROOT=`dirname $0`
 ENV_SCRIPT="$ROOT/_env"
 
