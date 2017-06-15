@@ -63,3 +63,22 @@ like this:
 MAX_JAVA_MEM=8g cpipe run
 ```
 
+## Permission Denied
+A pipeline failure caused by insufficent permissions looks something like this:
+```
+PermissionError: [Errno 13] Permission denied
+```
+
+In this case, you (or the sysadmin) need to adjust the permissions of the Cpipe installation. The simplest way would be to give read, write, and
+execute permissions for the whole installation: 
+```bash
+chmod g+rwx -R cpipe
+```
+However, if you're worried about users editing the pipeline
+contents, you can give only read and execute permissions for those directories (`chmod g+rx -R cpipe`), and then give write permissions
+only to the batches and designs directories:
+```bash
+chmod g+rx -R cpipe
+chmod g+w -R cpipe/designs cpipe/batches
+```
+
