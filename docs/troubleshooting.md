@@ -56,7 +56,7 @@ This isn't a significant error, so you can make Java stop reporting it by editin
 setting `JAVA_OPTS="-noverify"`.
 
 ## Out of Memory
-If you notice OutOfMemory errors in the cpipe output log, especially when you are running a large number of samples, you
+If you notice `OutOfMemory` errors in the cpipe output log, especially when you are running a large number of samples, you
 might need to increase the amount of memory allocated to Java. You can do this by setting the `MAX_JAVA_MEM` variable
 like this:
 ```bash
@@ -75,7 +75,7 @@ execute permissions for the whole installation:
 chmod g+rwx -R cpipe
 ```
 However, if you're worried about users editing the pipeline
-contents, you can give only read and execute permissions for those directories (`chmod g+rx -R cpipe`), and then give write permissions
+contents, you can give only read and execute permissions for those directories, and then give write permissions
 only to the batches and designs directories:
 ```bash
 chmod g+rx -R cpipe
