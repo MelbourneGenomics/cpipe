@@ -82,6 +82,10 @@ def main():
 
     # Stop command
     stop_parser = subparsers.add_parser('stop', help='Stops a currently running Cpipe batch')
+    stop_parser.add_argument('batch', type=arg_validation.existing_batch,
+                            help='The name of the batch that you want to stop, relative to the batches directory')
+    stop_parser.add_argument('-j', '--no-java-check', action='store_true',
+                             help="Don't check that the system Java is a compatible version")
     stop_parser.set_defaults(func=stop_pipeline)
 
     # Test command

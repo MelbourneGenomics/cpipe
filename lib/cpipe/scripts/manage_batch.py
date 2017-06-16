@@ -67,6 +67,10 @@ def setup_parser(parser: argparse.ArgumentParser):
     validate_parser.add_argument('batch', type=existing_batch, help='The name of the batch whose metadata file you '
                                                                     'want to validate')
 
+    # delete command
+    delete_parser = subparsers.add_parser('delete', help='Delete the specified batch')
+    delete_parser.add_argument('batch', type=existing_batch, help='The name of the batch to delete')
+
     # add_sample command
     add_sample_parser = subparsers.add_parser('add_sample',
                                               help='Add a sample to an existing metadata file')
@@ -90,6 +94,8 @@ def execute(args: argparse.Namespace):
         args.batch.metadata.edit(editor=args.editor, is_mgha=args.mgha)
     elif args.command == 'view':
         args.batch.metadata.view()
+    elif args.command == 'delete':
+        args.batch.delete()
     elif args.command == 'check':
         warnings = args.batch.metadata.validate(is_mgha=args.mgha)
         if warnings:

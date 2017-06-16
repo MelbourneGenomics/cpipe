@@ -30,7 +30,6 @@ class Metadata:
         with self.path.open('w') as file:
             file.write(names)
 
-
     def view(self):  # sample: str = None):
         """
         Shows the sample metadata file using a spreadsheet viewer
@@ -89,6 +88,6 @@ class Metadata:
             'Sex': 'Unknown',
             'Cohort': design.name,
             'Sample_Type': 'Normal',
-            'Fastq_Files': ','.join([str(f.resolve()) for f in samples])
+            'Fastq_Files': ','.join([str(f) for f in samples])
         }, ignore_index=True)\
             .to_csv(str(self.path), sep='\t', index=False)

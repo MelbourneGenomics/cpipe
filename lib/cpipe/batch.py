@@ -70,12 +70,11 @@ class Batch:
             fastqs = list(fastqs)
 
             # Move the data into the batch
-            for fastq in fastqs:
-                batch.add_fastq(fastq, mode=mode, force=force, check_md5=check_md5)
+            batch_data = [batch.add_fastq(fastq, mode=mode, force=force, check_md5=check_md5) for fastq in fastqs]
 
             # Update the metadata file if we don't already have one
             if metadata is None:
-                batch.metadata.add_samples(fastqs, profile)
+                batch.metadata.add_samples(batch_data, profile)
 
     def add_fastq(self, fastq: Path, mode: str = 'link', check_md5=True, force=False):
         """
@@ -88,11 +87,17 @@ class Batch:
         self.data.mkdir(exist_ok=True)
 
         # Move the data into the batch
-        self.add_file(fastq, self.data, mode, force=force, check_md5=check_md5)
+        return self.add_file(fastq, self.data, mode, force=force, check_md5=check_md5)
 
     @classmethod
     def add_file(cls, file: Path, dest: Path, mode: str = 'link', check_md5=True, force=False):
-        """Add a file to a given directory using the given mode. Either 'link', 'move', or 'copy'"""
+        """
+        Add a file to a given directory using the given mode. Either 'link', 'move', or 'copy'.
+        Returns the path to the file in it snew location in the batch
+        """
+
+        if not file.exists():
+            raise ValueError(f'The input file "{file}" does not exist!')
 
         # dest can be a filepath or a directory
         if dest.is_dir():
@@ -118,8 +123,7 @@ class Batch:
         elif mode == 'move':
             file.rename(target)
 
-        # Fix permissions
-        # target.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
+        return target
 
     @staticmethod
     def check_md5(file: Path):
