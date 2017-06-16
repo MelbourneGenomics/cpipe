@@ -21,13 +21,11 @@ msg "Creating directories ..."
 mkdir -p $BATCH_DIR/data || err "Unable to create batch directory"
 
 msg "Creating batch using CARDIOM analysis profile ..."
-manage_batch create ${BATCH_NAME} --profile CARDIOM --data ${HERE}/data/*.fastq.gz --exome ${CPIPE_ROOT}/designs/genelists/exons.bed --force || err "Failed to create batch"
-
-pushd $BATCH_DIR/analysis
+cpipe batch create ${BATCH_NAME} --profile CARDIOM --data ${HERE}/data/*.fastq.gz --exome ${CPIPE_ROOT}/designs/genelists/exons.bed --force || err "Failed to create batch"
 
 msg "Running pipeline ... "
 
-../../../bpipe run -p CHECK_FASTQC_FAILURES=false -p VARIANT_DB=$VARIANT_DB ../../../pipeline/pipeline.groovy ../samples.txt | tee output.log
+cpipe run ${BATCH_NAME}
 
 msg "Checking results ..."
 
@@ -67,4 +65,3 @@ lovd_has chr1 201328340 "stop_lost"
 msg "Test Completed Successfully"
 
 true
-
