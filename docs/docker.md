@@ -55,7 +55,7 @@ In order to build the Cpipe container, follow these steps:
     ```
 2.
     1. If you are part of MGHA, copy the swift_credentials.sh file into the cpipe directory as explained in the [installation documentation](install.md#mgha-install).
-    2. If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To do this, follow all the instructions in the [Public Install section of the Install Documentation](install.md#public-install)
+    2. If you aren't part of MGHA, you'll have to manually install all the tools that we aren't able to redistribute. To do this, copy in all the tools listed in the [Public Install section of the Install Documentation](install.md#public-install). Don't run the install script - Docker will do that automatically.
 3. `cd` into the cpipe directory and build the container with the following commands,
  where `<version>` is some identifier you want to tag the image with.
     ```bash
