@@ -87,7 +87,7 @@ In order to build the Cpipe container, follow these steps:
 	  docker run -it -v /path/to/input/:/input -v /path/to/output:/opt/cpipe/batches cpipe:<tag>
 	```
 	This should put you in an interactive bash shell, inside the container, similar to if you'd run the 
-	[environment shell](batches.md#cpipe_environment).
+	[environment shell](commands.md#cpipe-environment).
 
 4. **Creating a Batch**:Now that you're in the container, you can create a batch with the ordinary `cpipe batch` command. For example:
 	```bash
