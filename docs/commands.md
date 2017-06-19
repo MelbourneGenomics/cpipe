@@ -14,28 +14,46 @@
 * [Design](#design)
   
 ## Cpipe Environment
-The Cpipe commands are only available inside a cpipe-specific Bash shell. To open this shell, simply run:
-```bash
-./environment.sh
+The Cpipe commands listed here can be run in one of two ways.
+
+The first, simplest, way, is to use the `cpipe` script in the root of the Cpipe installation. For example,
+to run a batch, you'd use:
+```batch
+./cpipe run MyBatch
 ```
-Just press `Ctrl+D` or type `exit` to close this shell at any time.
+In other words, you can take any command from this documentation, and replace `cpipe` with `./cpipe`.
+
+The second way, which is useful for debugging Cpipe commands, for using additional Cpipe commands that 
+aren't part of the `cpipe` command, and for checking versions of different binaries, 
+is to start a new bash shell inside the Cpipe environment. You can start this shell by running the same
+`./cpipe` script as above, but with no further arguments. Once you're in the shell, you can run the cpipe
+commands as they're written below. For example:
+```
+cpipe run MyBatch
+```
 
 ## Basic Functionality
 
-Once you've activated the Cpipe shell, the most common command you will be using is `cpipe`, which exposes the 
+The core command you will be using with is `cpipe`, which exposes the 
 public interface for running and reviewing the pipeline
 
-Usage: `cpipe <CPIPE OPTIONS> COMMAND <COMMAND OPTIONS>`
+```
+usage: cpipe [-h] {run,batch,stop,test,design,bpipe} ...
 
-Commands (type --help after any command for more details):
-* [run](#run): Runs the analysis pipeline
-* [test](#test): Runs the pipeline tests
-* [batch](#batch): Creates and modifies analysis batches
-* [design](#design): Creates and modifies designs/genelists
-* [metadata](#metadata): Creates and modifies sample metadata files
+Runs core Cpipe functions
 
-Keyword Arguments:
-* `-h`, `--help`: Prints this help page
+positional arguments:
+  {run,batch,stop,test,design,bpipe}
+    run                 Runs the analysis pipeline
+    batch               Manage Cpipe batches and metadata files
+    stop                Stops a currently running Cpipe batch
+    test                Run the cpipe test suite
+    design              Create and modify designs and their genelists
+    bpipe               Pass a command to bpipe
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
 
 ## Run
 ```

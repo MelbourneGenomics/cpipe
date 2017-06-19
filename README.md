@@ -22,7 +22,7 @@ For more detailed instructions, have a look at the [installation documentation](
 
 ## Activate the Cpipe environment
 ```bash
-./environment.sh
+./cpipe
 ```
 This will start a new shell with various Cpipe-specific variables set. Just press `Ctrl+D` or type `exit` to close this
 shell at any time.
