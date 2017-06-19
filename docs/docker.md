@@ -84,19 +84,19 @@ In order to build the Cpipe container, follow these steps:
  make sure you're in a `screen` or `tmux` session so that the container won't be killed when you disconnect from the server
   hosting Docker. Run the following command to start the container:
 	```bash
-	  docker run -it -v /path/to/input/:/input -v /path/to/output:/opt/cpipe/batches/001 cpipe:<tag>
+	  docker run -it -v /path/to/input/:/input -v /path/to/output:/opt/cpipe/batches cpipe:<tag>
 	```
 	This should put you in an interactive bash shell, inside the container, similar to if you'd run the 
 	[environment shell](batches.md#cpipe_environment).
 
 4. **Creating a Batch**:Now that you're in the container, you can create a batch with the ordinary `cpipe batch` command. For example:
 	```bash
-	cpipe batch create --data /input/*.fastq.gz --exome /input/*.bed
+	cpipe batch create MyBatch --data /input/*.fastq.gz --exome /input/*.bed
 	```
 	
 5. **Starting the Analysis**: Now that the batch has been created, all you need to do is start the analysis:
 	```bash
-	cpipe run 001
+	cpipe run MyBatch
 	```
 6. **Getting the Results**: Once the analysis has finished successfully, you will find the results inside the output
 	directory that you mounted into the container. If you are happy with these results, you can kill the container by
