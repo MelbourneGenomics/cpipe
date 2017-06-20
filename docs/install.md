@@ -62,7 +62,7 @@ access) and running the following
    If you cloned cpipe using a different name, copy into the directory you created instead of `cpipe`
 * Having access to the MGHA NeCTAR project and downloading the credentials file from:
  Compute (in the sidebar) → Access & Security → API Access → Download OpenStack RC File.
- You'll then have to rename the file `Melbourne_Genomics_Health_Alliance-openrc.sh` to `swift_credentials` and place it
+ You'll then have to rename the file `Melbourne_Genomics_Health_Alliance-openrc.sh` to `swift_credentials.sh` and place it
  in the Cpipe installation directory.
  
 ### Public Install
@@ -84,16 +84,19 @@ Depending on the speed of your connection, and the number of simultaneous proces
 The Cpipe installer has a number of command line flags that can be used to customise the installation. You can view the 
  latest flags simply by running `./cpipe --help`. Otherwise, some are documented here:
  ```
+  Cpipe Installer
   --help, --usage
     Print this help page to stdout
   -n, --processes <process number>
-    Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently 4 on your system)
+    Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently 16 on your system)
+  -i, --noninteractive
+    Disables the interactive installation prompting, e.g. for automated installs
   -c, --credentials </path/to/swift_credentials.sh>
-    Use the specified swift credentials file to download assets from NeCTAR. Defaults to looking in the cpipe root directory
+    Use the specified swift credentials file to download assets from NECTAR. Defaults to looking in the cpipe root directory
   -v, --verbose
     Print everything to stdout instead of just errors. Good for debugging an install
   -s, --no-swift
-    Do a manual install instead of downloading assets from NeCTAR. Strongly NOT recommended as this will potentially take days to complete
+    Do a manual install instead of downloading assets from NECTAR. Strongly NOT recommended as this will potentially take days to complete
   -t, --task <taskname>
     Specify one or more tasks to run instead of a full install. Each time you use this flag it will add another task. Don't use this unless you know what you're doing
   -p, --no-pip
