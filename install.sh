@@ -32,8 +32,8 @@ function usage {
   echo "    ${normal}Print this help page to stdout"
   echo "  ${bold}-n, --processes <process number>"
   echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
-  echo "  ${bold}-i, --noninteractive <process number>"
-  echo "    ${normal}Set the maximum number of processes to use for the install. The higher number the faster the install, but the more memory used. Defaults to the output of 'nproc --all', the number of available processing units (currently `nproc --all` on your system)"
+  echo "  ${bold}-i, --noninteractive"
+  echo "    ${normal}Disables the interactive installation prompting, e.g. for automated installs"
   echo "  ${bold}-c, --credentials </path/to/swift_credentials.sh>"
   echo "    ${normal}Use the specified swift credentials file to download assets from NECTAR. Defaults to looking in the cpipe root directory"
   echo "  ${bold}-v, --verbose"
@@ -47,7 +47,7 @@ function usage {
 }
 
 # Parse arguments
-ARGS=$(getopt -o visc:n:t:p: --long "verbose,noninteractive,no-swift,credentials:,processes:,task:,no-pip:" -n $(basename $0) -- "$@")
+ARGS=$(getopt -o visc:n:t:p: --long "verbose,noninteractive,no-swift,help,usage,credentials:,processes:,task:,no-pip:" -n $(basename $0) -- "$@")
 eval set -- "$ARGS"
 
 PROCESSES=`nproc --all`
