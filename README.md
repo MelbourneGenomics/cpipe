@@ -27,9 +27,9 @@ For more detailed instructions, have a look at the [installation documentation](
    ```bash
    ./cpipe batch create MyBatch --data path/to/samples/*.fastq.gz --exome path/to/exons.bed
    ```
-  * `MyBatch` is the identifier 
-  * `path/to/exons.bed` is the full filepath to a capture regions bed file specified by your sequencer
-  * `path/to/samples/*.fastq.gz` is the full filepath to the sample fastqs you want to put in your batch
+  * `MyBatch` is the batch name 
+  * `path/to/exons.bed` is the filepath to a capture regions bed file specified by your sequencer
+  * `path/to/samples/*.fastq.gz` is the filepath to the sample fastqs you want to put in your batch
 
 For more information about this stage, refer to the [batches documentation](docs/batches.md).
 
