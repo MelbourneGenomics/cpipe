@@ -27,16 +27,16 @@ setup(
     },
 
     install_requires=[
-        'requests==2.11.0',
-        'python-swiftclient',
-        'python-keystoneclient',
-        'doit>=0.30.0',
-        'pymysql',
-        'pandas',
-        'pandas_schema',
-        'visidata>=0.59',
-        'Jinja2',
-        'argparse_prompt'
+        'requests==2.18.1',
+        'python-swiftclient==3.3.0',
+        'python-keystoneclient==3.12.0',
+        'doit==0.30.3',
+        'pymysql==0.7.11',
+        'pandas==0.20.2',
+        'pandas_schema==0.3.1',
+        'visidata==0.91',
+        'Jinja2==2.9.6',
+        'argparse_prompt==0.0.2'
     ],
     license="GPL"
 )
