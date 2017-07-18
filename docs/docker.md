@@ -32,17 +32,18 @@ a member of the MGHA and would like to obtain docker registry credentials, pleas
 
 Once you have the credentials, you'll first need to login to our registry. Insert the credentials as prompted.
 ```bash
-docker login https://docker.melbournegenomics.org
+docker login https://docker.melbournegenomics.org.au
 ```
 
 Now all you need to do is run the following command, where `<version>` is the version of Cpipe you would like to install
 ```bash
-docker pull docker.melbournegenomics.org/cpipe:<version>
+docker pull docker.melbournegenomics.org.au/cpipe:<version>
 ```
 The current versions we have available on the docker registry are the following. Any of these version numbers can be put 
 after the colon in the `docker pull` command above:
-* 2.4.0
-* 2.4.1
+* `2.4.0`
+* `2.4.1`
+* `2.5.1`
 
 ### Building the Container Yourself
 
