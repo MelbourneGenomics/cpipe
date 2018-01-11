@@ -17,6 +17,9 @@ from doit.tools import PythonInteractiveAction
 
 from cpipe import get_version
 from cpipe.scripts import create_bpipe_config
+from multiprocessing import Lock
+
+lock = Lock()
 
 DOIT_CONFIG = {
     'default_tasks': ['install'],
@@ -72,7 +75,6 @@ def task_tool_assets():
             'install_bcftools',
             'install_bedtools',
             'install_gatk',
-            'install_perl_libs',
             'install_vep',
             'install_fastqc',
             'install_groovy',
