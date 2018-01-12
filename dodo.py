@@ -72,6 +72,7 @@ def task_tool_assets():
             'install_bcftools',
             'install_bedtools',
             'install_gatk',
+            'install_perl_libs',
             'install_vep',
             'install_fastqc',
             'install_groovy',
