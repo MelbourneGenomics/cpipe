@@ -17,9 +17,6 @@ from doit.tools import PythonInteractiveAction
 
 from cpipe import get_version
 from cpipe.scripts import create_bpipe_config
-from multiprocessing import Lock
-
-lock = Lock()
 
 DOIT_CONFIG = {
     'default_tasks': ['install'],

@@ -10,6 +10,7 @@ from urllib.parse import urlparse, urljoin
 from urllib.request import urlretrieve
 
 from tasks.common import unzip_todir, has_swift_auth, ROOT, MANUAL_INSTALL
+from . import lock
 
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
