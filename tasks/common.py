@@ -163,7 +163,7 @@ def unzip_todir(input, directory, type):
         tar = tarfile.open(fileobj=input, mode='r:bz2')
         tar.extractall(tempdir)
     else:
-        raise ValueError('Can only download .tar.gz, .tar.bz2, or .zip file')
+        raise ValueError('Type: {0} given. Can only download .tar.gz, .tar.bz2, or .zip file'.format(type))
 
     # If there is only one subdirectory, take the files inside that
     files = [os.path.join(tempdir, f) for f in os.listdir(tempdir)]
@@ -207,7 +207,7 @@ def download_zip(url_str, directory, type=None):
     input = BytesIO(url.read())
 
     # Try to deduce the type from the URL
-    if not type:
+    if type is None:
         [name, ext2] = os.path.splitext(url_str)
         [name, ext1] = os.path.splitext(name)
 
@@ -217,6 +217,9 @@ def download_zip(url_str, directory, type=None):
             type = 'tgz'
         elif (ext1 == '.tar' and ext2 == '.bz2') or ext2 == '.tbz2':
             type = 'tbz2'
+        else:
+            raise ValueError ("Unknow filetype: ext1: {}, ext2: {}\nurl_str: {}".format(ext1, ext2,
+                                                                                        url_str))
 
     unzip_todir(input, directory, type)
 

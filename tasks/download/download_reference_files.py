@@ -130,7 +130,15 @@ def task_download_ucsc():
                     ["ucsc.hg19.dict.gz", "ucsc.hg19.fasta.gz", "ucsc.hg19.fasta.fai.gz"],
                     UCSC_ROOT,
                     'bundle/hg19/'
-                )
+                ),
+                cmd('''
+                mkdir -p ucsc\
+                && pushd {data_dir}/ucsc\
+                    && gunzip -c ucsc.hg19.dict.gz >ucsc.hg19.dict\
+                    && gunzip -c ucsc.hg19.fasta.fai.gz >ucsc.hg19.fasta.fai\
+                    && gunzip -c ucsc.hg19.fasta.gz >ucsc.hg19.fasta
+                '''.format(data_dir=DATA_ROOT), cwd=DATA_ROOT, executable='bash')
+
             ],
             'uptodate': [run_once],
         }
@@ -311,7 +319,7 @@ def task_bwa_index_ucsc_reference():
     return {
         'targets': [UCSC_BWA_INDEX],
         'actions': [
-            '{tools}/bwa/bwa index -a bwtsw {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
+            '{tools}/bin/bwa index -a bwtsw {data}/ucsc/ucsc.hg19.fasta'.format(tools=TOOLS_ROOT, data=DATA_ROOT)
         ],
         'task_dep': [
             'install_bwa',

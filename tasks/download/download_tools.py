@@ -67,6 +67,9 @@ def task_download_cpanm():
                     curl -L https://cpanmin.us/ -o cpanm
                     chmod +x cpanm
             ''', cwd=temp_dir)
+            return {
+                'dir': temp_dir
+            }
 
         return {
             'actions': [action],
@@ -99,7 +102,7 @@ def task_download_bwa():
     if swift_install():
         return nectar_download('bwa')
     else:
-        return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION))
+        return download_task("https://codeload.github.com/lh3/bwa/tar.gz/v{0}".format(BWA_VERSION), type='tgz')
 
 
 def task_download_htslib():
@@ -130,7 +133,7 @@ def task_download_bedtools():
     if swift_install():
         return nectar_download('bedtools')
     else:
-        return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION))
+        return download_task("https://codeload.github.com/arq5x/bedtools2/tar.gz/v{0}".format(BEDTOOLS_VERSION), type='tgz')
 
 def task_download_vep():
     if swift_install():
@@ -331,7 +334,7 @@ def task_download_zlib():
         return nectar_download('zlib')
     else:
         return download_task(
-            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION))
+            'https://codeload.github.com/madler/zlib/tar.gz/v{}'.format(ZLIB_VERSION), type='tgz')
 
 def task_download_vcfanno():
     if has_swift_auth():

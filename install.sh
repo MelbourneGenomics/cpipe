@@ -7,6 +7,7 @@ set -e
 PYTHON_VERSION='3.6.0'
 PYTHON_INTERPRETER='python3.6'
 ROOT=$(readlink -f $(dirname ${BASH_SOURCE}))
+mkdir -p ${ROOT}/tmpdata
 export TMPDIR=${ROOT}/tmpdata # Write temporary files to tmpdata
 export CPIPE_ROOT=$ROOT
 TEMP_SUBDIR=`mktemp -d`
