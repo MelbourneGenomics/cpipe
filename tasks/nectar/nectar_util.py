@@ -10,7 +10,7 @@ from urllib.parse import urlparse, urljoin
 from urllib.request import urlretrieve
 
 from tasks.common import unzip_todir, has_swift_auth, ROOT, MANUAL_INSTALL
-
+from . import lock
 
 current_dir = path.dirname(__file__)
 current_manifest = path.join(current_dir, 'current.manifest.json')
@@ -18,8 +18,9 @@ target_manifest = path.join(current_dir, 'target.manifest.json')
 
 def add_to_manifest(key):
     """Copy the JSON objects from the target JSON file to current JSON file"""
+    lock.acquire()
     with open(target_manifest, 'r') as target, \
-            open(current_manifest, 'r+') as current:
+         open(current_manifest, 'r+') as current:
         target_json = json.load(target)
         current_json = json.load(current)
         current_json[key] = target_json[key]
@@ -27,6 +28,7 @@ def add_to_manifest(key):
         current.truncate()
         json.dump(current_json, current, indent=4)
 
+    lock.release()
 
 def create_current_manifest():
     # Create the current manifest if it doesn't exist
